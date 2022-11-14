@@ -8,6 +8,30 @@ from django.utils import timezone
 
 from django.utils.translation import gettext as _
 
+class UserRole(models.TextChoices):
+    STUDENT = 'Student',
+    ADMIN = 'Administrator',
+    DIRECTOR = 'Director',
+
+class Gender(models.TextChoices):
+    MALE = 'M', _('Male')
+    FEMALE = 'F', _('Female')
+    PNOT = 'PNOT', _('Prefer Not To Say')
+
+def is_valid_gender(Student):
+    return Student.gender in {
+        Gender.MALE,
+        Gender.FEMALE,
+        Gender.PNOT,
+        }
+
+def is_valid_role(Student):
+    return Student.role in {
+        UserRole.STUDENT,
+        UserRole.ADMIN,
+        UserRole.DIRECTOR,
+        }
+
 class StudentManager(BaseUserManager):
     use_in_migrations = True
 
@@ -24,14 +48,17 @@ class StudentManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('role', UserRole.STUDENT)
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', UserRole.DIRECTOR)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError(
@@ -50,6 +77,7 @@ class StudentManager(BaseUserManager):
 class Student(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
+    email = models.EmailField(unique=True, blank=False)
 
     is_staff = models.BooleanField(
         default=False,
@@ -69,27 +97,20 @@ class Student(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(
         default=timezone.now,
     )
-    email = models.EmailField(unique=True, blank=False)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     objects = StudentManager()
 
-    USERNAME_FIELD = 'email'
-
-    class Gender(models.TextChoices):
-        MALE = 'M', _('Male')
-        FEMALE = 'F', _('Female')
-        PNOT = 'P', _('Prefer Not To Say')
-
     gender = models.CharField(
-        max_length=1,
+        max_length=4,
         choices=Gender.choices,
         default=Gender.PNOT,
     )
 
-
-    def is_valid_gender(self):
-        return self.gender in {
-            self.Gender.MALE,
-            self.Gender.FEMALE,
-            self.Gender.PNOT,
-        }
+    role = models.CharField(
+        max_length=13,
+        choices=UserRole.choices,
+        default=UserRole.STUDENT,
+    )
