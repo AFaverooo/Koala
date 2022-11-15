@@ -1,13 +1,13 @@
 <html>
-
-
 <head>
-<title>Welcome!</title>
-
+  <title> Log in </title>
 </head>
+  <body>
 
-<body>
-<h1>Log in</h1>
-<p> under construction </p>
-
+      <form action="{% url 'log_in' %}" method="post">
+           {% csrf_token %}
+           {{form.as_p}}
+       <input type="submit" value="log in" class="btn btn-primary">
+  </form>
 </body>
+</html>
