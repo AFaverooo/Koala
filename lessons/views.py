@@ -16,6 +16,6 @@ def sign_up(request):
 		form = SignUpForm(request.POST)
 		if form.is_valid():
 			student = form.save()
-			login(request, student)
+			# login(request, student)
 
 	return render(request, 'sign_up.html', {'form': form})
