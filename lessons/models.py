@@ -8,6 +8,9 @@ from django.utils import timezone
 
 from django.utils.translation import gettext as _
 
+#imports for Request
+from django.conf import settings
+
 class UserRole(models.TextChoices):
     STUDENT = 'Student',
     ADMIN = 'Administrator',
@@ -32,6 +35,7 @@ def is_valid_role(Student):
         UserRole.DIRECTOR,
         }
 
+
 class StudentManager(BaseUserManager):
     use_in_migrations = True
 
@@ -53,6 +57,22 @@ class StudentManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('role', UserRole.STUDENT)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_admin(self, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('role', UserRole.ADMIN)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(
+                'Superuser must have is_staff=True.'
+            )
+        if extra_fields.get('is_superuser') is not False:
+            raise ValueError(
+                'Superuser must have is_superuser=False.'
+            )
+
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
@@ -112,5 +132,4 @@ class Student(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(
         max_length=13,
         choices=UserRole.choices,
-        default=UserRole.STUDENT,
     )

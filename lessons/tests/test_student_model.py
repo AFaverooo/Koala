@@ -111,7 +111,7 @@ class StudentModelTestCase(TestCase):
         self.student.email = 'johndoe@@example.org'
         self._assert_student_is_invalid()
 
-    def test_student_selected_gender_is_valid(self):
+    def test_student_is_valid(self):
         self._assert_student_is_valid()
 
     #checks students of gender M,F,PNOT are valid
@@ -132,3 +132,6 @@ class StudentModelTestCase(TestCase):
     def test_student_role_string_is_invalid(self):
         self.student.role = 'NonStudent'
         self.assertFalse(is_valid_role(self.student))
+
+    def test_student_is_not_staff(self):
+        self.assertFalse(self.student.is_staff)
