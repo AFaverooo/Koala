@@ -30,6 +30,7 @@ class SignUpForm(forms.ModelForm):
         """Clean the data and generate messages for any errors."""
 
         super().clean()
+        gender = self.cleaned_data.get('gender')
         new_password = self.cleaned_data.get('new_password')
         password_confirmation = self.cleaned_data.get('password_confirmation')
         if new_password != password_confirmation:
@@ -44,5 +45,6 @@ class SignUpForm(forms.ModelForm):
             last_name=self.cleaned_data.get('last_name'),
             email=self.cleaned_data.get('email'),
             password=self.cleaned_data.get('new_password'),
+            gender=self.cleaned_data.get('gender'),
         )
         return student
