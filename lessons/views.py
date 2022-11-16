@@ -54,7 +54,7 @@ def sign_up(request):
         if form.is_valid():
             student = form.save()
             login(request, student)
-            #return redirect('feed')
+            return redirect('student_feed')
     else:
         form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
