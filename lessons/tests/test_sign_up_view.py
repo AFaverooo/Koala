@@ -13,6 +13,7 @@ class SignUpViewTestCase(TestCase):
             'first_name': 'Jane',
             'last_name': 'Doe',
             'email': 'janedoe@example.org',
+            'gender': 'Female',
             'new_password': 'Password123',
             'password_confirmation': 'Password123'
         }
@@ -50,9 +51,11 @@ class SignUpViewTestCase(TestCase):
         response_url = reverse('student_feed')
         self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student_feed.html')
+
         student = Student.objects.get(email ='janedoe@example.org')
         self.assertEqual(student.first_name, 'Jane')
         self.assertEqual(student.last_name, 'Doe')
+        self.assertEqual(student.gender, 'Female')
         self.assertEqual(student.email, 'janedoe@example.org')
         is_password_correct = check_password('Password123', student.password)
         self.assertTrue(is_password_correct)
