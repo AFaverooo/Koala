@@ -1,6 +1,7 @@
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib import messages
 from lessons.forms import LogInForm
 from lessons.models import Student
 
@@ -9,6 +10,35 @@ class LogInTestCase(TestCase):
 
     def setUp(self):
         self.url = reverse('log_in')
+        self.student = Student.objects.create_user(
+            first_name='John',
+            last_name='Doe',
+            email='johndoe@example.org',
+            password='Password123',
+            gender = 'M',
+            role = 'Student'
+        )
+        self.admin = Student.objects.create_admin(
+            first_name='Jane',
+            last_name='Doe',
+            email='janedoe@example.org',
+            password='Password123',
+            gender = 'F',
+            role = 'Admin'
+        )
+        
+        self.director = Student.objects.create_superuser(
+            first_name='Jack',
+            last_name='Smith',
+            email='jsmith@example.org',
+            password='Password123',
+            gender = 'M',
+            role = 'Director'
+        )
+
+        self.student_form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
+        self.admin_form_input = {'email' : 'janedoe@example.org', 'password' : 'Password123'}
+        self.director_form_input = {'email' : 'jsmith@example.org', 'password' : 'Password123'}
 
     def test_log_in_url(self):
         self.assertEqual(self.url,'/log_in/')
@@ -21,17 +51,70 @@ class LogInTestCase(TestCase):
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
 
-    # 
-    # def test_get_log_in_with_redirect(self):
-    #     destination_url = reverse('user_list')
-    #     self.url = reverse_with_next('log_in', destination_url)
-    #     response = self.client.get(self.url) #getting the log in view
-    #     self.assertEqual(response.status_code,200)
-    #     self.assertTemplateUsed(response,'log_in.html')
-    #     form = response.context['form']
-    #     next = response.context['next']
-    #     self.assertTrue(isinstance(form,LogInForm))
-    #     self.assertFalse(form.is_bound)
-    #     self.assertEqual(next, destination_url)
-    #     messages_list = list(response.context['messages'])
-    #     self.assertEqual(len(messages_list),0)
+
+    def test_unsucessful_student_log_in(self):
+        self.student_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
+        response = self.client.post(self.url, self.student_form_input)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'log_in.html')
+        form = response.context['form']
+        self.assertTrue(isinstance(form, LogInForm))
+        self.assertFalse(form.is_bound)
+        self.assertFalse(self._is_logged_in())
+        # tests if messages is being displayed
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),1)
+        self.assertEqual(messages_list[0].level,messages.ERROR)
+
+    def test_successful_student_login(self):
+        response = self.client.post(self.url, self.student_form_input,follow=True)
+        self.assertTrue(self._is_logged_in())
+        response_url = reverse('student_feed')
+        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
+
+    def test_successful_admin_login(self):
+        response = self.client.post(self.url, self.admin_form_input,follow=True)
+        self.assertTrue(self._is_logged_in())
+        response_url = reverse('admin_feed')
+        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'admin_feed.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
+
+    def test_successful_director_login(self):
+        response = self.client.post(self.url, self.director_form_input,follow=True)
+        self.assertTrue(self._is_logged_in())
+        response_url = reverse('director_feed')
+        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_feed.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
+
+    def _is_logged_in(self):
+         return '_auth_user_id' in self.client.session.keys()
+         #self.client.session is dictionary of session data
+
+
+
+
+
+
+# #     def test_unsuccessful_log_in(self):
+# #         response = self.client.post(self.url, self.form_input)
+# #         self.assertEqual(response.status_code,200)
+# #         self.assertTemplateUsed(response,'log_in.html')
+# #         form = response.context['form']
+# #         self.assertTrue(isinstance(form,LogInForm))
+# #         self.assertFalse(form.is_bound)
+# #         self.assertFalse(self._is_logged_in())
+# #         messages_list = list(response.context['messages'])
+# #         self.assertEqual(len(messages_list),1)
+# #         self.assertEqual(messages_list[0].level,messages.ERROR)
+# #
+# #
+# class LogInTester:
+#     def _is_logged_in(self):
+#         return '_auth_user_id' in self.client.session.keys()
