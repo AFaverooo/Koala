@@ -3,6 +3,12 @@ from django.core.validators import RegexValidator
 from .models import Student
 
 
+class LogInForm(forms.Form):
+    email = forms.CharField(label='email')
+    password = forms.CharField(label='password',widget=forms.PasswordInput())
+
+
+
 
 
 class SignUpForm(forms.ModelForm):
@@ -12,8 +18,10 @@ class SignUpForm(forms.ModelForm):
         """Form options."""
 
         model = Student
+
         fields = ['first_name', 'last_name','email', 'gender']
         
+
 
     new_password = forms.CharField(
         label='Password',
