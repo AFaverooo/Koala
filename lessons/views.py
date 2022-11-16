@@ -34,10 +34,11 @@ def log_in(request):
              user = authenticate(email=email, password=password)
              if user is not None:
                  login(request,user)
-
-                 if (role == UserRole.ADMIN.label):
+                 
+                 # redirects the user based on his role
+                 if (user.role == UserRole.ADMIN.label):
                      return redirect('admin_feed')
-                 elif (role is UserRole.DIRECTOR.label):
+                 elif (user.role == UserRole.DIRECTOR.label):
                      return redirect('director_feed')
                  else:
                      return redirect('student_feed')

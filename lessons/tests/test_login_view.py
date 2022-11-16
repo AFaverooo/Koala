@@ -26,7 +26,7 @@ class LogInTestCase(TestCase):
             gender = 'F',
             role = 'Admin'
         )
-        
+
         self.director = Student.objects.create_superuser(
             first_name='Jack',
             last_name='Smith',
@@ -93,28 +93,19 @@ class LogInTestCase(TestCase):
         messages_list = list(response.context['messages'])
         self.assertEqual(len(messages_list),0)
 
+
+    def test_invalid_log_in_by_inactive_user(self):
+        self.student.is_active = False
+        self.student.save()
+        response = self.client.post(self.url, self.student_form_input, follow = True)
+        self.assertEqual(response.status_code,200)
+        self.assertTemplateUsed(response,'log_in.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),1)
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level,messages.ERROR)
+
+
+
     def _is_logged_in(self):
          return '_auth_user_id' in self.client.session.keys()
-         #self.client.session is dictionary of session data
-
-
-
-
-
-
-# #     def test_unsuccessful_log_in(self):
-# #         response = self.client.post(self.url, self.form_input)
-# #         self.assertEqual(response.status_code,200)
-# #         self.assertTemplateUsed(response,'log_in.html')
-# #         form = response.context['form']
-# #         self.assertTrue(isinstance(form,LogInForm))
-# #         self.assertFalse(form.is_bound)
-# #         self.assertFalse(self._is_logged_in())
-# #         messages_list = list(response.context['messages'])
-# #         self.assertEqual(len(messages_list),1)
-# #         self.assertEqual(messages_list[0].level,messages.ERROR)
-# #
-# #
-# class LogInTester:
-#     def _is_logged_in(self):
-#         return '_auth_user_id' in self.client.session.keys()
