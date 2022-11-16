@@ -16,7 +16,6 @@ class LogInTestCase(TestCase):
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Student'
         )
         self.admin = Student.objects.create_admin(
             first_name='Jane',
@@ -24,7 +23,6 @@ class LogInTestCase(TestCase):
             email='janedoe@example.org',
             password='Password123',
             gender = 'F',
-            role = 'Admin'
         )
 
         self.director = Student.objects.create_superuser(
@@ -33,7 +31,6 @@ class LogInTestCase(TestCase):
             email='jsmith@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Director'
         )
 
         self.student_form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
@@ -104,8 +101,6 @@ class LogInTestCase(TestCase):
         self.assertEqual(len(messages_list),1)
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level,messages.ERROR)
-
-
 
     def _is_logged_in(self):
          return '_auth_user_id' in self.client.session.keys()

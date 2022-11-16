@@ -15,7 +15,6 @@ class LogInFormTestCase(TestCase):
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Student'
         )
 
     def test_form_contains_required_fields(self):

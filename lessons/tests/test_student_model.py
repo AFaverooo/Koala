@@ -1,7 +1,7 @@
 """Unit tests for the Student model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import Student,is_valid_gender, is_valid_role
+from lessons.models import Student,is_valid_gender, is_valid_role, UserRole
 
 class StudentModelTestCase(TestCase):
     """Unit tests for the Student model"""
@@ -13,7 +13,6 @@ class StudentModelTestCase(TestCase):
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Student'
         )
 
     def _create_second_student(self):
@@ -23,7 +22,6 @@ class StudentModelTestCase(TestCase):
             email='janedoe@example.org',
             password='Password123',
             gender = 'F',
-            role = 'Student'
         )
         return student
 
@@ -34,7 +32,6 @@ class StudentModelTestCase(TestCase):
             email='mikephoenix@example.org',
             password='Password123',
             gender = 'PNOT',
-            role = 'Student'
         )
         return student
 
@@ -135,3 +132,6 @@ class StudentModelTestCase(TestCase):
 
     def test_student_is_not_staff(self):
         self.assertFalse(self.student.is_staff)
+
+    def test_student_is_student(self):
+        self.assertEquals(self.student.role, UserRole.STUDENT)

@@ -8,9 +8,6 @@ class LogInForm(forms.Form):
     password = forms.CharField(label='password',widget=forms.PasswordInput())
 
 
-
-
-
 class SignUpForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
 
@@ -20,7 +17,7 @@ class SignUpForm(forms.ModelForm):
         model = Student
 
         fields = ['first_name', 'last_name','email', 'gender']
-        
+
 
 
     new_password = forms.CharField(
