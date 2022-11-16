@@ -1,40 +1,38 @@
 """Unit tests for the Student model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import Student,is_valid_gender, is_valid_role
+from lessons.models import User,is_valid_gender, is_valid_role
 
 class StudentModelTestCase(TestCase):
     """Unit tests for the Student model"""
 
     def setUp(self):
-        self.student = Student.objects.create_user(
+        self.student = User.objects.create_user(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Student'
+
         )
 
     def _create_second_student(self):
-        student = Student.objects.create_user(
+        student = User.objects.create_user(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
             password='Password123',
             gender = 'F',
-            role = 'Student'
         )
         return student
 
     def _create_third_student(self):
-        student = Student.objects.create_user(
+        student = User.objects.create_user(
             first_name='Michael',
             last_name='Phoenix',
             email='mikephoenix@example.org',
             password='Password123',
             gender = 'PNOT',
-            role = 'Student'
         )
         return student
 

@@ -21,22 +21,22 @@ class Gender(models.TextChoices):
     FEMALE = 'F', _('Female')
     PNOT = 'PNOT', _('Prefer Not To Say')
 
-def is_valid_gender(Student):
-    return Student.gender in {
+def is_valid_gender(User):
+    return User.gender in {
         Gender.MALE,
         Gender.FEMALE,
         Gender.PNOT,
         }
 
-def is_valid_role(Student):
-    return Student.role in {
+def is_valid_role(User):
+    return User.role in {
         UserRole.STUDENT,
         UserRole.ADMIN,
         UserRole.DIRECTOR,
         }
 
 
-class StudentManager(BaseUserManager):
+class UserManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -94,7 +94,7 @@ class StudentManager(BaseUserManager):
 
 
 #Student model refers to the User of the MSMS application
-class Student(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
     email = models.EmailField(unique=True, blank=False)
@@ -121,7 +121,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = StudentManager()
+    objects = UserManager()
 
     gender = models.CharField(
         max_length=4,

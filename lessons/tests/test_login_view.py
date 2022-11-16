@@ -3,37 +3,34 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
-from lessons.models import Student
+from lessons.models import User
 
 class LogInTestCase(TestCase):
     """Tests of the login up view."""
 
     def setUp(self):
         self.url = reverse('log_in')
-        self.student = Student.objects.create_user(
+        self.student = User.objects.create_user(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Student'
         )
-        self.admin = Student.objects.create_admin(
+        self.admin = User.objects.create_admin(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
             password='Password123',
             gender = 'F',
-            role = 'Admin'
         )
 
-        self.director = Student.objects.create_superuser(
+        self.director = User.objects.create_superuser(
             first_name='Jack',
             last_name='Smith',
             email='jsmith@example.org',
             password='Password123',
             gender = 'M',
-            role = 'Director'
         )
 
         self.student_form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}

@@ -1,7 +1,7 @@
 from django import forms
 from django.test import TestCase
 from lessons.forms import LogInForm
-from lessons.models import Student
+from lessons.models import User
 
 
 class LogInFormTestCase(TestCase):
@@ -9,7 +9,7 @@ class LogInFormTestCase(TestCase):
 
     def setUp(self):
         self.form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
-        self.student = Student.objects.create_user(
+        self.student = User.objects.create_user(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',

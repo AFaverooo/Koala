@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import Student
+from .models import User
 
 
 class LogInForm(forms.Form):
@@ -17,10 +17,10 @@ class SignUpForm(forms.ModelForm):
     class Meta:
         """Form options."""
 
-        model = Student
+        model = User
 
         fields = ['first_name', 'last_name','email', 'gender']
-        
+
 
 
     new_password = forms.CharField(
@@ -38,7 +38,7 @@ class SignUpForm(forms.ModelForm):
         """Clean the data and generate messages for any errors."""
 
         super().clean()
-        # gender = self.cleaned_data.get('gender')
+        #gender = self.cleaned_data.get('gender')
         new_password = self.cleaned_data.get('new_password')
         password_confirmation = self.cleaned_data.get('password_confirmation')
         if new_password != password_confirmation:
@@ -48,11 +48,12 @@ class SignUpForm(forms.ModelForm):
         """Create a new user."""
 
         super().save(commit=False)
-        student = Student.objects.create_user(
+        student = User.objects.create_user(
             first_name=self.cleaned_data.get('first_name'),
             last_name=self.cleaned_data.get('last_name'),
             email=self.cleaned_data.get('email'),
             password=self.cleaned_data.get('new_password'),
             gender=self.cleaned_data.get('gender'),
         )
+
         return student
