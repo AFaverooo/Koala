@@ -49,15 +49,12 @@ def log_in(request):
 
 
 def sign_up(request):
-
-
-	if(request.method == 'GET'):
-		form = SignUpForm()
-	if(request.method == 'POST'):
-		form = SignUpForm(request.POST)
-		if form.is_valid():
-			student = form.save()
-			login(request, student)
-
-
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            student = form.save()
+            login(request, student)
+            #return redirect('feed')
+    else:
+        form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
