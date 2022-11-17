@@ -11,9 +11,7 @@
 </div>
 {% endfor %}
 
-
   <body>
-
       <form action="{% url 'log_in' %}" method="post">
            {% csrf_token %}
            {{form.as_p}}

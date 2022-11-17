@@ -14,9 +14,11 @@ def home(request):
 #     return render(request, 'log_in.html', {'form': form})
 #
 
-
 def student_feed(request):
     return render(request,'student_feed.html')
+
+def requests_page(request):
+    return render(request,'requests_page.html')
 
 def admin_feed(request):
     return render(request,'admin_feed.html')

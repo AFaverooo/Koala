@@ -1,11 +1,12 @@
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
+from .helpers import LogInTester
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
 from lessons.models import Student
 
-class LogInTestCase(TestCase):
+class LogInTestCase(TestCase,LogInTester):
     """Tests of the login up view."""
 
     def setUp(self):
@@ -101,6 +102,3 @@ class LogInTestCase(TestCase):
         self.assertEqual(len(messages_list),1)
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level,messages.ERROR)
-
-    def _is_logged_in(self):
-         return '_auth_user_id' in self.client.session.keys()

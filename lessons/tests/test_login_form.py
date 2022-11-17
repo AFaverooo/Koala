@@ -4,6 +4,7 @@ from lessons.forms import LogInForm
 from lessons.models import Student
 
 
+
 class LogInFormTestCase(TestCase):
     """Unit tests of the login form."""
 
