@@ -3,10 +3,8 @@ from django.test import TestCase
 from lessons.forms import LogInForm
 from lessons.models import Student
 
-
-
 class LogInFormTestCase(TestCase):
-    """Unit tests of the login form."""
+    """Unit tests for the login form."""
 
     def setUp(self):
         self.form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}

@@ -7,7 +7,7 @@ from lessons.forms import LogInForm
 from lessons.models import Student
 
 class LogInTestCase(TestCase,LogInTester):
-    """Tests of the login up view."""
+    """Tests for the login up view."""
 
     def setUp(self):
         self.url = reverse('log_in')
@@ -49,7 +49,6 @@ class LogInTestCase(TestCase,LogInTester):
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
 
-
     def test_unsucessful_student_log_in(self):
         self.student_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
         response = self.client.post(self.url, self.student_form_input)
@@ -64,6 +63,7 @@ class LogInTestCase(TestCase,LogInTester):
         self.assertEqual(len(messages_list),1)
         self.assertEqual(messages_list[0].level,messages.ERROR)
 
+    # These tests check if user is redirected to the correct feed based on their roles
     def test_successful_student_login(self):
         response = self.client.post(self.url, self.student_form_input,follow=True)
         self.assertTrue(self._is_logged_in())
