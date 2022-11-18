@@ -3,21 +3,21 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
-from lessons.models import Student
+from lessons.models import SystemUser
 
 class LogInTestCase(TestCase):
     """Tests of the login up view."""
 
     def setUp(self):
         self.url = reverse('log_in')
-        self.student = Student.objects.create_user(
+        self.student = SystemUser.objects.create_user(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
         )
-        self.admin = Student.objects.create_admin(
+        self.admin = SystemUser.objects.create_admin(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
@@ -25,7 +25,7 @@ class LogInTestCase(TestCase):
             gender = 'F',
         )
 
-        self.director = Student.objects.create_superuser(
+        self.director = SystemUser.objects.create_superuser(
             first_name='Jack',
             last_name='Smith',
             email='jsmith@example.org',

@@ -36,7 +36,7 @@ def is_valid_role(Student):
         }
 
 
-class StudentManager(BaseUserManager):
+class SystemUserManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -94,7 +94,7 @@ class StudentManager(BaseUserManager):
 
 
 #Student model refers to the User of the MSMS application
-class Student(AbstractBaseUser, PermissionsMixin):
+class SystemUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
     email = models.EmailField(unique=True, blank=False)
@@ -121,7 +121,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = StudentManager()
+    objects = SystemUserManager()
 
     gender = models.CharField(
         max_length=4,
