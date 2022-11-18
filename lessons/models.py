@@ -133,3 +133,11 @@ class Student(AbstractBaseUser, PermissionsMixin):
         max_length=13,
         choices=UserRole.choices,
     )
+
+
+class Invoice(models.Model):
+    reference_number = models.CharField(
+        max_length=30,
+        unique=True,
+        
+    )

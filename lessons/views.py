@@ -3,7 +3,8 @@ from .forms import SignUpForm
 # Create your views here.
 
 
-
+def invoice(request):
+	return render(request, 'invoice.html')
 
 def home(request):
 	return render(request, 'home.html')
