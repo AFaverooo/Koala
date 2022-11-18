@@ -74,6 +74,6 @@ class SignUpFormTestCase(TestCase):
         student = Student.objects.get(email ='janedoe@example.org')
         self.assertEqual(student.first_name, 'Jane')
         self.assertEqual(student.last_name, 'Doe')
-        self.assertEqual(student.gender, 'F')
+        self.assertEqual(student.gender, Gender.FEMALE.value)
         is_password_correct = check_password('Password123', student.password)
         self.assertTrue(is_password_correct)

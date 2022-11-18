@@ -11,15 +11,18 @@ from django.utils.translation import gettext as _
 #imports for Request
 from django.conf import settings
 
+class LessonType(models.TextChoices):
+    pass
+
 class UserRole(models.TextChoices):
     STUDENT = 'Student',
     ADMIN = 'Administrator',
     DIRECTOR = 'Director',
 
 class Gender(models.TextChoices):
-    MALE = 'M', _('Male')
-    FEMALE = 'F', _('Female')
-    PNOT = 'PNOT', _('Prefer Not To Say')
+    MALE = 'Male'
+    FEMALE = 'Female'
+    PNOT = 'Prefer Not To Say'
 
 def is_valid_gender(Student):
     return Student.gender in {
@@ -124,7 +127,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
     objects = StudentManager()
 
     gender = models.CharField(
-        max_length=4,
+        max_length=17,
         choices=Gender.choices,
         default=Gender.PNOT,
     )
@@ -133,3 +136,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
         max_length=13,
         choices=UserRole.choices,
     )
+
+
+class Lesson(models.Model):
+    lesson_id = models.BigAutoField(primary_key=True)
