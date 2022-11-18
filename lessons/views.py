@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .forms import SignUpForm
+from .models import *
 # Create your views here.
 
 

@@ -8,6 +8,10 @@ from django.utils import timezone
 
 from django.utils.translation import gettext as _
 
+'''below are for invoice'''
+from django.contrib.postgres.fields import ArrayField
+from django_postgres_extensions.models.functions import *
+
 #imports for Request
 from django.conf import settings
 
@@ -139,5 +143,30 @@ class Invoice(models.Model):
     reference_number = models.CharField(
         max_length=30,
         unique=True,
-        
     )
+
+    fees_amount = models.IntegerField(
+    )
+
+    list_of_lessons = ArrayField(
+        models.CharField(max_length=30,blank=False)
+    )
+    
+    list_of_price = ArrayField(
+        models.IntegerField()
+    )
+
+    def add_lesson(self, lesson_name, lesson_price):
+        Invoice.objects.update(list_of_lessons = ArrayAppend(self.list_of_lessons, lesson_name))
+        Invoice.objects.update(list_of_price = ArrayAppend(self.list_of_price, lesson_price))
+
+    def delete_lesson(self):
+        pass
+
+    def calculate_fees(self):
+        pass
+
+    def get_invoice(self):
+        pass
+
+
