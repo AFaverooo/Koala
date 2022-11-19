@@ -150,3 +150,37 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         max_length=13,
         choices=UserRole.choices,
     )
+
+class Lesson(models.Model):
+    lesson_id = models.BigAutoField(primary_key=True)
+
+    type = models.CharField(
+        max_length=30,
+        choices=LessonType.choices,
+        default=LessonType.INSTRUMENT,
+    )
+
+    duration = models.CharField(
+        max_length = 20,
+        choices = LessonDuration.choices,
+        default = LessonDuration.THIRTY,
+    )
+
+    lesson_date_time = models.DateTimeField('Lesson Date And Time')
+
+    #teacher_id = models.ForeignKey(User,on_delete=models.CASCADE)
+
+class groupLessons(models.Model):
+    group_id = models.BigAutoField(primary_key=True)
+    lesson_id = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+
+class requests(models.Model):
+    request_id = models.BigAutoField(primary_key=True)
+    student_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
+    groupLessons_id = models.ForeignKey(groupLessons,on_delete=models.CASCADE)
+    is_current_request = models.BooleanField(
+        default=True,
+        help_text=(
+            'Designates whether this request is the most recent made by the related student.'
+        ),
+    )
