@@ -11,13 +11,25 @@ from django.utils.translation import gettext as _
 #imports for Request
 from django.conf import settings
 
+#test fot lesson type
 class LessonType(models.TextChoices):
-    pass
+    INSTRUMENT = 'Learn To Play An Instrument',
+    THEORY = 'Instrument Music Theory',
+    PRACTICE = 'Instrument practice',
+    PERFORMANCE = 'Performance Preparation',
 
+#test for lesson duration
+class LessonDuration(models.TextChoices):
+    THIRTY = '30 minute lesson',
+    FOURTY_FIVE = '45 minute lesson',
+    HOUR = '1 hour lesson',
+
+#added a teacher as a user role
 class UserRole(models.TextChoices):
     STUDENT = 'Student',
     ADMIN = 'Administrator',
     DIRECTOR = 'Director',
+    #TEACHER = 'Teacher',
 
 class Gender(models.TextChoices):
     MALE = 'Male'
@@ -36,6 +48,7 @@ def is_valid_role(Student):
         UserRole.STUDENT,
         UserRole.ADMIN,
         UserRole.DIRECTOR,
+        #UserRole.TEACHER,
         }
 
 
@@ -117,6 +130,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
             'of deleting accounts.'
         ),
     )
+
     date_joined = models.DateTimeField(
         default=timezone.now,
     )
@@ -137,6 +151,36 @@ class Student(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
     )
 
+class requests(models.Model):
+    request_id = models.BigAutoField(primary_key=True)
+    student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
+    groupLessons_id = models.ForeignKey(groupLessons,on_delete=models.CASCADE)
+    is_current_request = models.BooleanField(
+        default=True,
+        help_text=(
+            'Designates whether this request is the most recent made by the related student.'
+        ),
+    )
+
+class groupLessons(models.Model):
+    group_id = models.BigAutoField(primary_key=True)
+    lesson_id = models.ForeignKey(Lesson, on_delete=models.CASCADE)
 
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
+
+    type = models.CharField(
+        max_length=30,
+        choices=LessonType.choices,
+        default=LessonType.INSTRUMENT,
+    )
+
+    duration = models.CharField(
+        max_length = 20,
+        choices = LessonDuration.choices,
+        default = LessonDuration.THIRTY,
+    )
+
+    lesson_date_time = models.DateTimeField('Lesson Date And Time')
+
+    #teacher_id = models.ForeignKey(User,on_delete=models.CASCADE)
