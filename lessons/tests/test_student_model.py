@@ -1,13 +1,13 @@
-"""Unit tests for the Student model"""
+"""Unit tests for the UserAccount model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import Student, is_valid_gender, is_valid_role, UserRole, Gender
+from lessons.models import UserAccount, is_valid_gender, is_valid_role, UserRole, Gender
 
-class StudentModelTestCase(TestCase):
-    """Unit tests for the Student model"""
+class UserAccountModelTestCase(TestCase):
+    """Unit tests for the UserAccount model"""
 
     def setUp(self):
-        self.student = Student.objects.create_user(
+        self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
@@ -16,7 +16,7 @@ class StudentModelTestCase(TestCase):
         )
 
     def _create_second_student(self):
-        student = Student.objects.create_user(
+        student = UserAccount.objects.create_student(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
@@ -26,7 +26,7 @@ class StudentModelTestCase(TestCase):
         return student
 
     def _create_third_student(self):
-        student = Student.objects.create_user(
+        student = UserAccount.objects.create_student(
             first_name='Michael',
             last_name='Phoenix',
             email='mikephoenix@example.org',
@@ -127,7 +127,7 @@ class StudentModelTestCase(TestCase):
         self.assertTrue(is_valid_role(self._create_third_student()))
 
     def test_student_role_string_is_invalid(self):
-        self.student.role = 'NonStudent'
+        self.student.role = 'NonUserAccount'
         self.assertFalse(is_valid_role(self.student))
 
     def test_student_is_not_staff(self):

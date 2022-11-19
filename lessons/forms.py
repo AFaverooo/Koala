@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import Student
+from .models import UserAccount
 
 
 class LogInForm(forms.Form):
@@ -14,7 +14,7 @@ class SignUpForm(forms.ModelForm):
     class Meta:
         """Form options."""
 
-        model = Student
+        model = UserAccount
 
         fields = ['first_name', 'last_name','email', 'gender']
 
@@ -45,7 +45,7 @@ class SignUpForm(forms.ModelForm):
         """Create a new user."""
 
         super().save(commit=False)
-        student = Student.objects.create_user(
+        student = UserAccount.objects.create_student(
             first_name=self.cleaned_data.get('first_name'),
             last_name=self.cleaned_data.get('last_name'),
             email=self.cleaned_data.get('email'),

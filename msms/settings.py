@@ -124,4 +124,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #User model , Student, for authentication of a Student user to the systen
-AUTH_USER_MODEL = 'lessons.Student'
+AUTH_USER_MODEL = 'lessons.UserAccount'

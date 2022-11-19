@@ -1,24 +1,25 @@
+
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
 from .helpers import LogInTester
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
-from lessons.models import Student
+from lessons.models import UserAccount
 
 class LogInTestCase(TestCase,LogInTester):
     """Tests for the login up view."""
 
     def setUp(self):
         self.url = reverse('log_in')
-        self.student = Student.objects.create_user(
+        self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
         )
-        self.admin = Student.objects.create_admin(
+        self.admin = UserAccount.objects.create_admin(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
@@ -26,7 +27,7 @@ class LogInTestCase(TestCase,LogInTester):
             gender = 'F',
         )
 
-        self.director = Student.objects.create_superuser(
+        self.director = UserAccount.objects.create_superuser(
             first_name='Jack',
             last_name='Smith',
             email='jsmith@example.org',

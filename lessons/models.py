@@ -26,7 +26,7 @@ class LessonDuration(models.TextChoices):
 
 #added a teacher as a user role
 class UserRole(models.TextChoices):
-    STUDENT = 'Student',
+    STUDENT = 'UserAccount',
     ADMIN = 'Administrator',
     DIRECTOR = 'Director',
     #TEACHER = 'Teacher',
@@ -36,15 +36,15 @@ class Gender(models.TextChoices):
     FEMALE = 'Female'
     PNOT = 'Prefer Not To Say'
 
-def is_valid_gender(Student):
-    return Student.gender in {
+def is_valid_gender(UserAccount):
+    return UserAccount.gender in {
         Gender.MALE,
         Gender.FEMALE,
         Gender.PNOT,
         }
 
-def is_valid_role(Student):
-    return Student.role in {
+def is_valid_role(UserAccount):
+    return UserAccount.role in {
         UserRole.STUDENT,
         UserRole.ADMIN,
         UserRole.DIRECTOR,
@@ -52,7 +52,7 @@ def is_valid_role(Student):
         }
 
 
-class StudentManager(BaseUserManager):
+class UserAccountManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -68,7 +68,7 @@ class StudentManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password, **extra_fields):
+    def create_student(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', True)
@@ -109,8 +109,8 @@ class StudentManager(BaseUserManager):
 
 
 
-#Student model refers to the User of the MSMS application
-class Student(AbstractBaseUser, PermissionsMixin):
+#UserAccount model refers to the User of the MSMS application
+class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
     email = models.EmailField(unique=True, blank=False)
@@ -138,7 +138,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = StudentManager()
+    objects = UserAccountManager()
 
     gender = models.CharField(
         max_length=17,
@@ -150,37 +150,3 @@ class Student(AbstractBaseUser, PermissionsMixin):
         max_length=13,
         choices=UserRole.choices,
     )
-
-class requests(models.Model):
-    request_id = models.BigAutoField(primary_key=True)
-    student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
-    groupLessons_id = models.ForeignKey(groupLessons,on_delete=models.CASCADE)
-    is_current_request = models.BooleanField(
-        default=True,
-        help_text=(
-            'Designates whether this request is the most recent made by the related student.'
-        ),
-    )
-
-class groupLessons(models.Model):
-    group_id = models.BigAutoField(primary_key=True)
-    lesson_id = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-
-class Lesson(models.Model):
-    lesson_id = models.BigAutoField(primary_key=True)
-
-    type = models.CharField(
-        max_length=30,
-        choices=LessonType.choices,
-        default=LessonType.INSTRUMENT,
-    )
-
-    duration = models.CharField(
-        max_length = 20,
-        choices = LessonDuration.choices,
-        default = LessonDuration.THIRTY,
-    )
-
-    lesson_date_time = models.DateTimeField('Lesson Date And Time')
-
-    #teacher_id = models.ForeignKey(User,on_delete=models.CASCADE)
