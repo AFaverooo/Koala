@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import UserAccount
+from .models import UserAccount, Gender
 
 
 class LogInForm(forms.Form):
@@ -17,7 +17,6 @@ class SignUpForm(forms.ModelForm):
         model = UserAccount
 
         fields = ['first_name', 'last_name','email', 'gender']
-
 
 
     new_password = forms.CharField(

@@ -6,7 +6,7 @@ from django.contrib.auth.base_user import BaseUserManager
 
 from django.utils import timezone
 
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 #imports for Request
 from django.conf import settings
@@ -20,21 +20,22 @@ class LessonType(models.TextChoices):
 
 #test for lesson duration
 class LessonDuration(models.TextChoices):
-    THIRTY = '30 minute lesson',
-    FOURTY_FIVE = '45 minute lesson',
-    HOUR = '1 hour lesson',
+    THIRTY = '30', _('30 minute lesson')
+    FOURTY_FIVE = '45', _('45 minute lesson')
+    HOUR = '60', _('1 hour lesson')
 
 #added a teacher as a user role
 class UserRole(models.TextChoices):
-    STUDENT = 'UserAccount',
-    ADMIN = 'Administrator',
-    DIRECTOR = 'Director',
+    STUDENT = 'UserAccount'
+    ADMIN = 'Administrator'
+    DIRECTOR = 'Director'
     #TEACHER = 'Teacher',
 
 class Gender(models.TextChoices):
-    MALE = 'Male'
-    FEMALE = 'Female'
-    PNOT = 'Prefer Not To Say'
+    MALE = 'M' , _('Male')
+    FEMALE = 'F', _('Female')
+    PNOT = 'PNOT', _('Prefer Not To Say')
+
 
 def is_valid_gender(UserAccount):
     return UserAccount.gender in {
@@ -141,7 +142,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     objects = UserAccountManager()
 
     gender = models.CharField(
-        max_length=17,
+        max_length=20,
         choices=Gender.choices,
         default=Gender.PNOT,
     )
