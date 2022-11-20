@@ -29,7 +29,7 @@ class UserRole(models.TextChoices):
     STUDENT = 'UserAccount'
     ADMIN = 'Administrator'
     DIRECTOR = 'Director'
-    #TEACHER = 'Teacher',
+    TEACHER = 'Teacher',
 
 class Gender(models.TextChoices):
     MALE = 'M' , _('Male')
@@ -49,7 +49,7 @@ def is_valid_role(UserAccount):
         UserRole.STUDENT,
         UserRole.ADMIN,
         UserRole.DIRECTOR,
-        #UserRole.TEACHER,
+        UserRole.TEACHER,
         }
 
 
@@ -83,11 +83,27 @@ class UserAccountManager(BaseUserManager):
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError(
-                'Superuser must have is_staff=True.'
+                'Admin must have is_staff=True.'
             )
         if extra_fields.get('is_superuser') is not False:
             raise ValueError(
-                'Superuser must have is_superuser=False.'
+                'Admin must have is_superuser=False.'
+            )
+
+        return self._create_user(email, password, **extra_fields)
+
+    def create_teacher(self, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('role', UserRole.TEACHER)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(
+                'Teacher must have is_staff=True.'
+            )
+        if extra_fields.get('is_superuser') is not False:
+            raise ValueError(
+                'Teacher must have is_superuser=False.'
             )
 
         return self._create_user(email, password, **extra_fields)
@@ -169,7 +185,7 @@ class Lesson(models.Model):
 
     lesson_date_time = models.DateTimeField('Lesson Date And Time')
 
-    #teacher_id = models.ForeignKey(User,on_delete=models.CASCADE)
+    teacher_id = models.ForeignKey(User,on_delete=models.CASCADE)
 
 class groupLessons(models.Model):
     group_id = models.BigAutoField(primary_key=True)
@@ -179,9 +195,19 @@ class requests(models.Model):
     request_id = models.BigAutoField(primary_key=True)
     student_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
     groupLessons_id = models.ForeignKey(groupLessons,on_delete=models.CASCADE)
-    is_current_request = models.BooleanField(
-        default=True,
-        help_text=(
-            'Designates whether this request is the most recent made by the related student.'
+
+    date_request_made = models.DateField(blank = False, default=timezone.now)
+
+    #is_current_request = models.BooleanField(
+    #    default=True,
+    #    help_text=(
+    #        'Designates whether this request is the most recent made by the related student.'
+    #    ),
+    #)
+
+    is_booking = models.BooleanField(
+        default=False,
+        help_text = (
+            'Designates whether the request has been booked'
         ),
     )
