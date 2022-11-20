@@ -5,7 +5,10 @@ from .models import *
 
 
 def invoice(request):
-	return render(request, 'invoice.html')
+	b = Invoice.objects.get(reference_number = '111-11')
+	ref = b.reference_number
+	fee = b.fees_amount
+	return render(request, 'invoice.html', {'Invoice': b})
 
 def home(request):
 	return render(request, 'home.html')

@@ -1,10 +1,26 @@
 <html>
+    <style>
+        table, th, td {
+          border:1px solid black;
+        }
+        </style>
 <head>
     <title>This is invoice for student</title>
 </head>
     <body>
         <h1>Invoice<h1>
-        <p>The place for invoice table<p><br>
+        <p>The place for invoice table<p>
+
+    <table style="width:100%">
+        <tr>
+            <th>Reference</th>
+            <th>Amount of money</th>
+        </tr>
+        <tr>
+            <td>{{Invoice.reference_number }}</td>
+            <td>{{Invoice.fees_amount}}</td>
+        </tr>
+    </table>
         
 
     </body>
