@@ -68,4 +68,4 @@ class RequestForm(forms.ModelForm):
     teacher_choices = []
     teacher_name = forms.CharField(
         label = "Teacher Name: ",
-        widget = forms.Select(choices = teacher_choices))  
+        widget = forms.Select(choices = teacher_choices))
