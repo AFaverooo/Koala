@@ -185,7 +185,7 @@ class Lesson(models.Model):
 
     lesson_date_time = models.DateTimeField('Lesson Date And Time')
 
-    teacher_id = models.ForeignKey(User,on_delete=models.CASCADE)
+    teacher_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
 
 class groupLessons(models.Model):
     group_id = models.BigAutoField(primary_key=True)

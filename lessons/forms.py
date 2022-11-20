@@ -52,3 +52,8 @@ class SignUpForm(forms.ModelForm):
             gender=self.cleaned_data.get('gender'),
         )
         return student
+
+
+
+
+# e
