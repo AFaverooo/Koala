@@ -4,7 +4,6 @@ from lessons.models import UserAccount, UserRole, Gender
 import random
 import string
 
-
 letters = string.ascii_lowercase
 
 class Command(BaseCommand):
@@ -12,10 +11,33 @@ class Command(BaseCommand):
         super().__init__()
         self.faker = Faker('en_GB')
 
-    # add seed command (generate 100 random users)
+    # Seeds the database with users
     def handle(self, *args, **options):
 
-        # Seed the students into the database
+        # Add the set Student, Admin and Directors
+        self.student = UserAccount.objects.create_student(
+            first_name="John",
+            last_name="Doe",
+            email= "john.doe@example.org",
+            password="Password123",
+            gender ="M",
+        )
+        self.student = UserAccount.objects.create_admin(
+            first_name="Petra",
+            last_name="Pickles",
+            email= "petra.pickles@example.org",
+            password="Password123",
+            gender ="F",
+        )
+        self.student = UserAccount.objects.create_superuser(
+            first_name="Marty",
+            last_name="Major",
+            email= "marty.major@example.org",
+            password="Password123",
+            gender ="PNOT",
+        )
+
+        # Seed the remaining students,teachers,admins and directors into the database
         for i in range(20):
 
             fname = self.faker.first_name()
@@ -32,7 +54,6 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
-        # Seed the teachers into the database
         for i in range(5):
 
             fname = self.faker.first_name()
@@ -49,9 +70,8 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
-        # Seed the admins into the database
-        for i in range(3):
 
+        for i in range(3):
             fname = self.faker.first_name()
             lname = self.faker.last_name()
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
@@ -66,9 +86,7 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
-        # Seed the directors into the database
         for i in range(1):
-
             fname = self.faker.first_name()
             lname = self.faker.last_name()
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
