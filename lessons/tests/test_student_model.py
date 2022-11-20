@@ -134,4 +134,4 @@ class UserAccountModelTestCase(TestCase):
         self.assertFalse(self.student.is_staff)
 
     def test_student_is_student(self):
-        self.assertEquals(self.student.role, UserRole.STUDENT)
+        self.assertTrue(self.student.role.is_student())

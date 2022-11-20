@@ -26,10 +26,14 @@ class LessonDuration(models.TextChoices):
 
 #added a teacher as a user role
 class UserRole(models.TextChoices):
-    STUDENT = 'UserAccount'
+    STUDENT = 'Student'
     ADMIN = 'Administrator'
     DIRECTOR = 'Director'
-    TEACHER = 'Teacher',
+    TEACHER = 'Teacher'
+
+    def is_student(self):
+        return self.value == 'Student'
+
 
 class Gender(models.TextChoices):
     MALE = 'M' , _('Male')
@@ -197,13 +201,6 @@ class requests(models.Model):
     groupLessons_id = models.ForeignKey(groupLessons,on_delete=models.CASCADE)
 
     date_request_made = models.DateField(blank = False, default=timezone.now)
-
-    #is_current_request = models.BooleanField(
-    #    default=True,
-    #    help_text=(
-    #        'Designates whether this request is the most recent made by the related student.'
-    #    ),
-    #)
 
     is_booking = models.BooleanField(
         default=False,
