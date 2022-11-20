@@ -1,7 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import UserAccount, Gender
-
+from .models import UserAccount, Gender, Lesson
 
 class LogInForm(forms.Form):
     email = forms.CharField(label='email')
@@ -52,3 +51,21 @@ class SignUpForm(forms.ModelForm):
             gender=self.cleaned_data.get('gender'),
         )
         return student
+
+
+class RequestForm(forms.ModelForm):
+    """Form enabling unregistered users to sign up."""
+
+    class Meta:
+        """Form options."""
+
+        model = Lesson
+
+        fields = ['type','duration','lesson_date_time']
+
+
+    #This is the choice of teachers the student is able to pick out of
+    teacher_choices = []
+    teacher_name = forms.CharField(
+        label = "Teacher Name: ",
+        widget = forms.Select(choices = teacher_choices))  

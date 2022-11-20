@@ -1,4 +1,13 @@
+<html>
 <h1> Request a lesson</h1>
 
 
-<p> Form will be here </p>
+  <body>
+      <form action="{% url 'requests_page' %}" method="post">
+           {% csrf_token %}
+           {{form.as_p}}
+       <input type="submit" value="log in" class="btn btn-primary">
+  </form>
+</body>
+</html>
+

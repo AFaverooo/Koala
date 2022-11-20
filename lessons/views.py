@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
-from .forms import LogInForm,SignUpForm
+from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson
 # Create your views here.
@@ -18,7 +18,8 @@ def student_feed(request):
     return render(request,'student_feed.html')
 
 def requests_page(request):
-    return render(request,'requests_page.html')
+    form = RequestForm()
+    return render(request,'requests_page.html', {'form': form})
 
 def admin_feed(request):
     return render(request,'admin_feed.html')
