@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole
+from .models import UserRole, UserAccount, Lesson
 # Create your views here.
 
 
@@ -60,3 +60,21 @@ def sign_up(request):
     else:
         form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
+
+def new_lesson(self):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            current_student = request.user
+            if current_student.role.is_student():
+                form = RequestForm(request.POST)
+
+                if form.is_valid():
+                    first_name = form.cleaned_data.get('teacher')
+                    last_name = form.cleaned_data.get('teacher')
+
+                    teacher_id = UserAccount.objects.get(first_name = teacher_name).pk
+                    duration = form.cleaned_data.get('duration')
+                    lesson_date = form.cleaned_data.get('lesson_date_time')
+                    type = form.cleaned_data.get('type')
+
+                    lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id)
