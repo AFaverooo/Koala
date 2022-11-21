@@ -23,6 +23,9 @@ urlpatterns = [
     path('log_in/', views.log_in, name = 'log_in'),
     path('student_feed', views.student_feed, name = 'student_feed'),
     path('requests_page', views.requests_page, name = 'requests_page'),
+
+    path('make_request', views.new_lesson, name = 'make_request'),
+
     path('admin_feed', views.admin_feed, name = 'admin_feed'),
     path('director_feed', views.director_feed, name = 'director_feed'),
     path('sign_up/', views.sign_up, name = 'sign_up'),

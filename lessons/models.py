@@ -13,10 +13,10 @@ from django.conf import settings
 
 #test fot lesson type
 class LessonType(models.TextChoices):
-    INSTRUMENT = 'Learn To Play An Instrument',
-    THEORY = 'Instrument Music Theory',
-    PRACTICE = 'Instrument practice',
-    PERFORMANCE = 'Performance Preparation',
+    INSTRUMENT = 'INSTR', _('Learn To Play An Instrument'),
+    THEORY = 'TH',_('Instrument Music Theory'),
+    PRACTICE = 'PR', _('Instrument practice'),
+    PERFORMANCE = 'PERF', _('Performance Preparation'),
 
 #test for lesson duration
 class LessonDuration(models.TextChoices):
@@ -191,16 +191,11 @@ class Lesson(models.Model):
 
     teacher_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
 
-class groupLessons(models.Model):
-    group_id = models.BigAutoField(primary_key=True)
-    lesson_id = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-
 class requests(models.Model):
     request_id = models.BigAutoField(primary_key=True)
     student_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
-    groupLessons_id = models.ForeignKey(groupLessons,on_delete=models.CASCADE)
 
-    date_request_made = models.DateField(blank = False, default=timezone.now)
+    lesson_id = models.ForeignKey(Lesson,on_delete=models.CASCADE)
 
     is_booking = models.BooleanField(
         default=False,

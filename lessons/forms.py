@@ -61,11 +61,9 @@ class RequestForm(forms.ModelForm):
 
         model = Lesson
 
-        fields = ['type','duration','lesson_date_time']
-
-
+        fields = ['type','duration' , 'lesson_date_time']
     #This is the choice of teachers the student is able to pick out of
-    teacher_choices = []
-    teacher_name = forms.CharField(
-        label = "Teacher Name: ",
-        widget = forms.Select(choices = teacher_choices))
+    #teacher_choices = []
+    #teacher_name = forms.CharField(
+    #    label = "Teacher Name: ",
+    #    widget = forms.Select(choices = teacher_choices))

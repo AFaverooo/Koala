@@ -2,20 +2,14 @@
 <h1> Request a lesson</h1>
 
 
-<<<<<<< HEAD
-
-
-
 
 <p> Form will be here </p>
 =======
   <body>
-      <form action="{% url 'requests_page' %}" method="post">
+      <form action="{% url 'make_request' %}" method="post">
            {% csrf_token %}
            {{form.as_p}}
-       <input type="submit" value="log in" class="btn btn-primary">
+       <input type="submit" value="request" class="btn btn-primary">
   </form>
 </body>
 </html>
-
->>>>>>> b832e3fa603f4a50859240d8137195803f727524
