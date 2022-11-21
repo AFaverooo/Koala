@@ -1,10 +1,10 @@
+
+from .modelHelpers import produce_teacher_object
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson
-
-from .modelHelpers import produce_teacher_object
 # Create your views here.
 
 
@@ -32,7 +32,7 @@ def director_feed(request):
 def log_in(request):
      if request.method == 'POST':
          form = LogInForm(request.POST)
-         if  valid():
+         if  form.is_valid():
              email = form.cleaned_data.get('email')
              password = form.cleaned_data.get('password')
              role = form.cleaned_data.get('role')
@@ -83,8 +83,8 @@ def new_lesson(request):
                 teacher_id = produce_teacher_object("johndoe@example.org")
 
                 lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id)
-                print('made lesson')
-                return render(request,'requests_page.html', {'form' : form})
+                #print('made lesson')
+                return render(request,'requests_page.html')
             else:
                 print('form is not valid')
             #else:

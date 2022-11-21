@@ -128,8 +128,6 @@ class UserAccountManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
-
-
 #UserAccount model refers to the User of the MSMS application
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, blank=False)
@@ -171,6 +169,9 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         max_length=13,
         choices=UserRole.choices,
     )
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
 
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
