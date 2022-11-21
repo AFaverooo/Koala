@@ -1,10 +1,11 @@
 
-from .modelHelpers import produce_teacher_object
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson
+
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 
@@ -71,24 +72,19 @@ def new_lesson(request):
             current_student = request.user
             #if current_student.role.is_student():
             form = RequestForm(request.POST)
-
             if form.is_valid():
-                    #first_name = form.cleaned_data.get('teacher')
-                    #last_name = form.cleaned_data.get('teacher')
-
-                    #teacher_id = UserAccount.objects.get(first_name = teacher_name).pk
                 duration = form.cleaned_data.get('duration')
                 lesson_date = form.cleaned_data.get('lesson_date_time')
                 type = form.cleaned_data.get('type')
-                teacher_id = produce_teacher_object("johndoe@example.org")
+                teacher_id = form.cleaned_data.get('teachers')
 
-                lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id)
+                lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 #print('made lesson')
-                return render(request,'requests_page.html')
+                return render(request,'requests_page.html', {'form': form})
             else:
                 print('form is not valid')
-            #else:
-            #    print('user is not student')
+                print(form.errors)
         else:
             print('user is not authenitcated')
+
     return render(request,'student_feed.html', {'form' : form})

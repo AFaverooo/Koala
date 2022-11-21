@@ -11,6 +11,9 @@ from django.utils.translation import gettext_lazy as _
 #imports for Request
 from django.conf import settings
 
+class LessonStatus(models.TextChoices):
+    PENDING = 'PN', _('The lesson request is pending')
+    BOOKED = 'BK', _('The lesson has been booked')
 #test fot lesson type
 class LessonType(models.TextChoices):
     INSTRUMENT = 'INSTR', _('Learn To Play An Instrument'),
@@ -40,6 +43,20 @@ class Gender(models.TextChoices):
     FEMALE = 'F', _('Female')
     PNOT = 'PNOT', _('Prefer Not To Say')
 
+def is_valid_lessonType(Lesson):
+    return Lesson.type in {
+        LessonType.INSTRUMENT,
+        LessonType.THEORY,
+        LessonType.PRACTICE,
+        LessonType.PERFORMANCE,
+        }
+
+def is_valid_lessonDuration(Lesson):
+    return Lesson.duration in {
+        LessonDuration.THIRTY,
+        LessonDuration.FOURTY_FIVE,
+        LessonDuration.HOUR,
+        }
 
 def is_valid_gender(UserAccount):
     return UserAccount.gender in {
@@ -176,31 +193,29 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
 
+    request_date = models.DateField('Request Date And Time', default=timezone.now)
+
     type = models.CharField(
         max_length=30,
         choices=LessonType.choices,
         default=LessonType.INSTRUMENT,
+        blank = False
     )
 
     duration = models.CharField(
         max_length = 20,
         choices = LessonDuration.choices,
         default = LessonDuration.THIRTY,
+        blank = False
     )
 
     lesson_date_time = models.DateTimeField('Lesson Date And Time')
 
-    teacher_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
+    teacher_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE, related_name = 'teacher')
 
-class requests(models.Model):
-    request_id = models.BigAutoField(primary_key=True)
-    student_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
+    student_id = models.ForeignKey(UserAccount, on_delete = models.CASCADE, related_name = 'student')
 
-    lesson_id = models.ForeignKey(Lesson,on_delete=models.CASCADE)
+    is_booked = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.PENDING, blank = False)
 
-    is_booking = models.BooleanField(
-        default=False,
-        help_text = (
-            'Designates whether the request has been booked'
-        ),
-    )
+    class Meta:
+        unique_together = (('request_date', 'lesson_date_time', 'student_id', 'teacher_id'),)

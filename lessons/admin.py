@@ -11,5 +11,5 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Lesson)
 class UserAdmin(admin.ModelAdmin):
     list_display = [
-        'lesson_id', 'type', 'duration' , 'lesson_date_time', 'teacher_id'
+        'lesson_id', 'request_date' ,'type', 'duration' , 'lesson_date_time', 'teacher_id', 'student_id', 'is_booked'
     ]

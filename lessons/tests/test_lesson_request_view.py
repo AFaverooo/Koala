@@ -1,10 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.forms import RequestForm
-from lessons.models import Lesson, UserAccount,Gender
+from lessons.models import Lesson, UserAccount,Gender,UserRole
 
+from lessons.forms import RequestForm
 
-class RequestViewTestCase(TestCase):
+class LessonRequestViewTestCase(TestCase):
     def setUp(self):
 
         self.student = UserAccount.objects.create_student(
@@ -23,12 +24,20 @@ class RequestViewTestCase(TestCase):
             gender = Gender.FEMALE,
         )
 
-        self.url = reverse('make_request')
+        self.url = reverse('new_lesson')
+
         self.form_input = {
             'type': 'INSTR',
             'duration': '30',
             'lesson_date_time': '2006-10-25 14:30:59',
+            'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
         }
+
+    def test_valid_new_lesson_form(self):
+        self.assertEqual(len(UserAccount.objects.filter(role = UserRole.TEACHER)), 1)
+        form = RequestForm(data=self.form_input)
+        self.assertTrue(form.is_valid())
+
 
     def test_succesful_request(self):
 

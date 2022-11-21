@@ -1,7 +1,7 @@
 """Unit tests for the UserAccount model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import UserAccount, is_valid_gender, is_valid_role, UserRole, Gender
+from lessons.models import UserAccount, is_valid_gender, is_valid_role,UserRole, Gender
 
 class UserAccountModelTestCase(TestCase):
     """Unit tests for the UserAccount model"""
@@ -120,6 +120,7 @@ class UserAccountModelTestCase(TestCase):
     def test_student_gender_string_is_invalid(self):
         self.student.gender = 'MALE'
         self.assertFalse(is_valid_gender(self.student))
+        self._assert_student_is_invalid()
 
     def test_student_role_is_valid(self):
         self.assertTrue(is_valid_role(self.student))
@@ -129,9 +130,12 @@ class UserAccountModelTestCase(TestCase):
     def test_student_role_string_is_invalid(self):
         self.student.role = 'NonUserAccount'
         self.assertFalse(is_valid_role(self.student))
+        self._assert_student_is_invalid()
 
     def test_student_is_not_staff(self):
         self.assertFalse(self.student.is_staff)
+        self._assert_student_is_valid()
 
     def test_student_is_student(self):
         self.assertTrue(self.student.role.is_student())
+        self._assert_student_is_valid()

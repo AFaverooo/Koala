@@ -67,8 +67,8 @@ class RequestForm(forms.ModelForm):
         model = Lesson
         fields = ['type','duration']
 
+    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None)
 
-    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select)
 
     #This is the choice of teachers the student is able to pick out of
     #teacher_choices = []
