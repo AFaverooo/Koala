@@ -29,7 +29,9 @@ class LessonRequestViewTestCase(TestCase):
         self.form_input = {
             'type': 'INSTR',
             'duration': '30',
-            'lesson_date_time': '2006-10-25 14:30:59',
+            'lesson_date_time_0': '2020-04-04',
+            'lesson_date_time_1': '12:12',
+            
             'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
         }
 
