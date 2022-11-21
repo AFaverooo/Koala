@@ -32,7 +32,7 @@ def director_feed(request):
 def log_in(request):
      if request.method == 'POST':
          form = LogInForm(request.POST)
-         if form.is_valid():
+         if  valid():
              email = form.cleaned_data.get('email')
              password = form.cleaned_data.get('password')
              role = form.cleaned_data.get('role')
@@ -84,11 +84,11 @@ def new_lesson(request):
 
                 lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id)
                 print('made lesson')
-                return render(request,'requests_page.html')
+                return render(request,'requests_page.html', {'form' : form})
             else:
                 print('form is not valid')
             #else:
             #    print('user is not student')
         else:
             print('user is not authenitcated')
-    return render(request,'student_feed.html')
+    return render(request,'student_feed.html', {'form' : form})
