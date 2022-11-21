@@ -83,7 +83,7 @@ def new_lesson(request):
                 teacher_id = produce_teacher_object("johndoe@example.org")
 
                 lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id)
-                print('made lesson')
+                #print('made lesson')
                 return render(request,'requests_page.html')
             else:
                 print('form is not valid')

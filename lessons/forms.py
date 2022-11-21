@@ -1,6 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import UserAccount, Gender, Lesson
+from .models import UserAccount, Gender, Lesson, UserRole
+
 
 class LogInForm(forms.Form):
     email = forms.CharField(label='email')
@@ -62,6 +63,11 @@ class RequestForm(forms.ModelForm):
         model = Lesson
 
         fields = ['type','duration' , 'lesson_date_time']
+
+    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select)
+
+
+
     #This is the choice of teachers the student is able to pick out of
     #teacher_choices = []
     #teacher_name = forms.CharField(
