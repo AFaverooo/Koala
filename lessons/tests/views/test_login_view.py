@@ -1,7 +1,7 @@
 
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
-from .helpers import LogInTester
+from lessons.tests.helpers import LogInTester
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
