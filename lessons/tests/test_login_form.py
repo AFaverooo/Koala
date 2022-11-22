@@ -1,15 +1,14 @@
+
 from django import forms
 from django.test import TestCase
 from lessons.forms import LogInForm
-from lessons.models import Student
-
+from lessons.models import UserAccount
 
 class LogInFormTestCase(TestCase):
-    """Unit tests of the login form."""
-
+    """Unit tests for the login form."""
     def setUp(self):
         self.form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
-        self.student = Student.objects.create_user(
+        self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',

@@ -1,23 +1,25 @@
+
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
+from .helpers import LogInTester
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
-from lessons.models import Student
+from lessons.models import UserAccount
 
-class LogInTestCase(TestCase):
-    """Tests of the login up view."""
+class LogInTestCase(TestCase,LogInTester):
+    """Tests for the login up view."""
 
     def setUp(self):
         self.url = reverse('log_in')
-        self.student = Student.objects.create_user(
+        self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
             password='Password123',
             gender = 'M',
         )
-        self.admin = Student.objects.create_admin(
+        self.admin = UserAccount.objects.create_admin(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
@@ -25,7 +27,7 @@ class LogInTestCase(TestCase):
             gender = 'F',
         )
 
-        self.director = Student.objects.create_superuser(
+        self.director = UserAccount.objects.create_superuser(
             first_name='Jack',
             last_name='Smith',
             email='jsmith@example.org',
@@ -48,7 +50,6 @@ class LogInTestCase(TestCase):
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
 
-
     def test_unsucessful_student_log_in(self):
         self.student_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
         response = self.client.post(self.url, self.student_form_input)
@@ -63,6 +64,7 @@ class LogInTestCase(TestCase):
         self.assertEqual(len(messages_list),1)
         self.assertEqual(messages_list[0].level,messages.ERROR)
 
+    # These tests check if user is redirected to the correct feed based on their roles
     def test_successful_student_login(self):
         response = self.client.post(self.url, self.student_form_input,follow=True)
         self.assertTrue(self._is_logged_in())
@@ -101,6 +103,3 @@ class LogInTestCase(TestCase):
         self.assertEqual(len(messages_list),1)
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level,messages.ERROR)
-
-    def _is_logged_in(self):
-         return '_auth_user_id' in self.client.session.keys()

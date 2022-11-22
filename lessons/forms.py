@@ -1,6 +1,9 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import Student
+from .models import UserAccount, Gender, Lesson
+from  django.contrib.admin.widgets import AdminSplitDateTime
+from django.shortcuts import render
+from .models import UserAccount, Gender, Lesson, UserRole
 
 
 class LogInForm(forms.Form):
@@ -14,10 +17,9 @@ class SignUpForm(forms.ModelForm):
     class Meta:
         """Form options."""
 
-        model = Student
+        model = UserAccount
 
         fields = ['first_name', 'last_name','email', 'gender']
-
 
 
     new_password = forms.CharField(
@@ -45,7 +47,7 @@ class SignUpForm(forms.ModelForm):
         """Create a new user."""
 
         super().save(commit=False)
-        student = Student.objects.create_user(
+        student = UserAccount.objects.create_student(
             first_name=self.cleaned_data.get('first_name'),
             last_name=self.cleaned_data.get('last_name'),
             email=self.cleaned_data.get('email'),
@@ -53,3 +55,23 @@ class SignUpForm(forms.ModelForm):
             gender=self.cleaned_data.get('gender'),
         )
         return student
+
+
+class RequestForm(forms.ModelForm):
+    """Form enabling unregistered users to sign up."""
+    lesson_date_time = forms.SplitDateTimeField(widget=AdminSplitDateTime())
+
+    class Meta:
+        """Form options."""
+
+        model = Lesson
+        fields = ['type','duration']
+
+    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None)
+
+
+    #This is the choice of teachers the student is able to pick out of
+    #teacher_choices = []
+    #teacher_name = forms.CharField(
+    #    label = "Teacher Name: ",
+    #    widget = forms.Select(choices = teacher_choices))

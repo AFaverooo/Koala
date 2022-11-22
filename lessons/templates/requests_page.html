@@ -1,0 +1,25 @@
+{% load static %}
+<html>
+  <head>
+
+    <script src = "{% url 'js-catalog' %}"></script>
+    <script src="{% static '/admin/js/core.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+
+  <head>
+
+
+  <h1> Request a lesson</h1>
+  <p> Form will be here </p>
+
+  <body>
+      <form action="{% url 'new_lesson' %}" method="post">
+           {% csrf_token %}
+           {{ form.media }}
+           {{ form.as_p }}
+       <input type="submit" value="save lesson" class="btn btn-primary">
+  </form>
+</body>
+
+</html>
