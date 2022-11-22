@@ -1,4 +1,4 @@
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
@@ -16,10 +16,15 @@ def home(request):
 #     form = LogInForm()
 #     return render(request, 'log_in.html', {'form': form})
 #
+def log_out(request):
+    logout(request)
+    return redirect('home')
 
+@login_required
 def student_feed(request):
     return render(request,'student_feed.html')
 
+@login_required
 def requests_page(request):
     form = RequestForm()
     return render(request,'requests_page.html', {'form': form})
@@ -43,15 +48,19 @@ def log_in(request):
 
                  # redirects the user based on his role
                  if (user.role == UserRole.ADMIN.value):
+                     #redirect_url = request.POST.get('next') or 'admin_feed'
                      return redirect('admin_feed')
                  elif (user.role == UserRole.DIRECTOR.value):
-                     return redirect('director_feed')
+                     redirect_url = request.POST.get('next') or 'director_feed'
+                     return redirect(redirect_url)
                  else:
-                     return redirect('student_feed')
+                     redirect_url = request.POST.get('next') or 'student_feed'
+                     return redirect(redirect_url)
 
          messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
      form = LogInForm()
-     return render(request,'log_in.html', {'form' : form})
+     next = request.GET.get('next') or ''
+     return render(request,'log_in.html', {'form' : form, 'next' : next})
 
 
 def sign_up(request):
