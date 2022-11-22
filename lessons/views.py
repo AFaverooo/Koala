@@ -82,9 +82,10 @@ def new_lesson(request):
                 #print('made lesson')
                 return render(request,'requests_page.html', {'form': form})
             else:
-                print('form is not valid')
-                print(form.errors)
+                messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
         else:
-            print('user is not authenitcated')
+            return redirect('log_in')
+    else:
+        form = RequestForm()
 
-    return render(request,'student_feed.html', {'form' : form})
+    return render(request,'requests_page.html', {'form' : form})

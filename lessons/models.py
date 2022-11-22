@@ -218,4 +218,4 @@ class Lesson(models.Model):
     is_booked = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.PENDING, blank = False)
 
     class Meta:
-        unique_together = (('request_date', 'lesson_date_time', 'student_id', 'teacher_id'),)
+        unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
