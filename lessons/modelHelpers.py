@@ -18,7 +18,7 @@ def is_valid_role(UserAccount):
 
 def is_valid_lessonStatus(Lesson):
     return Lesson.is_booked in {
-        LessonStatus.UNSAVED,
+        LessonStatus.SAVED,
         LessonStatus.PENDING,
         LessonStatus.BOOKED,
         }

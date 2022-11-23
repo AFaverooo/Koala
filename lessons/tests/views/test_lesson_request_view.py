@@ -29,8 +29,6 @@ class LessonRequestViewTestCase(TestCase):
             gender = Gender.FEMALE,
         )
 
-
-
         self.url = reverse('new_lesson')
         self.save_lessons_url = reverse('save_lessons')
 

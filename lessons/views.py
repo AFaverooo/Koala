@@ -83,7 +83,7 @@ def student_feed(request):
 
 def requests_page(request):
     student = request.user
-    unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.UNSAVED, student_id = student)
+    unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = student)
     form = RequestForm()
     return render(request,'requests_page.html', {'form': form , 'lessons': unsavedLessons})
 
@@ -153,7 +153,7 @@ def new_lesson(request):
 
                 lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 #print('made lesson')
-                unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.UNSAVED, student_id = current_student)
+                unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = current_student)
 
                 return render(request,'requests_page.html', {'form': form, 'lessons' : unsavedLessons})
             else:
@@ -170,7 +170,7 @@ def save_lessons(request):
         if request.user.is_authenticated:
             current_student = request.user
 
-            all_unsaved_lessons = Lesson.objects.filter(is_booked = LessonStatus.UNSAVED, student_id = current_student)
+            all_unsaved_lessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = current_student)
 
             for eachLesson in all_unsaved_lessons:
                 #print(eachLesson.is_booked)
