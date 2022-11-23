@@ -18,12 +18,12 @@ class LessonStatus(models.TextChoices):
 #test fot lesson type
 class LessonType(models.TextChoices):
     INSTRUMENT = 'INSTR', _('Learn To Play An Instrument'),
-    THEORY = 'TH',_('Instrument Music Theory'),
+    THEORY = 'TH', _('Instrument Music Theory'),
     PRACTICE = 'PR', _('Instrument practice'),
     PERFORMANCE = 'PERF', _('Performance Preparation'),
 
-    def __str__(self):
-        return f'{self.value}'
+    #def getType(self):
+    #    return f'{self.label}'
 
 #test for lesson duration
 class LessonDuration(models.TextChoices):
@@ -31,8 +31,11 @@ class LessonDuration(models.TextChoices):
     FOURTY_FIVE = '45', _('45 minute lesson')
     HOUR = '60', _('1 hour lesson')
 
-    def __str__(self):
-        return f'{self.value}'
+    #def getDuration(self):
+    #    return f'{self.label}'
+
+    #def getLabel(self):
+    #    return f'{self.label}'
 
 #added a teacher as a user role
 class UserRole(models.TextChoices):

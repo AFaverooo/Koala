@@ -135,3 +135,7 @@ class LessonModelTestCase(TestCase):
         self.assertTrue(is_valid_lessonStatus(self.lesson))
         self.assertTrue(is_valid_lessonStatus(self.lesson2))
         self.assertTrue(is_valid_lessonStatus(self.lesson3))
+
+    #def test_output(self):
+    #    print(self.lesson3.type.getType())
+    #    print(self.lesson3.duration.value)

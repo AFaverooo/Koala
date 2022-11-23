@@ -43,6 +43,8 @@ class LessonRequestViewTestCase(TestCase):
             'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
         }
 
+
+    def create_pending_lessons(self):
         self.lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
@@ -75,30 +77,7 @@ class LessonRequestViewTestCase(TestCase):
             is_booked = LessonStatus.PENDING
         )
 
-    #first tests cover the saving of lessons
-    def test_succesfull_save_lessons_post(self):
-        #test normally fails after login required is added
-        self.client.login(email = self.student.email, password = 'Password123')
-        before_count = Lesson.objects.count()
-        response = self.client.post(self.save_lessons_url, follow = True)
-        after_count = Lesson.objects.count()
-
-        self.assertEqual(before_count,after_count)
-
-        self.assertEqual(response.status_code, 200)
-
-        all_student_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = self.student)
-
-        for lessons in all_student_lessons:
-            self.assertEqual(lessons.is_booked, LessonStatus.PENDING)
-            self.assertEqual(lessons.student_id, self.student)
-
-        response_url = reverse('student_feed')
-
-        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'student_feed.html')
-
-
+    #first tests cover making a new lesson
     def check_user_information(self,email,name,last_name,gender):
         user = UserAccount.objects.get(email =email)
         self.assertEqual(user.first_name, name)
@@ -154,7 +133,9 @@ class LessonRequestViewTestCase(TestCase):
         self.client.login(email=self.student.email, password="Password123")
 
         before_count = Lesson.objects.count()
+
         response = self.client.post(self.url, self.form_input, follow=True)
+
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count+1)
         response_url = reverse('requests_page')
@@ -163,3 +144,28 @@ class LessonRequestViewTestCase(TestCase):
 
         self.check_user_information(self.student.email,self.student.first_name, self.student.last_name, Gender.MALE.value)
         self.check_user_information(self.teacher.email,self.teacher.first_name, self.teacher.last_name, Gender.FEMALE.value)
+
+
+
+    def test_succesfull_save_lessons_post(self):
+        self.create_pending_lessons()
+        #test normally fails after login required is added
+        self.client.login(email = self.student.email, password = 'Password123')
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.save_lessons_url, follow = True)
+        after_count = Lesson.objects.count()
+
+        self.assertEqual(before_count,after_count)
+
+        self.assertEqual(response.status_code, 200)
+
+        all_student_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = self.student)
+
+        for lessons in all_student_lessons:
+            self.assertEqual(lessons.is_booked, LessonStatus.PENDING)
+            self.assertEqual(lessons.student_id, self.student)
+
+        response_url = reverse('student_feed')
+
+        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'student_feed.html')
