@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson
+from .models import UserRole, UserAccount, Lesson, LessonStatus
 
 from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
@@ -21,8 +21,10 @@ def student_feed(request):
     return render(request,'student_feed.html')
 
 def requests_page(request):
+    student = request.user
+    unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.UNSAVED, student_id = student)
     form = RequestForm()
-    return render(request,'requests_page.html', {'form': form})
+    return render(request,'requests_page.html', {'form': form , 'lessons': unsavedLessons})
 
 def admin_feed(request):
     return render(request,'admin_feed.html')
@@ -80,7 +82,9 @@ def new_lesson(request):
 
                 lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 #print('made lesson')
-                return render(request,'requests_page.html', {'form': form})
+                unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.UNSAVED, student_id = current_student)
+
+                return render(request,'requests_page.html', {'form': form, 'lessons' : unsavedLessons})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
         else:
@@ -89,3 +93,23 @@ def new_lesson(request):
         form = RequestForm()
 
     return render(request,'requests_page.html', {'form' : form})
+
+def save_lessons(request):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            current_student = request.user
+
+            all_unsaved_lessons = Lesson.objects.filter(is_booked = LessonStatus.UNSAVED, student_id = current_student)
+
+            for eachLesson in all_unsaved_lessons:
+                print(eachLesson.is_booked)
+                eachLesson.is_booked = LessonStatus.PENDING
+                eachLesson.save()
+
+            return redirect('student_feed')
+
+        else:
+            return redirect('log_in')
+    else:
+        form = RequestForm()
+        return render(rquest,'requests_page.html', {'form':form})
