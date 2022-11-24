@@ -4,16 +4,13 @@
 </head>
 
 
-
 {% for message in messages %}
 <div class="alert alert-{{ message.level_tag }}" role="alert">
   {{ message }}
 </div>
 {% endfor %}
 
-
   <body>
-
       <form action="{% url 'log_in' %}" method="post">
            {% csrf_token %}
            {{form.as_p}}

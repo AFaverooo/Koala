@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import check_password
 from django import forms
 from django.test import TestCase
 from lessons.forms import SignUpForm
-from lessons.models import User, Gender
+from lessons.models import UserAccount,Gender
 
 
 class SignUpFormTestCase(TestCase):
@@ -67,13 +67,13 @@ class SignUpFormTestCase(TestCase):
 
     def test_form_must_save_correctly(self):
         form = SignUpForm(data=self.form_input)
-        before_count = User.objects.count()
+        before_count = UserAccount.objects.count()
         form.save()
-        after_count = User.objects.count()
+        after_count = UserAccount.objects.count()
         self.assertEqual(after_count, before_count+1)
-        student = User.objects.get(email ='janedoe@example.org')
+        student = UserAccount.objects.get(email ='janedoe@example.org')
         self.assertEqual(student.first_name, 'Jane')
         self.assertEqual(student.last_name, 'Doe')
-        self.assertEqual(student.gender, 'F') #check to make this a Gender object instead of string
+        self.assertEqual(student.gender, Gender.FEMALE.value)
         is_password_correct = check_password('Password123', student.password)
         self.assertTrue(is_password_correct)

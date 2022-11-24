@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import check_password
 from django.test import TestCase
 from django.urls import reverse
 from lessons.forms import SignUpForm
-from lessons.models import User,Gender
+from lessons.models import UserAccount, Gender
 
 class SignUpViewTestCase(TestCase):
     """Tests of the sign up view."""
@@ -31,9 +31,9 @@ class SignUpViewTestCase(TestCase):
 
     def test_unsuccesful_sign_up(self):
         self.form_input['email'] = 'BAD_EMAIL.COM'
-        before_count = User.objects.count()
+        before_count = UserAccount.objects.count()
         response = self.client.post(self.url, self.form_input)
-        after_count = User.objects.count()
+        after_count = UserAccount.objects.count()
         self.assertEqual(after_count, before_count)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'sign_up.html')
@@ -44,18 +44,18 @@ class SignUpViewTestCase(TestCase):
         #self.assertFalse(self._is_logged_in())
 
     def test_succesful_sign_up(self):
-        before_count = User.objects.count()
+        before_count = UserAccount.objects.count()
         response = self.client.post(self.url, self.form_input, follow=True)
-        after_count = User.objects.count()
+        after_count = UserAccount.objects.count()
         self.assertEqual(after_count, before_count+1)
         response_url = reverse('student_feed')
         self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
-        student = User.objects.get(email ='janedoe@example.org')
+        student = UserAccount.objects.get(email ='janedoe@example.org')
         self.assertEqual(student.first_name, 'Jane')
         self.assertEqual(student.last_name, 'Doe')
-        self.assertEqual(student.gender, 'F')
+        self.assertEqual(student.gender, Gender.FEMALE.value)
         self.assertEqual(student.email, 'janedoe@example.org')
         is_password_correct = check_password('Password123', student.password)
         self.assertTrue(is_password_correct)

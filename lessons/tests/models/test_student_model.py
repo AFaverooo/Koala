@@ -1,38 +1,37 @@
-"""Unit tests for the Student model"""
+"""Unit tests for the UserAccount model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import User,is_valid_gender, is_valid_role
+from lessons.models import UserAccount, is_valid_gender, is_valid_role,UserRole, Gender
 
-class StudentModelTestCase(TestCase):
-    """Unit tests for the Student model"""
+class UserAccountModelTestCase(TestCase):
+    """Unit tests for the UserAccount model"""
 
     def setUp(self):
-        self.student = User.objects.create_user(
+        self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
             email='johndoe@example.org',
             password='Password123',
-            gender = 'M',
-
+            gender = Gender.MALE,
         )
 
     def _create_second_student(self):
-        student = User.objects.create_user(
+        student = UserAccount.objects.create_student(
             first_name='Jane',
             last_name='Doe',
             email='janedoe@example.org',
             password='Password123',
-            gender = 'F',
+            gender = Gender.FEMALE,
         )
         return student
 
     def _create_third_student(self):
-        student = User.objects.create_user(
+        student = UserAccount.objects.create_student(
             first_name='Michael',
             last_name='Phoenix',
             email='mikephoenix@example.org',
             password='Password123',
-            gender = 'PNOT',
+            gender = Gender.PNOT,
         )
         return student
 
@@ -121,6 +120,7 @@ class StudentModelTestCase(TestCase):
     def test_student_gender_string_is_invalid(self):
         self.student.gender = 'MALE'
         self.assertFalse(is_valid_gender(self.student))
+        self._assert_student_is_invalid()
 
     def test_student_role_is_valid(self):
         self.assertTrue(is_valid_role(self.student))
@@ -128,8 +128,14 @@ class StudentModelTestCase(TestCase):
         self.assertTrue(is_valid_role(self._create_third_student()))
 
     def test_student_role_string_is_invalid(self):
-        self.student.role = 'NonStudent'
+        self.student.role = 'NonUserAccount'
         self.assertFalse(is_valid_role(self.student))
+        self._assert_student_is_invalid()
 
     def test_student_is_not_staff(self):
         self.assertFalse(self.student.is_staff)
+        self._assert_student_is_valid()
+
+    def test_student_is_student(self):
+        self.assertTrue(self.student.role.is_student())
+        self._assert_student_is_valid()
