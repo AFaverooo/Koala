@@ -89,12 +89,14 @@ class LogInTestCase(TestCase):
         #print(lesson_dict)
         self.assertEqual(len(lesson_dict),4)
         #print(lesson_dict[self.lesson])
-        self.check_dictionary_equality(lesson_dict[self.lesson], LessonType.INSTRUMENT.label, "2022-11-20", "15:15 - 15:45", "Barbare Dutch")
-        self.check_dictionary_equality(lesson_dict[self.lesson2], LessonType.THEORY.label, "2022-10-20", "16:00 - 16:45", "Barbare Dutch")
-        self.check_dictionary_equality(lesson_dict[self.lesson3], LessonType.PERFORMANCE.label, "2022-09-20", "09:45 - 10:45", "Amane Hill")
-        self.check_dictionary_equality(lesson_dict[self.lesson4], LessonType.PRACTICE.label, "2022-12-25", "09:45 - 10:30", "Amane Hill")
+        self.check_dictionary_equality(lesson_dict[self.lesson], LessonType.INSTRUMENT.label, "2022-11-20", "15:15 - 15:45", "Miss Barbare Dutch")
+        self.check_dictionary_equality(lesson_dict[self.lesson2], LessonType.THEORY.label, "2022-10-20", "16:00 - 16:45", "Miss Barbare Dutch")
+        self.check_dictionary_equality(lesson_dict[self.lesson3], LessonType.PERFORMANCE.label, "2022-09-20", "09:45 - 10:45", "Mr Amane Hill")
+        self.check_dictionary_equality(lesson_dict[self.lesson4], LessonType.PRACTICE.label, "2022-12-25", "09:45 - 10:30", "Mr Amane Hill")
 
     def test_get_student_feed_in(self):
+        self.client.login(email=self.student.email, password="Password123")
+        
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')

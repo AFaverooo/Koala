@@ -42,7 +42,7 @@ class LessonRequestViewTestCase(TestCase):
         }
 
 
-    def create_pending_lessons(self):
+    def create_saved_lessons(self):
         self.lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
@@ -50,7 +50,7 @@ class LessonRequestViewTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            is_booked = LessonStatus.SAVED
         )
 
 
@@ -62,7 +62,7 @@ class LessonRequestViewTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            is_booked = LessonStatus.SAVED
         )
 
         self.lesson3 = Lesson.objects.create(
@@ -72,7 +72,7 @@ class LessonRequestViewTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            is_booked = LessonStatus.SAVED
         )
 
     #first tests cover making a new lesson
@@ -94,6 +94,7 @@ class LessonRequestViewTestCase(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_get_lesson(self):
+        self.client.login(email=self.student.email, password="Password123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'requests_page.html')
@@ -144,9 +145,8 @@ class LessonRequestViewTestCase(TestCase):
         self.check_user_information(self.teacher.email,self.teacher.first_name, self.teacher.last_name, Gender.FEMALE.value)
 
 
-
     def test_succesfull_save_lessons_post(self):
-        self.create_pending_lessons()
+        self.create_saved_lessons()
         #test normally fails after login required is added
         self.client.login(email = self.student.email, password = 'Password123')
         before_count = Lesson.objects.count()
@@ -157,7 +157,10 @@ class LessonRequestViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        all_student_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = self.student)
+        all_student_lessons = Lesson.objects.filter(student_id = self.student)
+        all_student_pending_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = self.student)
+
+        self.assertEqual(len(all_student_lessons),len(all_student_pending_lessons))
 
         for lessons in all_student_lessons:
             self.assertEqual(lessons.is_booked, LessonStatus.PENDING)
