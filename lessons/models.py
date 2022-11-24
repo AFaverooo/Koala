@@ -154,18 +154,12 @@ class Invoice(models.Model):
         self.student_number = student_number
         self.fees_amount = fees_amount
 
-
-    # list_of_lessons = models.CharField(
-    #     max_length=30
-    # )
-    
-    # list_of_price = models.CharField(
-    #     max_length=30
-    # )
-
-    def add_lesson(self, lesson_name, lesson_price):
+    def generate_new_invoice_reference_number():
+        #this method will be use to generate new invoice reference number base on the student reference number
         pass
 
+    def add_lesson(self, lesson_price):
+        pass
 
     def delete_lesson(self, lesson_name, lesson_price):
         pass
