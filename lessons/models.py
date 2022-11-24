@@ -12,20 +12,30 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 class LessonStatus(models.TextChoices):
+    SAVED = 'SA', _('The lesson has not been saved')
     PENDING = 'PN', _('The lesson request is pending')
     BOOKED = 'BK', _('The lesson has been booked')
 #test fot lesson type
 class LessonType(models.TextChoices):
     INSTRUMENT = 'INSTR', _('Learn To Play An Instrument'),
-    THEORY = 'TH',_('Instrument Music Theory'),
+    THEORY = 'TH', _('Instrument Music Theory'),
     PRACTICE = 'PR', _('Instrument practice'),
     PERFORMANCE = 'PERF', _('Performance Preparation'),
+
+    #def getType(self):
+    #    return f'{self.label}'
 
 #test for lesson duration
 class LessonDuration(models.TextChoices):
     THIRTY = '30', _('30 minute lesson')
     FOURTY_FIVE = '45', _('45 minute lesson')
     HOUR = '60', _('1 hour lesson')
+
+    #def getDuration(self):
+    #    return f'{self.label}'
+
+    #def getLabel(self):
+    #    return f'{self.label}'
 
 #added a teacher as a user role
 class UserRole(models.TextChoices):
@@ -42,36 +52,6 @@ class Gender(models.TextChoices):
     MALE = 'M' , _('Male')
     FEMALE = 'F', _('Female')
     PNOT = 'PNOT', _('Prefer Not To Say')
-
-def is_valid_lessonType(Lesson):
-    return Lesson.type in {
-        LessonType.INSTRUMENT,
-        LessonType.THEORY,
-        LessonType.PRACTICE,
-        LessonType.PERFORMANCE,
-        }
-
-def is_valid_lessonDuration(Lesson):
-    return Lesson.duration in {
-        LessonDuration.THIRTY,
-        LessonDuration.FOURTY_FIVE,
-        LessonDuration.HOUR,
-        }
-
-def is_valid_gender(UserAccount):
-    return UserAccount.gender in {
-        Gender.MALE,
-        Gender.FEMALE,
-        Gender.PNOT,
-        }
-
-def is_valid_role(UserAccount):
-    return UserAccount.role in {
-        UserRole.STUDENT,
-        UserRole.ADMIN,
-        UserRole.DIRECTOR,
-        UserRole.TEACHER,
-        }
 
 
 class UserAccountManager(BaseUserManager):
@@ -215,7 +195,7 @@ class Lesson(models.Model):
 
     student_id = models.ForeignKey(UserAccount, on_delete = models.CASCADE, related_name = 'student')
 
-    is_booked = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.PENDING, blank = False)
+    is_booked = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.SAVED, blank = False)
 
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)

@@ -1,9 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration, is_valid_lessonDuration,is_valid_lessonType
-
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
+from lessons.modelHelpers import is_valid_lessonStatus,is_valid_lessonDuration,is_valid_lessonType
 from django.db import IntegrityError
-
 import datetime
 from django.utils import timezone
 
@@ -45,6 +44,7 @@ class LessonModelTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
+            is_booked = LessonStatus.PENDING
         )
 
         self.lesson3 = Lesson.objects.create(
@@ -54,7 +54,18 @@ class LessonModelTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
+            is_booked = LessonStatus.BOOKED
         )
+
+    def _assert_lesson_is_valid(self,lesson):
+        try:
+            lesson.full_clean()
+        except(ValidationError):
+            self.fail('Test user should be valid')
+
+    def _assert_lesson_is_invalid(self,lesson):
+        with self.assertRaises(ValidationError):
+            lesson.full_clean()
 
     def test_violate_primary_key_unique_constraint(self):
         with self.assertRaises(IntegrityError):
@@ -66,17 +77,6 @@ class LessonModelTestCase(TestCase):
                 student_id = self.student,
                 request_date = datetime.date(2022, 10, 15),
                 )
-
-
-    def _assert_lesson_is_valid(self,lesson):
-        try:
-            lesson.full_clean()
-        except(ValidationError):
-            self.fail('Test user should be valid')
-
-    def _assert_lesson_is_invalid(self,lesson):
-        with self.assertRaises(ValidationError):
-            lesson.full_clean()
 
     def _all_lessons_are_valid(self):
         self._assert_lesson_is_valid(self.lesson)
@@ -130,3 +130,12 @@ class LessonModelTestCase(TestCase):
         self.assertEqual(self.lesson.request_date, self.lesson2.request_date)
         self.assertEqual(self.lesson.request_date, self.lesson3.request_date)
         self.assertEqual(self.lesson2.request_date, self.lesson3.request_date)
+
+    def test_all_lesson_status_is_valid(self):
+        self.assertTrue(is_valid_lessonStatus(self.lesson))
+        self.assertTrue(is_valid_lessonStatus(self.lesson2))
+        self.assertTrue(is_valid_lessonStatus(self.lesson3))
+
+    #def test_output(self):
+    #    print(self.lesson3.type.getType())
+    #    print(self.lesson3.duration.value)

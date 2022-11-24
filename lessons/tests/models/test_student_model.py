@@ -1,7 +1,9 @@
 """Unit tests for the UserAccount model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import UserAccount, is_valid_gender, is_valid_role,UserRole, Gender
+from lessons.models import UserAccount,UserRole, Gender
+
+from lessons.modelHelpers import is_valid_gender,is_valid_role
 
 class UserAccountModelTestCase(TestCase):
     """Unit tests for the UserAccount model"""
