@@ -94,8 +94,6 @@ def student_feed(request):
     else:
         return redirect('log_in')
 
-
-
 def requests_page(request):
     student = request.user
     unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = student)
@@ -149,8 +147,8 @@ def new_lesson(request):
         if request.user.is_authenticated:
             current_student = request.user
 
-            print(current_student.first_name)
-            print(LessonStatus.PENDING.label)
+            #print(current_student.first_name)
+            #rint(LessonStatus.PENDING.label)
 
             previously_requested_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING.value, student_id = current_student)
 

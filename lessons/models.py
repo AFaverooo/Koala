@@ -167,6 +167,9 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
     )
 
+    def get_student_id(self):
+        return f'{self.id}'
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
