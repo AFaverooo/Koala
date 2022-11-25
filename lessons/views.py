@@ -8,7 +8,7 @@ from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gen
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.db import IntegrityError
-
+from django.utils import timezone
 import datetime
 # Create your views here.
 
@@ -78,13 +78,15 @@ def make_lesson_timetable_dictionary(student_user):
 
     return booked_lessons_dict
 
+
+def get_saved_lessons(student):
+    return Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = student)
+
+def get_pending_lessons(student):
+     return Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = student)
+
 def home(request):
     return render(request, 'home.html')
-
-# def log_in(request):
-#     form = LogInForm()
-#     return render(request, 'log_in.html', {'form': form})
-#
 
 def student_feed(request):
     if request.user.is_authenticated:
@@ -95,10 +97,15 @@ def student_feed(request):
         return redirect('log_in')
 
 def requests_page(request):
-    student = request.user
-    unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = student)
-    form = RequestForm()
-    return render(request,'requests_page.html', {'form': form , 'lessons': unsavedLessons})
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            student = request.user
+            savedLessons = get_saved_lessons(student)
+            form = RequestForm()
+            return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
+    else:
+        #add message that the user should be logged in
+        return redirect('log_in')
 
 def admin_feed(request):
     return render(request,'admin_feed.html')
@@ -136,60 +143,64 @@ def sign_up(request):
         if form.is_valid():
             student = form.save()
             login(request, student)
-            #return redirect('feed')
+            return redirect('student_feed')
     else:
         form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
 
+def check_duplicate(request_date, lesson_date_time, student_id):
+    duplicate_lesson = Lesson.objects.filter(request_date = request_date, lesson_date_time = lesson_date_time, student_id = student_id)
+
+    return (len(duplicate_lesson) == 0)
 
 def new_lesson(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            current_student = request.user
-
-            #print(current_student.first_name)
-            #rint(LessonStatus.PENDING.label)
-
-            previously_requested_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING.value, student_id = current_student)
+    if request.user.is_authenticated:
+        current_student = request.user
+        if request.method == 'POST':
+            #test case, already pending lessons upon request
+            previously_requested_lessons = get_pending_lessons(current_student)
 
             #import widget tweaks
             #in the case the student already has requests that are pending, extend for the given term when terms are introduced
             if previously_requested_lessons:
                 print('already made a set of requests')
                 messages.add_message(request,messages.ERROR,"You have already made requests for this term, contact admin to add extra lessons")
-                #form = RequestForm()
-                #return render(request,'requests_page.html', {'form' : form})
-                return requests_page(request)
+                form = RequestForm()
+                return render(request,'requests_page.html', {'form' : form})
 
             #if current_student.role.is_student():
-            form = RequestForm(request.POST)
-            if form.is_valid():
-                duration = form.cleaned_data.get('duration')
-                lesson_date = form.cleaned_data.get('lesson_date_time')
-                type = form.cleaned_data.get('type')
-                teacher_id = form.cleaned_data.get('teachers')
+            request_form = RequestForm(request.POST)
 
-                try:
-                    lesson = Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
-                except IntegrityError:
+            if request_form.is_valid():
+                duration = request_form.cleaned_data.get('duration')
+                lesson_date = request_form.cleaned_data.get('lesson_date_time')
+                type = request_form.cleaned_data.get('type')
+                teacher_id = request_form.cleaned_data.get('teachers')
+
+                if check_duplicate(timezone.now, lesson_date, current_student) is False:
+                    Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
+                else:
+                    messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
                     #print('attempted to duplicate lesson')
-                    messages.add_message(request,messages.ERROR,"You attempted to book the same lesson already saved")
-                    return requests_page(request)
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
 
 
-                #unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = current_student)
-                #return render(request,'requests_page.html', {'form': form, 'lessons' : unsavedLessons})
-                return requests_page(request)
+                #savedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = current_student)
+                #return render(request,'requests_page.html', {'form': form, 'lessons' : savedLessons})
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                unsavedLessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = current_student)
-                return render(request,'requests_page.html', {'form': form, 'lessons' : unsavedLessons})
-
+                savedLessons = get_saved_lessons(current_student)
+                return render(request,'requests_page.html', {'form': request_form, 'lessons' : savedLessons})
         else:
-            #print('user should be logged in')
-            return redirect('log_in')
+            form = RequestForm()
+            return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+    else:
+        #print('user should be logged in')
+        return redirect('log_in')
 
-    return requests_page(request)
+
 
 def save_lessons(request):
     if request.method == 'POST':

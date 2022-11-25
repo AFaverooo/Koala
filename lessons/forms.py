@@ -72,6 +72,7 @@ class RequestForm(forms.ModelForm):
         model = Lesson
         fields = ['type','duration']
 
+
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None)
 
 
