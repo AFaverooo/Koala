@@ -10,6 +10,8 @@ class LogInForm(forms.Form):
     email = forms.CharField(label='email')
     password = forms.CharField(label='password',widget=forms.PasswordInput())
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 class SignUpForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
@@ -21,7 +23,9 @@ class SignUpForm(forms.ModelForm):
 
         fields = ['first_name', 'last_name','email', 'gender']
 
-
+    # dateOfBirth = forms.DateField(
+    #     label = 'Date Of Birth', 
+    #     widget = DateInput())
     new_password = forms.CharField(
         label='Password',
         widget=forms.PasswordInput(),
