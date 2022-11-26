@@ -203,7 +203,7 @@ class Lesson(models.Model):
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
 
-
+#Invoice refers to the invoices of the lessons student booked
 class Invoice(models.Model):
     reference_number = models.CharField(
         max_length=30,
@@ -223,17 +223,24 @@ class Invoice(models.Model):
         self.student_ID = student_ID
         self.fees_amount = fees_amount
 
-    def generate_new_invoice_reference_number():
+    def generate_new_invoice_reference_number(self, student_id, number_of_exist_invoice):   
         #this method will be use to generate new invoice reference number base on the student reference number
-        pass
+        if(number_of_exist_invoice < 10):
+            self.reference_number = student_id + '-' + '00' + number_of_exist_invoice # student 1 with 2 exist invoice get a new reference_number 1-003
+        elif(number_of_exist_invoice < 100):
+            self.reference_number = student_id + '-' + '0' + number_of_exist_invoice # student 1 with 10 exist invoice get a new reference_number 1-011
+        else:
+            self.reference_number = student_id + '-' + number_of_exist_invoice # student 1 with 788 exist invoice get a new reference_number 1-789
 
-    def calculate_fees_amount():
-        #this function calcualte the fees amount base on the lesson Student booked
-        pass
+    def calculate_fees_amount(self, number_of_30_mins, number_of_45_mins, number_of_1_hr):
+        #30 mins lesson cost 15, 45 mins lesson cost 18,  1 hr lesson cost 20, no matter the date and teacher
+        self.fees_amount += number_of_30_mins*15
+        self.fees_amount += number_of_45_mins*18
+        self.fees_amount += number_of_1_hr*20
 
-    def get_fees_amount():
+    def get_fees_amount(self):
         #return the total amount of fees
-        pass
+        return f'{self.fees_amount}'
 
     def add_lesson(self, lesson_price):
         pass
@@ -241,9 +248,5 @@ class Invoice(models.Model):
     def delete_lesson(self, lesson_name, lesson_price):
         pass
         
-
-    def calculate_fees(self):
-        pass
-
     def get_invoice(self):
-        return (self.reference_number, self.student_number, self.fees_amount)
+        return (self.reference_number, self.student_ID, self.fees_amount)
