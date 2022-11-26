@@ -81,7 +81,8 @@ class Command(BaseCommand):
         lesson_types = list(LessonType)
         Lesson_durations = list(LessonDuration)
         lesson_status = list(LessonStatus)
-        #increases chances to get booked lessons
+        # increases chances to get booked lessons
+        lesson_status.remove(LessonStatus.SAVED)
         lesson_status.append(LessonStatus.BOOKED)
         lesson_status.append(LessonStatus.BOOKED)
 
@@ -97,7 +98,7 @@ class Command(BaseCommand):
                     is_booked = lesson_status[random.randint(0,len(lesson_status)-1)],
                 )
 
-            #TO DO : add requests have been paid, some have been particially paid, a few have overpaid, and some are unpaid.
+            #TO DO : add paid, overpaid, and unpaid requests
 
         # Seed the admins
         for i in range(3):
