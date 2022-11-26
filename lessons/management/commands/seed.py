@@ -1,8 +1,11 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, UserRole, Gender
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
 import random
 import string
+import datetime
+from django.utils import timezone
+
 
 letters = string.ascii_lowercase
 
@@ -37,11 +40,11 @@ class Command(BaseCommand):
             gender ="PNOT",
         )
 
-        # Seed the remaining students,teachers,admins and directors into the database
-        for i in range(20):
+        # Seed the students
+        for i in range(99):
 
-            fname = self.faker.first_name()
-            lname = self.faker.last_name()
+            fname = self.faker.unique.first_name()
+            lname = self.faker.unique.last_name()
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
@@ -54,10 +57,12 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
+
+        # Seed the teachers
         for i in range(5):
 
-            fname = self.faker.first_name()
-            lname = self.faker.last_name()
+            fname = self.faker.unique.first_name()
+            lname = self.faker.unique.last_name()
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
@@ -71,9 +76,33 @@ class Command(BaseCommand):
             )
 
 
+        teachers = UserAccount.objects.filter(role=UserRole.TEACHER.value)
+        students = UserAccount.objects.filter(role=UserRole.STUDENT.value)
+        lesson_types = list(LessonType)
+        Lesson_durations = list(LessonDuration)
+        lesson_status = list(LessonStatus)
+        #increases chances to get booked lessons
+        lesson_status.append(LessonStatus.BOOKED)
+        lesson_status.append(LessonStatus.BOOKED)
+
+        for i in range(len(students)):
+            for _ in range(random.randint(0,6)):
+                self.lesson = Lesson.objects.create(
+                    type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+                    duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+                    lesson_date_time = self.faker.date_time_this_year(tzinfo = timezone.utc).replace(microsecond=0, second=0, minute=0),
+                    teacher_id = teachers[random.randint(0,len(teachers)-1)],
+                    student_id = students[i],
+                    request_date = datetime.date(2022, 10, 15),
+                    is_booked = lesson_status[random.randint(0,len(lesson_status)-1)],
+                )
+
+            #TO DO : add requests have been paid, some have been particially paid, a few have overpaid, and some are unpaid.
+
+        # Seed the admins
         for i in range(3):
-            fname = self.faker.first_name()
-            lname = self.faker.last_name()
+            fname = self.faker.unique.first_name()
+            lname = self.faker.unique.last_name()
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
@@ -86,9 +115,10 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
+        # Seed the director
         for i in range(1):
-            fname = self.faker.first_name()
-            lname = self.faker.last_name()
+            fname = self.faker.unique.first_name()
+            lname = self.faker.unique.last_name()
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
@@ -100,3 +130,5 @@ class Command(BaseCommand):
                 password=f'{random_password}',
                 gender = f'{genders[random.randint(0,2)]}',
             )
+
+        # CREATE LESSONS
