@@ -218,25 +218,25 @@ class Invoice(models.Model):
     fees_amount = models.IntegerField(
     )
 
-    def create_new_invoice(self, reference_number, student_ID, fees_amount): 
-        self.reference_number = reference_number
-        self.student_ID = student_ID
-        self.fees_amount = fees_amount
-
-    def generate_new_invoice_reference_number(self, student_id, number_of_exist_invoice):   
+    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
         #this method will be use to generate new invoice reference number base on the student reference number
         if(number_of_exist_invoice < 10):
-            self.reference_number = student_id + '-' + '00' + number_of_exist_invoice # student 1 with 2 exist invoice get a new reference_number 1-003
+            reference_number = student_id + '-' + '00' + str(number_of_exist_invoice+1) # student 1 with 2 exist invoice get a new reference_number 1-003
         elif(number_of_exist_invoice < 100):
-            self.reference_number = student_id + '-' + '0' + number_of_exist_invoice # student 1 with 10 exist invoice get a new reference_number 1-011
+            reference_number = student_id + '-' + '0' + str(number_of_exist_invoice+1) # student 1 with 10 exist invoice get a new reference_number 1-011
         else:
-            self.reference_number = student_id + '-' + number_of_exist_invoice # student 1 with 788 exist invoice get a new reference_number 1-789
+            reference_number = student_id + '-' + str(number_of_exist_invoice+1) # student 1 with 788 exist invoice get a new reference_number 1-789
 
-    def calculate_fees_amount(self, number_of_30_mins, number_of_45_mins, number_of_1_hr):
+        return f'{reference_number}'
+
+    def calculate_fees_amount(lessons_with_30_mins, lessons_with_45_mins, lessons_with_1_hr):
         #30 mins lesson cost 15, 45 mins lesson cost 18,  1 hr lesson cost 20, no matter the date and teacher
-        self.fees_amount += number_of_30_mins*15
-        self.fees_amount += number_of_45_mins*18
-        self.fees_amount += number_of_1_hr*20
+        fees_amount = 0
+        fees_amount += len(lessons_with_30_mins)*15
+        fees_amount += len(lessons_with_45_mins)*18
+        fees_amount += len(lessons_with_1_hr)*20
+
+        return f'{fees_amount}'
 
     def get_fees_amount(self):
         #return the total amount of fees
