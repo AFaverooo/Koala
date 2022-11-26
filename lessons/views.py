@@ -13,8 +13,13 @@ import datetime
 # Create your views here.
 
 def invoice(request):
-	b = Invoice.objects.filter(student_ID = '1')
-	return render(request, 'invoice.html', {'Invoice': b})
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            student = request.user
+            student_invoice = Invoice.objects.filter(student_ID = student.id) #this function filter out the invocie with the same student id as the current user
+            return render(request, 'invoice.html', {'Invoice': student_invoice})
+    else:
+        return redirect('log_in')
 
 def make_lesson_timetable_dictionary(student_user):
     booked_lessons = Lesson.objects.filter(is_booked = LessonStatus.BOOKED, student_id = student_user)

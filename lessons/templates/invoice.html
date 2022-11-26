@@ -1,3 +1,4 @@
+{% load static %}
 <html>
     <style>
         table, th, td {
@@ -8,10 +9,7 @@
     <title>This is invoice for student</title>
 </head>
     <body>
-        <h1>Invoice<h1>
-        <p>The place for invoice table<p>
-
-    {% for inv in Invoice %}
+        <h1>Invoices<h1>
     <table style="width:100%">
         <tr>
             <!-- table head of the invoice -->
@@ -19,13 +17,14 @@
             <th>Student ID</th>
             <th>Amount of fees</th>
         </tr>
+        {% for inv in Invoice %} <!-- this function reads all the invoices under the student and print them out in one single table -->
         <tr>
             <td>{{inv.reference_number}}</td>
             <td>{{inv.student_ID}}</td>
             <td>{{inv.fees_amount}}</td>
         </tr>
+        {% endfor %}
     </table>
-    {% endfor %}
         
 
     </body>
