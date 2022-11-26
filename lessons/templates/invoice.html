@@ -11,16 +11,17 @@
         <h1>Invoice<h1>
         <p>The place for invoice table<p>
 
+    {% for inv in Invoice %}
     <table style="width:100%">
         <tr>
             <th>Reference</th>
-            <th>Student Number</th>
+            <th>Student ID</th>
             <th>Amount of money</th>
         </tr>
         <tr>
-            <td>{{Invoice.reference_number}}</td>
-            <td>{{Invoice.student_number}}</td>
-            <td>{{Invoice.fees_amount}}</td>
+            <td>{{inv.reference_number}}</td>
+            <td>{{inv.student_ID}}</td>
+            <td>{{inv.fees_amount}}</td>
         </tr>
     </table>
         

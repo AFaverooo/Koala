@@ -210,21 +210,29 @@ class Invoice(models.Model):
         unique=True,
     )
 
-    student_number = models.CharField( 
+    # student number store the student
+    student_ID = models.CharField( 
         max_length = 30,
-        unique = True,
     )
 
     fees_amount = models.IntegerField(
     )
 
-    def create_new_invoice(self, reference_number, student_number, fees_amount): 
+    def create_new_invoice(self, reference_number, student_ID, fees_amount): 
         self.reference_number = reference_number
-        self.student_number = student_number
+        self.student_ID = student_ID
         self.fees_amount = fees_amount
 
     def generate_new_invoice_reference_number():
         #this method will be use to generate new invoice reference number base on the student reference number
+        pass
+
+    def calculate_fees_amount():
+        #this function calcualte the fees amount base on the lesson Student booked
+        pass
+
+    def get_fees_amount():
+        #return the total amount of fees
         pass
 
     def add_lesson(self, lesson_price):

@@ -13,7 +13,7 @@ import datetime
 # Create your views here.
 
 def invoice(request):
-	b = Invoice.objects.get(reference_number = '111-11')
+	b = Invoice.objects.get(student_ID = '1')
 	return render(request, 'invoice.html', {'Invoice': b})
 
 def make_lesson_timetable_dictionary(student_user):
