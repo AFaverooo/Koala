@@ -1,6 +1,6 @@
 """Configuration of the admin interface for MSMS"""
 from django.contrib import admin
-from .models import UserAccount,Lesson
+from .models import UserAccount,Lesson, Invoice
 # Register your models here.
 @admin.register(UserAccount)
 class UserAdmin(admin.ModelAdmin):
@@ -12,4 +12,9 @@ class UserAdmin(admin.ModelAdmin):
 class UserAdmin(admin.ModelAdmin):
     list_display = [
         'lesson_id', 'request_date' ,'type', 'duration' , 'lesson_date_time', 'teacher_id', 'student_id', 'is_booked'
+    ]
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ['reference_number','student_number','fees_amount'
     ]
