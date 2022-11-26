@@ -61,7 +61,7 @@ class LessonRequestViewTestCase(TestCase):
         self.saved_lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -73,7 +73,7 @@ class LessonRequestViewTestCase(TestCase):
         self.saved_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -83,7 +83,7 @@ class LessonRequestViewTestCase(TestCase):
         self.saved_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -94,7 +94,7 @@ class LessonRequestViewTestCase(TestCase):
         self.pending_lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2021, 11, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2021, 11, 20, 20, 8, 7,tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -104,7 +104,7 @@ class LessonRequestViewTestCase(TestCase):
         self.pending_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2021, 10, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2021, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -113,7 +113,7 @@ class LessonRequestViewTestCase(TestCase):
         self.pending_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2021, 9, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2021, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -193,7 +193,7 @@ class LessonRequestViewTestCase(TestCase):
 
     def test_unsuccesful_lesson_request_not_logged_in(self):
         before_count = Lesson.objects.count()
-        response = self.client.post(self.url, self.form_input, follow=True)
+        response = self.client.get(self.url, follow=True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
 
@@ -225,7 +225,6 @@ class LessonRequestViewTestCase(TestCase):
 
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count+1)
-        response_url = reverse('requests_page')
         #self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'requests_page.html')
 
@@ -240,11 +239,9 @@ class LessonRequestViewTestCase(TestCase):
 
         response = self.client.post(self.url, self.form_input, follow=True)
 
-
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count+1)
 
-        response_url = reverse('requests_page')
         self.assertTemplateUsed(response, 'requests_page.html')
 
         self.create_lesson_form_copy()
@@ -253,6 +250,46 @@ class LessonRequestViewTestCase(TestCase):
         after_copy_count = Lesson.objects.count()
         self.assertEqual(before_copy_count,after_copy_count)
         self.assertTemplateUsed(response, 'requests_page.html')
+
+    def test_save_lessons_url(self):
+        self.assertEqual(self.save_lessons_url,'/save_lessons/')
+
+    def test_save_lessons_not_logged_in(self):
+        before_count = Lesson.objects.count()
+        response = self.client.get(self.save_lessons_url, follow=True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+        response_url = reverse('log_in')
+        self.assertTemplateUsed(response, 'log_in.html')
+
+    def test_save_lessons_get(self):
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.save_lessons_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+        form = response.context['form']
+        self.assertEqual(len(response.context['lessons']),0)
+
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+
+    def test_save_lessons_get_with_lessons(self):
+        self.create_saved_lessons()
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.save_lessons_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+        form = response.context['form']
+
+        self.assertEqual(len(response.context['lessons']),3)
+
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+
+        self.delete_saved_lessons()
+
 
 
     def test_succesfull_save_lessons_post(self):
@@ -276,7 +313,4 @@ class LessonRequestViewTestCase(TestCase):
             self.assertEqual(lessons.is_booked, LessonStatus.PENDING)
             self.assertEqual(lessons.student_id, self.student)
 
-        response_url = reverse('student_feed')
-
-        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'student_feed.html')
+        self.assertTemplateUsed(response, 'requests_page.html')

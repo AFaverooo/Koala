@@ -8,7 +8,7 @@
 
 <p> <a href = '{% url 'requests_page' %}' class = "btn btn-lg btn-secondary"> Book lessons  </a></p>
 
-<h1>Booked Lessons</h1>
+
 <table>
   <tr>
     <th>Lesson</th>
@@ -16,7 +16,14 @@
     <th>Lesson Duration</th>
     <th>Teacher</th>
   </tr>
-
+  {% for key,value in booked_lessons.items %}
+    <tr>
+      <td>{{value|get_lesson}}</td>
+      <td>{{value|get_lesson_date}}</td>
+      <td>{{value|get_lesson_duration}}</td>
+      <td>{{value|get_teacher}}</td>
+    </tr>
+  {% endfor %}
 </table>
 
 <input type="submit" value="save lessons" class="btn btn-primary">

@@ -40,7 +40,7 @@ class LogInTestCase(TestCase):
         self.lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 15, 15, 00, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -50,7 +50,7 @@ class LogInTestCase(TestCase):
         self.lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 16, 00, 00, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 10, 20, 16, 00, 00, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -60,7 +60,7 @@ class LogInTestCase(TestCase):
         self.lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 00, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 00, tzinfo=timezone.utc),
             teacher_id = self.teacher2,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -70,7 +70,7 @@ class LogInTestCase(TestCase):
         self.lesson4 = Lesson.objects.create(
             type = LessonType.PRACTICE,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 12, 25, 9, 45, 00, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 12, 25, 9, 45, 00, tzinfo=timezone.utc),
             teacher_id = self.teacher2,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -96,7 +96,7 @@ class LogInTestCase(TestCase):
 
     def test_get_student_feed_in(self):
         self.client.login(email=self.student.email, password="Password123")
-        
+
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')

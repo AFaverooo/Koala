@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 class LessonStatus(models.TextChoices):
-    SAVED = 'SA', _('The lesson has not been saved')
+    SAVED = 'SA', _('The lesson has been saved')
     PENDING = 'PN', _('The lesson request is pending')
     BOOKED = 'BK', _('The lesson has been booked')
 #test fot lesson type

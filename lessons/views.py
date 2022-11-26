@@ -12,8 +12,27 @@ from django.utils import timezone
 import datetime
 # Create your views here.
 
+from django.template.defaulttags import register
+
+@register.filter
+def get_lesson_duration(dictionary):
+    return dictionary.get("Lesson Duration")
+
+@register.filter
+def get_lesson(dictionary):
+    return dictionary.get("Lesson")
+
+@register.filter
+def get_lesson_date(dictionary):
+    return dictionary.get("Lesson Date")
+
+@register.filter
+def get_teacher(dictionary):
+    return dictionary.get("Teacher")
+
 def make_lesson_timetable_dictionary(student_user):
     booked_lessons = Lesson.objects.filter(is_booked = LessonStatus.BOOKED, student_id = student_user)
+
     booked_lessons_dict = {}
 
     if len(booked_lessons) == 0:
@@ -90,9 +109,9 @@ def home(request):
 
 def student_feed(request):
     if request.user.is_authenticated:
-        #greeting_str = f'Welcome back {request.user} Below is your timetable for this term'
-        #booked_lessons = make_lesson_timetable_dictionary(request.user)
-        return render(request,'student_feed.html')#, {'booked_lessons':booked_lessons}) #, 'greeting':greeting_str})
+        greeting_str = f'Welcome back {request.user} Below is your timetable for this term'
+        booked_lessons = make_lesson_timetable_dictionary(request.user)
+        return render(request,'student_feed.html' ,{'booked_lessons':booked_lessons, 'greeting':greeting_str})
     else:
         return redirect('log_in')
 
@@ -177,9 +196,9 @@ def new_lesson(request):
                 type = request_form.cleaned_data.get('type')
                 teacher_id = request_form.cleaned_data.get('teachers')
 
-                if check_duplicate(timezone.now, lesson_date, current_student) is False:
+                try:#if check_duplicate(timezone.now, lesson_date, current_student) is False:
                     Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
-                else:
+                except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
                     #print('attempted to duplicate lesson')
@@ -201,13 +220,11 @@ def new_lesson(request):
         return redirect('log_in')
 
 
-
 def save_lessons(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            current_student = request.user
-
-            all_unsaved_lessons = Lesson.objects.filter(is_booked = LessonStatus.SAVED, student_id = current_student)
+    if request.user.is_authenticated:
+        current_student = request.user
+        if request.method == 'POST':
+            all_unsaved_lessons = get_saved_lessons(current_student)
 
             if len(all_unsaved_lessons) == 0:
                 messages.add_message(request,messages.ERROR,"Lessons should be requested before attempting to save")
@@ -219,13 +236,14 @@ def save_lessons(request):
                 eachLesson.is_booked = LessonStatus.PENDING
                 eachLesson.save()
 
-            #print('succesfully saved lessons')
-            return redirect('student_feed')
-
+            messages.add_message(request,messages.SUCCESS, "Lesson requests are now pending for validation by admin")
+            form = RequestForm()
+            return render(request,'requests_page.html', {'form': form})
         else:
-            #print('user should be logged in')
-            return redirect('log_in')
+            form = RequestForm()
+            return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
-        return requests_page(request)
+        #print('user should be logged in')
+        return redirect('log_in')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
