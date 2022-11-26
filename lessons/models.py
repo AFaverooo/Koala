@@ -202,3 +202,40 @@ class Lesson(models.Model):
 
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
+
+
+class Invoice(models.Model):
+    reference_number = models.CharField(
+        max_length=30,
+        unique=True,
+    )
+
+    student_number = models.CharField( 
+        max_length = 30,
+        unique = True,
+    )
+
+    fees_amount = models.IntegerField(
+    )
+
+    def create_new_invoice(self, reference_number, student_number, fees_amount): 
+        self.reference_number = reference_number
+        self.student_number = student_number
+        self.fees_amount = fees_amount
+
+    def generate_new_invoice_reference_number():
+        #this method will be use to generate new invoice reference number base on the student reference number
+        pass
+
+    def add_lesson(self, lesson_price):
+        pass
+
+    def delete_lesson(self, lesson_name, lesson_price):
+        pass
+        
+
+    def calculate_fees(self):
+        pass
+
+    def get_invoice(self):
+        return (self.reference_number, self.student_number, self.fees_amount)

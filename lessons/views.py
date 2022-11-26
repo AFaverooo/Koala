@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -11,6 +11,10 @@ from django.db import IntegrityError
 from django.utils import timezone
 import datetime
 # Create your views here.
+
+def invoice(request):
+	b = Invoice.objects.get(reference_number = '111-11')
+	return render(request, 'invoice.html', {'Invoice': b})
 
 def make_lesson_timetable_dictionary(student_user):
     booked_lessons = Lesson.objects.filter(is_booked = LessonStatus.BOOKED, student_id = student_user)
