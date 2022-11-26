@@ -220,12 +220,13 @@ class Invoice(models.Model):
 
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
         #this method will be use to generate new invoice reference number base on the student reference number
+        number_of_exist_invoice +=1
         if(number_of_exist_invoice < 10):
-            reference_number = student_id + '-' + '00' + str(number_of_exist_invoice+1) # student 1 with 2 exist invoice get a new reference_number 1-003
+            reference_number = student_id + '-' + '00' + str(number_of_exist_invoice) # student 1 with 2 exist invoice get a new reference_number 1-003
         elif(number_of_exist_invoice < 100):
-            reference_number = student_id + '-' + '0' + str(number_of_exist_invoice+1) # student 1 with 10 exist invoice get a new reference_number 1-011
+            reference_number = student_id + '-' + '0' + str(number_of_exist_invoice) # student 1 with 10 exist invoice get a new reference_number 1-011
         else:
-            reference_number = student_id + '-' + str(number_of_exist_invoice+1) # student 1 with 788 exist invoice get a new reference_number 1-789
+            reference_number = student_id + '-' + str(number_of_exist_invoice) # student 1 with 788 exist invoice get a new reference_number 1-789
 
         return f'{reference_number}'
 

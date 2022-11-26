@@ -116,8 +116,7 @@ class Command(BaseCommand):
             #this generate random number of pre exist invoices
             # for i in range(random.randint(1,5)):
             #     pre_fees = random.randint(12, 78)
-            #     pre_number_of_student_invoice = Invoice.objects.filter(student_ID = student_Id)
-            #     pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(pre_number_of_student_invoice))
+            #     pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, i)
             #     invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees)
 
             if(fees != 0):
