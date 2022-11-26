@@ -4,6 +4,7 @@ from lessons.models import UserAccount, Invoice
 
 class Command(BaseCommand):
     # Delete all users, except for email admin@example.org
+    # Delete all invoices that generate base on existing user and bookings
     def handle(self, *args, **options):
         users = UserAccount.objects.all()
         for i in range(len(users)):

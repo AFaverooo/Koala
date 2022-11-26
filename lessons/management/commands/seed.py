@@ -97,6 +97,8 @@ class Command(BaseCommand):
                     is_booked = lesson_status[random.randint(0,len(lesson_status)-1)],
                 )
 
+
+        # seed the invoices base on existing user and bookings
         for i in range(len(students)):   
             student_Id = students[i].id
             students_id_string = str(student_Id)
@@ -104,19 +106,22 @@ class Command(BaseCommand):
             lessons_with_30 = Lesson.objects.filter(student_id = students[i], is_booked = LessonStatus.BOOKED, duration = LessonDuration.THIRTY)
             lessons_with_45 = Lesson.objects.filter(student_id = students[i], is_booked = LessonStatus.BOOKED, duration = LessonDuration.FOURTY_FIVE)
             lessons_with_1_hr = Lesson.objects.filter(student_id = students[i], is_booked = LessonStatus.BOOKED, duration = LessonDuration.HOUR)
-            student_invoice_number = Invoice.objects.filter(student_ID = student_Id)
+            student_number_of_invoice = Invoice.objects.filter(student_ID = student_Id)
 
 
             fees = Invoice.calculate_fees_amount(lessons_with_30, lessons_with_45, lessons_with_1_hr)
-            reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_invoice_number))
+            fees = int(fees) # this change the fees type to int so the if loops below will work 
+            reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice))
+
+            #this generate random number of pre exist invoices
+            # for i in range(random.randint(1,5)):
+            #     pre_fees = random.randint(12, 78)
+            #     pre_number_of_student_invoice = Invoice.objects.filter(student_ID = student_Id)
+            #     pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(pre_number_of_student_invoice))
+            #     invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees)
 
             if(fees != 0):
-                self.invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees)
-            # self.invoice = Invoice.create_new_invoice(
-            #     reference_number = self.reference_number_temp,
-            #     student_ID = students_id_string,
-            #     fees_amount = self.fees,
-            # )
+                invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees)
 
             #TO DO : add paid, overpaid, and unpaid requests
 

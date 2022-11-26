@@ -242,11 +242,11 @@ class Invoice(models.Model):
         #return the total amount of fees
         return f'{self.fees_amount}'
 
-    def add_lesson(self, lesson_price):
-        pass
+    # def add_lesson(self, lesson_price):
+    #     pass
 
-    def delete_lesson(self, lesson_name, lesson_price):
-        pass
+    # def delete_lesson(self, lesson_name, lesson_price):
+    #     pass
         
     def get_invoice(self):
         return (self.reference_number, self.student_ID, self.fees_amount)
