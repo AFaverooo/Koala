@@ -14,9 +14,10 @@
     {% for inv in Invoice %}
     <table style="width:100%">
         <tr>
+            <!-- table head of the invoice -->
             <th>Reference</th>
             <th>Student ID</th>
-            <th>Amount of money</th>
+            <th>Amount of fees</th>
         </tr>
         <tr>
             <td>{{inv.reference_number}}</td>
@@ -24,6 +25,7 @@
             <td>{{inv.fees_amount}}</td>
         </tr>
     </table>
+    {% endfor %}
         
 
     </body>
