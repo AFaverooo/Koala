@@ -41,9 +41,7 @@ class LessonRequestViewTestCase(TestCase):
         self.form_input = {
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.THIRTY,
-            'lesson_date_time_0': datetime.date(2022, 4, 4),
-            'lesson_date_time_1': time(15, 15, 15),
-
+            'lesson_date_time' : datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
             'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
         }
 
@@ -51,9 +49,7 @@ class LessonRequestViewTestCase(TestCase):
         self.form_input_copy = {
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.THIRTY,
-            'lesson_date_time_0': datetime.date(2022, 4, 4),
-            'lesson_date_time_1': time(15, 15, 15),
-
+            'lesson_date_time' : datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
             'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
         }
 
