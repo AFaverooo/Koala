@@ -152,13 +152,6 @@ def get_fullfilled_lessons(student):
 def home(request):
     return render(request, 'home.html')
 
-# def log_in(request):
-#     form = LogInForm()
-#     return render(request, 'log_in.html', {'form': form})
-#
-def log_out(request):
-    logout(request)
-    return redirect('home')
 
 @login_required
 def student_feed(request):
@@ -189,9 +182,11 @@ def requests_page(request):
         #add message that the user should be logged in
         return redirect('log_in')
 
+@login_required
 def admin_feed(request):
     return render(request,'admin_feed.html')
 
+@login_required
 def director_feed(request):
     return render(request,'director_feed.html')
 
@@ -222,6 +217,10 @@ def log_in(request):
      next = request.GET.get('next') or ''
      return render(request,'log_in.html', {'form' : form, 'next' : next})
 
+
+def log_out(request):
+    logout(request)
+    return redirect('home')
 
 def sign_up(request):
     if request.method == 'POST':
