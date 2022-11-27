@@ -114,7 +114,24 @@ class InvoiceModelTestCase(TestCase):
     def test_fees_amount_must_only_contain_number(self):
         self.invoice.fees_amount = '45s'
         self._assert_invoice_is_invalid()
+
     
+    def test_invoice_status_cannot_be_blank(self):
+        self.invoice.invoice_status = ''
+        self._assert_invoice_is_invalid()
+
+    def test_invoice_status_value_can_only_be_one_of_the_choices_PAID(self):
+        self.invoice.invoice_status = 'UNPAID'
+        self._assert_invoice_is_valid()
+    
+    def test_invoice_status_value_can_only_be_one_of_the_choices_UNPAI(self):
+        self.invoice.invoice_status = 'UNPAID'
+        self._assert_invoice_is_valid()
+
+    def test_invoice_status_must_not_be_unique(self):
+        second_invoice = self._create_paid_invoice()
+        self.invoice.invoice_status = second_invoice.invoice_status
+        self._assert_invoice_is_valid()
 
 
 
