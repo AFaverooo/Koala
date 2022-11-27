@@ -152,7 +152,7 @@ class InvoiceModelTestCase(TestCase):
 
     
     def test_fees_amount_calculator_gives_correct_return(self):
-        temp_fees = Invoice.calculate_fees_amount(1,1,1)
+        temp_fees = Invoice.calculate_fees_amount('1','1','1') #in this case '1' use to modify objects with len(1)
         self.assertEqual(temp_fees, '53')
 
 

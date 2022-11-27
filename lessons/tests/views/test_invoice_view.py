@@ -1,7 +1,7 @@
 from django.test import TestCase
 from lessons.models import Invoice
 
-class invoiceTestCase(TestCase, Invoice): 
+class invoiceTestCase(TestCase): 
 
     def test_reference_must_not_be_blank(self):
         pass
