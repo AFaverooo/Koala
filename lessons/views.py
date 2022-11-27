@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -61,6 +61,15 @@ def make_unfulfilled_dictionary(student_user):
         request_count_id += 1
 
     return unfulfilled_lessons_dict
+    
+def invoice(request):
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            student = request.user
+            student_invoice = Invoice.objects.filter(student_ID = student.id) #this function filter out the invocie with the same student id as the current user
+            return render(request, 'invoice.html', {'Invoice': student_invoice})
+    else:
+        return redirect('log_in')
 
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
