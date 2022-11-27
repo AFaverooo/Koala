@@ -214,6 +214,10 @@ class Invoice(models.Model):
         max_length=30,
         unique=True,
         blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d*\d-\d\d\d\d*$', 
+            message='Reference number must all be number and consist of - in between followed by at least three numbers'
+        )]
     )
 
     # student number store the student
