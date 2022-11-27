@@ -213,21 +213,24 @@ class Invoice(models.Model):
     reference_number = models.CharField(
         max_length=30,
         unique=True,
+        blank=False,
     )
 
     # student number store the student
     student_ID = models.CharField( 
         max_length = 30,
+        blank=False,
     )
 
     fees_amount = models.IntegerField(
+        blank=False,
     )
 
     invoice_status = models.CharField(
         max_length=30,
         choices=InvoiceStatus.choices,
         default=InvoiceStatus.UNPAID,
-        blank = False
+        blank = False,
     )
 
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
