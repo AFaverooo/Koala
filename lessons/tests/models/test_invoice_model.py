@@ -133,5 +133,9 @@ class InvoiceModelTestCase(TestCase):
         self.invoice.invoice_status = second_invoice.invoice_status
         self._assert_invoice_is_valid()
 
+    def test_fees_amount_cannot_be_any_other_values_outside_choices(self):
+        self.invoice.invoice_status = '45s'
+        self._assert_invoice_is_invalid()
+
 
 
