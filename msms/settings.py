@@ -133,6 +133,6 @@ AUTH_USER_MODEL = 'lessons.UserAccount'
 LOGIN_URL = 'log_in'
 
 # URL where @login_prohibited redirects to
-REDIRECT_URL_WHEN_LOGGED_IN_STUDENT = "student_feed"
-REDIRECT_URL_WHEN_LOGGED_IN_ADMIN = "admin_feed"
-REDIRECT_URL_WHEN_LOGGED_IN_DIRECTOR = "director_feed"
+REDIRECT_URL_WHEN_LOGGED_IN_STUDENT = 'student_feed'
+REDIRECT_URL_WHEN_LOGGED_IN_ADMIN = 'admin_feed'
+REDIRECT_URL_WHEN_LOGGED_IN_DIRECTOR = 'director_feed'
