@@ -1,9 +1,6 @@
 from django.test import TestCase
 from lessons.models import Invoice
 
-b = Invoice(reference_number= '111-11', student_ID = '111', fees_amount=45)
-b.save()
-
 class invoiceTestCase(TestCase, Invoice): 
 
     def test_reference_must_not_be_blank(self):
