@@ -4,6 +4,8 @@ from .models import UserAccount, Gender, Lesson
 from  django.contrib.admin.widgets import AdminSplitDateTime
 from django.shortcuts import render
 from .models import UserAccount, Gender, Lesson, UserRole
+from django.forms import DateTimeInput
+import datetime
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 
 
@@ -70,9 +72,9 @@ class RequestForm(forms.ModelForm):
     class Meta:
         """Form options."""
         model = Lesson
-        fields = ['type','duration']
+        fields = ['type','duration','lesson_date_time']
         widgets = {
-            "lesson_date_time": DateTimePickerInput()}        
+            "lesson_date_time": DateTimePickerInput(),}        
     
         
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
