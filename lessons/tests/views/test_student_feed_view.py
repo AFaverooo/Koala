@@ -6,11 +6,14 @@ from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,Les
 from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
 import datetime
 from django.utils import timezone
+from lessons.models import UserAccount, Gender
+from lessons.tests.helpers import reverse_with_next
 
 class StudentFeedTestCase(TestCase):
     """Tests for the student feed."""
 
     def setUp(self):
+
         self.url = reverse('student_feed')
 
         self.teacher = UserAccount.objects.create_teacher(
@@ -171,3 +174,8 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(len(fullfilled_lessons),5)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
+
+    def test_get_student_feed_redirects_when_not_logged_in(self):
+        redirect_url = reverse_with_next('log_in', self.url)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)

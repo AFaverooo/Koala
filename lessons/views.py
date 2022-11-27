@@ -1,4 +1,4 @@
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
@@ -61,7 +61,7 @@ def make_unfulfilled_dictionary(student_user):
         request_count_id += 1
 
     return unfulfilled_lessons_dict
-    
+
 def invoice(request):
     if request.user.is_authenticated:
         if request.method == 'GET':
@@ -152,6 +152,15 @@ def get_fullfilled_lessons(student):
 def home(request):
     return render(request, 'home.html')
 
+# def log_in(request):
+#     form = LogInForm()
+#     return render(request, 'log_in.html', {'form': form})
+#
+def log_out(request):
+    logout(request)
+    return redirect('home')
+
+@login_required
 def student_feed(request):
     #print("redirected")
     if request.user.is_authenticated:
@@ -168,6 +177,7 @@ def student_feed(request):
     else:
         return redirect('log_in')
 
+@login_required
 def requests_page(request):
     if request.user.is_authenticated:
         if request.method == 'GET':
@@ -198,15 +208,19 @@ def log_in(request):
 
                  # redirects the user based on his role
                  if (user.role == UserRole.ADMIN.value):
+                     #redirect_url = request.POST.get('next') or 'admin_feed'
                      return redirect('admin_feed')
                  elif (user.role == UserRole.DIRECTOR.value):
-                     return redirect('director_feed')
+                     redirect_url = request.POST.get('next') or 'director_feed'
+                     return redirect(redirect_url)
                  else:
-                     return redirect('student_feed')
+                     redirect_url = request.POST.get('next') or 'student_feed'
+                     return redirect(redirect_url)
 
          messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
      form = LogInForm()
-     return render(request,'log_in.html', {'form' : form})
+     next = request.GET.get('next') or ''
+     return render(request,'log_in.html', {'form' : form, 'next' : next})
 
 
 def sign_up(request):
