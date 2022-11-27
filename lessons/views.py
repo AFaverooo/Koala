@@ -1,9 +1,9 @@
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -61,6 +61,15 @@ def make_unfulfilled_dictionary(student_user):
         request_count_id += 1
 
     return unfulfilled_lessons_dict
+
+def invoice(request):
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            student = request.user
+            student_invoice = Invoice.objects.filter(student_ID = student.id) #this function filter out the invocie with the same student id as the current user
+            return render(request, 'invoice.html', {'Invoice': student_invoice})
+    else:
+        return redirect('log_in')
 
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
@@ -143,6 +152,15 @@ def get_fullfilled_lessons(student):
 def home(request):
     return render(request, 'home.html')
 
+# def log_in(request):
+#     form = LogInForm()
+#     return render(request, 'log_in.html', {'form': form})
+#
+def log_out(request):
+    logout(request)
+    return redirect('home')
+
+@login_required
 def student_feed(request):
     #print("redirected")
     if request.user.is_authenticated:
@@ -159,6 +177,7 @@ def student_feed(request):
     else:
         return redirect('log_in')
 
+@login_required
 def requests_page(request):
     if request.user.is_authenticated:
         if request.method == 'GET':
@@ -189,15 +208,19 @@ def log_in(request):
 
                  # redirects the user based on his role
                  if (user.role == UserRole.ADMIN.value):
+                     #redirect_url = request.POST.get('next') or 'admin_feed'
                      return redirect('admin_feed')
                  elif (user.role == UserRole.DIRECTOR.value):
-                     return redirect('director_feed')
+                     redirect_url = request.POST.get('next') or 'director_feed'
+                     return redirect(redirect_url)
                  else:
-                     return redirect('student_feed')
+                     redirect_url = request.POST.get('next') or 'student_feed'
+                     return redirect(redirect_url)
 
          messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
      form = LogInForm()
-     return render(request,'log_in.html', {'form' : form})
+     next = request.GET.get('next') or ''
+     return render(request,'log_in.html', {'form' : form, 'next' : next})
 
 
 def sign_up(request):
@@ -224,7 +247,7 @@ def new_lesson(request):
                 print('already made a set of requests')
                 messages.add_message(request,messages.ERROR,"You have already made requests for this term, contact admin to add extra lessons")
                 form = RequestForm()
-                return redirect('requests_page.html')
+                return redirect('requests_page')
 
             #if current_student.role.is_student():
             request_form = RequestForm(request.POST)
