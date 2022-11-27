@@ -93,6 +93,27 @@ class InvoiceModelTestCase(TestCase):
         self.invoice.student_ID = '45s'
         self._assert_invoice_is_invalid()
 
+
+    def test_fees_amount_cannot_be_blank(self):
+        self.invoice.fees_amount = ''
+        self._assert_invoice_is_invalid()
+
+    def test_fees_amount_cannot_ber_larger_than_10000(self):
+        self.invoice.fees_amount = 10001
+        self._assert_invoice_is_invalid()
+
+    def test_fees_amount_cannot_ber_smaller_than_1(self):
+        self.invoice.fees_amount = -1
+        self._assert_invoice_is_invalid()
+
+    def test_fees_amount_must_not_be_unique(self):
+        second_invoice = self._create_paid_invoice()
+        self.invoice.fees_amount = second_invoice.fees_amount
+        self._assert_invoice_is_valid()
+
+    def test_fees_amount_must_only_contain_number(self):
+        self.invoice.fees_amount = '45s'
+        self._assert_invoice_is_invalid()
     
 
 

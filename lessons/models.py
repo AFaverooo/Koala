@@ -232,10 +232,10 @@ class Invoice(models.Model):
 
     fees_amount = models.IntegerField(
         blank=False,
-        validators=[RegexValidator(
-            regex = r'^\d+$', 
-            message='fees amount must all be number'
-        )]
+        validators=[
+            MaxValueValidator(10000),
+            MinValueValidator(1),
+        ]
     )
 
     invoice_status = models.CharField(
