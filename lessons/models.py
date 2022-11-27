@@ -213,21 +213,36 @@ class Invoice(models.Model):
     reference_number = models.CharField(
         max_length=30,
         unique=True,
+        blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d*\d-\d\d\d\d*$', 
+            message='Reference number must all be number and consist of - in between followed by at least three numbers'
+        )]
     )
 
     # student number store the student
     student_ID = models.CharField( 
         max_length = 30,
+        blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d+$', 
+            message='Student ID must all be number'
+        )]
     )
 
     fees_amount = models.IntegerField(
+        blank=False,
+        validators=[
+            MaxValueValidator(10000),
+            MinValueValidator(1),
+        ]
     )
 
     invoice_status = models.CharField(
         max_length=30,
         choices=InvoiceStatus.choices,
         default=InvoiceStatus.UNPAID,
-        blank = False
+        blank = False,
     )
 
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
