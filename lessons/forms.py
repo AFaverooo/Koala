@@ -24,7 +24,7 @@ class SignUpForm(forms.ModelForm):
         fields = ['first_name', 'last_name','email', 'gender']
 
     # dateOfBirth = forms.DateField(
-    #     label = 'Date Of Birth', 
+    #     label = 'Date Of Birth',
     #     widget = DateInput())
     new_password = forms.CharField(
         label='Password',
@@ -73,7 +73,7 @@ class RequestForm(forms.ModelForm):
         fields = ['type','duration']
 
 
-    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None)
+    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
 
 
     #This is the choice of teachers the student is able to pick out of

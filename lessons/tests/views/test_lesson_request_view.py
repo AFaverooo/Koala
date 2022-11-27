@@ -5,7 +5,7 @@ from lessons.forms import RequestForm
 from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus
 
 from lessons.forms import RequestForm
-from lessons.views import get_saved_lessons,get_pending_lessons
+from lessons.views import get_saved_lessons,get_unfulfilled_lessons
 
 from django.utils import timezone
 from datetime import time
@@ -61,11 +61,11 @@ class LessonRequestViewTestCase(TestCase):
         self.saved_lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.SAVED
+            lesson_status = LessonStatus.SAVED
         )
 
 
@@ -73,51 +73,51 @@ class LessonRequestViewTestCase(TestCase):
         self.saved_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.SAVED
+            lesson_status = LessonStatus.SAVED
         )
 
         self.saved_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.SAVED
+            lesson_status = LessonStatus.SAVED
         )
 
-    def create_pending_lessons(self):
-        self.pending_lesson = Lesson.objects.create(
+    def create_unfulfilled_lessons(self):
+        self.unfulfilled_lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2021, 11, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2021, 11, 20, 20, 8, 7,tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            lesson_status = LessonStatus.UNFULFILLED
         )
 
-        self.pending_lesson2 = Lesson.objects.create(
+        self.unfulfilled_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2021, 10, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2021, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            lesson_status = LessonStatus.UNFULFILLED
         )
-        self.pending_lesson3 = Lesson.objects.create(
+        self.unfulfilled_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2021, 9, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2021, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            lesson_status = LessonStatus.UNFULFILLED
         )
 
     def delete_saved_lessons(self):
@@ -125,10 +125,10 @@ class LessonRequestViewTestCase(TestCase):
         self.saved_lesson2.delete()
         self.saved_lesson3.delete()
 
-    def delete_pending_lessons(self):
-        self.pending_lesson.delete()
-        self.pending_lesson2.delete()
-        self.pending_lesson3.delete()
+    def delete_unfulfilled_lessons(self):
+        self.unfulfilled_lesson.delete()
+        self.unfulfilled_lesson2.delete()
+        self.unfulfilled_lesson3.delete()
 
     #FIRST TESTS COVER FUNCTIONALITY TO ADD A NEW LESSON IN SAVED STATE
 
@@ -148,12 +148,12 @@ class LessonRequestViewTestCase(TestCase):
 
         self.assertEqual(len(saved_lessons),3)
 
-    def test_get_pending_lessons(self):
-        self.create_pending_lessons()
+    def test_get_unfulfilled_lessons(self):
+        self.create_unfulfilled_lessons()
 
-        pending_lessons = get_pending_lessons(self.student)
+        unfulfilled_lessons = get_unfulfilled_lessons(self.student)
 
-        self.assertEqual(len(pending_lessons),3)
+        self.assertEqual(len(unfulfilled_lessons),3)
 
     def test_request_url(self):
         self.assertEqual(self.url,'/new_lesson/')
@@ -193,7 +193,7 @@ class LessonRequestViewTestCase(TestCase):
 
     def test_unsuccesful_lesson_request_not_logged_in(self):
         before_count = Lesson.objects.count()
-        response = self.client.post(self.url, self.form_input, follow=True)
+        response = self.client.get(self.url, follow=True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
 
@@ -225,7 +225,6 @@ class LessonRequestViewTestCase(TestCase):
 
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count+1)
-        response_url = reverse('requests_page')
         #self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'requests_page.html')
 
@@ -240,11 +239,9 @@ class LessonRequestViewTestCase(TestCase):
 
         response = self.client.post(self.url, self.form_input, follow=True)
 
-
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count+1)
 
-        response_url = reverse('requests_page')
         self.assertTemplateUsed(response, 'requests_page.html')
 
         self.create_lesson_form_copy()
@@ -253,6 +250,46 @@ class LessonRequestViewTestCase(TestCase):
         after_copy_count = Lesson.objects.count()
         self.assertEqual(before_copy_count,after_copy_count)
         self.assertTemplateUsed(response, 'requests_page.html')
+
+    def test_save_lessons_url(self):
+        self.assertEqual(self.save_lessons_url,'/save_lessons/')
+
+    def test_save_lessons_not_logged_in(self):
+        before_count = Lesson.objects.count()
+        response = self.client.get(self.save_lessons_url, follow=True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+        response_url = reverse('log_in')
+        self.assertTemplateUsed(response, 'log_in.html')
+
+    def test_save_lessons_get(self):
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.save_lessons_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+        form = response.context['form']
+        self.assertEqual(len(response.context['lessons']),0)
+
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+
+    def test_save_lessons_get_with_lessons(self):
+        self.create_saved_lessons()
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.save_lessons_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+        form = response.context['form']
+
+        self.assertEqual(len(response.context['lessons']),3)
+
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+
+        self.delete_saved_lessons()
+
 
 
     def test_succesfull_save_lessons_post(self):
@@ -268,15 +305,12 @@ class LessonRequestViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         all_student_lessons = Lesson.objects.filter(student_id = self.student)
-        all_student_pending_lessons = Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = self.student)
+        all_student_unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = self.student)
 
-        self.assertEqual(len(all_student_lessons),len(all_student_pending_lessons))
+        self.assertEqual(len(all_student_lessons),len(all_student_unfulfilled_lessons))
 
         for lessons in all_student_lessons:
-            self.assertEqual(lessons.is_booked, LessonStatus.PENDING)
+            self.assertEqual(lessons.lesson_status, LessonStatus.UNFULFILLED)
             self.assertEqual(lessons.student_id, self.student)
 
-        response_url = reverse('student_feed')
-
-        self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'student_feed.html')
+        self.assertTemplateUsed(response, 'requests_page.html')
