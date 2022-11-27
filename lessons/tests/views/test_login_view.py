@@ -1,7 +1,7 @@
 
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
-from lessons.tests.helpers import LogInTester
+from lessons.tests.helpers import LogInTester, reverse_with_next
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
@@ -47,8 +47,23 @@ class LogInTestCase(TestCase,LogInTester):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'log_in.html')
         form = response.context['form']
+        next = response.context['next']
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
+        self.assertFalse(next)
+
+    def test_get_log_in_with_redirect(self):
+        destination_url = reverse('student_feed')
+        self.url = reverse_with_next('log_in', destination_url)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'log_in.html')
+        form = response.context['form']
+        next = response.context['next']
+        self.assertTrue(isinstance(form, LogInForm))
+        self.assertFalse(form.is_bound)
+        self.assertTrue(next)
+        self.assertEqual(next, destination_url)
 
     def test_unsucessful_student_log_in(self):
         self.student_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
@@ -70,6 +85,23 @@ class LogInTestCase(TestCase,LogInTester):
         self.assertTrue(self._is_logged_in())
         response_url = reverse('student_feed')
         self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
+
+    def test_successful_student_login_with_redirect(self):
+        self.student = UserAccount.objects.create_student(
+            first_name='John',
+            last_name='Do',
+            email='johndo@example.org',
+            password='Password123',
+            gender = 'M',
+        )
+        redirect_url = reverse('student_feed')
+        form_input = { 'email' : 'johndo@example.org', 'password': 'Password123', 'next' : redirect_url}
+        response = self.client.post(self.url, form_input,follow=True)
+        self.assertTrue(self._is_logged_in())
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student_feed.html')
         messages_list = list(response.context['messages'])
         self.assertEqual(len(messages_list),0)
