@@ -11,6 +11,11 @@ from django.utils.translation import gettext_lazy as _
 #imports for Request
 from django.conf import settings
 
+#Shows the status of the invoices
+class InvoiceStatus(models.TextChoices):
+    PAID = 'PAID', _('This invoices has been paid')
+    UNPAID = 'UNPAID', _('This invoice has not been paid')
+
 class LessonStatus(models.TextChoices):
     SAVED = 'SA', _('The lesson has not been saved')
     PENDING = 'PN', _('The lesson request is pending')
@@ -218,6 +223,13 @@ class Invoice(models.Model):
     fees_amount = models.IntegerField(
     )
 
+    invoice_status = models.CharField(
+        max_length=30,
+        choices=InvoiceStatus.choices,
+        default=InvoiceStatus.UNPAID,
+        blank = False
+    )
+
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
         #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
@@ -242,6 +254,14 @@ class Invoice(models.Model):
     def get_fees_amount(self):
         #return the total amount of fees
         return f'{self.fees_amount}'
+
+    def change_invoice_status_to_paid(self):
+        #this function change the invoice status from unpaid to paid
+        self.invoice_status = InvoiceStatus.PAID
+
+    def change_invoice_status_to_unpaid(self):
+        #this function change the invoice status from paid to unpaid
+        self.invoice_status = InvoiceStatus.PAID
 
     # def add_lesson(self, lesson_price):
     #     pass

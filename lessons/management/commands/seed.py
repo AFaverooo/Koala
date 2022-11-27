@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus
 import random
 import string
 import datetime
@@ -111,16 +111,17 @@ class Command(BaseCommand):
 
             fees = Invoice.calculate_fees_amount(lessons_with_30, lessons_with_45, lessons_with_1_hr)
             fees = int(fees) # this change the fees type to int so the if loops below will work 
+
+            #this generate random number of pre-exist invoices
+            for i in range(random.randint(1,5)):
+                pre_fees = random.randint(12, 78)
+                pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, i)
+                invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID)
+
             reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice))
 
-            #this generate random number of pre exist invoices
-            # for i in range(random.randint(1,5)):
-            #     pre_fees = random.randint(12, 78)
-            #     pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, i)
-            #     invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees)
-
             if(fees != 0):
-                invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees)
+                invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID)
 
             #TO DO : add paid, overpaid, and unpaid requests
 
