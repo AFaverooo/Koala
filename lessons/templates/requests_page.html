@@ -1,52 +1,60 @@
 {% load static %}
+{{ form.media }}
 <html>
   <head>
 
     <script src = "{% url 'js-catalog' %}"></script>
     <script src="{% static '/admin/js/core.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}"> -->
 
+
+
+
+
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
   <head>
 
 
-  <h1> Request a lesson</h1>
-  <p> Form will be here </p>
 
-  <body>
-      <form action="{% url 'new_lesson' %}" method="post">
-        {% csrf_token %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.level_tag }}" role="alert">
-          {{ message }}
-        </div>
-        {% endfor %}
-           {{ form.media }}
-           {{ form.as_p }}
-       <input type="submit" value="request lesson" class="btn btn-primary">
-  </form>
-
-  <form action = "{% url 'save_lessons' %}" method="post">
-    {% csrf_token %}
-  <h1>Saved Lessons</h1>
-  <table>
-    <tr>
-      <th>Lesson Date</th>
-      <th>Lesson</th>
-      <th>Lesson Duration</th>
-      <th>Teacher</th>
-    </tr>
-    {% for lesson in lessons %}
+    <h1> Request a lesson</h1>
+    <p> Form will be here </p>
+  
+    <body>
+        <form action="{% url 'new_lesson' %}" method="post">
+          {% csrf_token %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.level_tag }}" role="alert">
+            {{ message }}
+          </div>
+          {% endfor %}
+             {{ form.as_p }}
+         <input type="submit" value="request lesson" class="btn btn-primary">
+    </form>
+  
+    <form action = "{% url 'save_lessons' %}" method="post">
+      {% csrf_token %}
+    <h1>Saved Lessons</h1>
+    <table>
       <tr>
-        <td>{{lesson.lesson_date_time}}</td>
-        <td>{{lesson.type}}</td>
-        <td>{{lesson.duration}}</td>
-        <td>{{lesson.teacher_id}}</td>
+        <th>Lesson Date</th>
+        <th>Lesson</th>
+        <th>Lesson Duration</th>
+        <th>Teacher</th>
       </tr>
-    {% endfor %}
-  </table>
-
-<input type="submit" value="save lessons" class="btn btn-primary">
-</form>
-</body>
-</html>
+      {% for lesson in lessons %}
+        <tr>
+          
+          <td>{{lesson.type}}</td>
+          <td>{{lesson.duration}}</td>
+          <td>{{lesson.teacher_id}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  
+  <input type="submit" value="save lessons" class="btn btn-primary">
+  </form>
+  </body>
+  </html>
