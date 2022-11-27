@@ -224,7 +224,7 @@ def new_lesson(request):
                 print('already made a set of requests')
                 messages.add_message(request,messages.ERROR,"You have already made requests for this term, contact admin to add extra lessons")
                 form = RequestForm()
-                return redirect('requests_page.html')
+                return redirect('requests_page')
 
             #if current_student.role.is_student():
             request_form = RequestForm(request.POST)
