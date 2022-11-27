@@ -1,9 +1,5 @@
-<html>
-<head>
-  <title> Log in </title>
-</head>
 
-
+<h1> Log In </h1>
 {% for message in messages %}
 <div class="alert alert-{{ message.level_tag }}" role="alert">
   {{ message }}
@@ -13,8 +9,8 @@
   <body>
       <form action="{% url 'log_in' %}" method="post">
            {% csrf_token %}
+           <input type="hidden" name="next" value="{{ next }}">
            {{form.as_p}}
        <input type="submit" value="log in" class="btn btn-primary">
   </form>
 </body>
-</html>

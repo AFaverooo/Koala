@@ -1,14 +1,33 @@
-<html>
+
+
 <h1> THIS IS THE STUDENT FEED PAGE</h1>
-<p>This page is under construction</p>
-
-<p>Table goes here</p>
-
-<p>Book for remainder of the term</p>
 
 <p> <a href = '{% url 'requests_page' %}' class = "btn btn-lg btn-secondary"> Book lessons  </a></p>
 
-<h1>Booked Lessons</h1>
+<p> <a href = '{% url 'invoice' %}' class = "btn btn-lg btn-secondary"> Check invoice  </a></p>
+
+<h2>{{greeting}}</h2>
+
+{%  if unfulfilled_requests|length > 0 %}
+<table>
+  <tr>
+    <th>Request Number</th>
+    <th>Lesson Type</th>
+    <th>Lesson Date</th>
+    <th>Lesson Duration</th>
+    <th>Teacher</th>
+  </tr>
+  {% for key,value in unfulfilled_requests.items %}
+    <tr>
+      <td>{{value|get_lesson_request}}</td>
+      <td>{{value|get_lesson}}</td>
+      <td>{{value|get_lesson_date}}</td>
+      <td>{{value|get_lesson_duration}}</td>
+      <td>{{value|get_teacher}}</td>
+    </tr>
+  {% endfor %}
+</table>
+{%  else %}
 <table>
   <tr>
     <th>Lesson</th>
@@ -16,8 +35,13 @@
     <th>Lesson Duration</th>
     <th>Teacher</th>
   </tr>
-
+  {% for key,value in fullfilled_lessons.items %}
+    <tr>
+      <td>{{value|get_lesson}}</td>
+      <td>{{value|get_lesson_date}}</td>
+      <td>{{value|get_lesson_duration}}</td>
+      <td>{{value|get_teacher}}</td>
+    </tr>
+  {% endfor %}
 </table>
-
-<input type="submit" value="save lessons" class="btn btn-primary">
-</form>
+{%  endif %}

@@ -44,7 +44,7 @@ class LessonModelTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.PENDING
+            lesson_status = LessonStatus.UNFULFILLED
         )
 
         self.lesson3 = Lesson.objects.create(
@@ -54,7 +54,7 @@ class LessonModelTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            is_booked = LessonStatus.BOOKED
+            lesson_status = LessonStatus.FULLFILLED
         )
 
     def _assert_lesson_is_valid(self,lesson):

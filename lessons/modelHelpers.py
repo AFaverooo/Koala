@@ -17,10 +17,10 @@ def is_valid_role(UserAccount):
         }
 
 def is_valid_lessonStatus(Lesson):
-    return Lesson.is_booked in {
+    return Lesson.lesson_status in {
         LessonStatus.SAVED,
-        LessonStatus.PENDING,
-        LessonStatus.BOOKED,
+        LessonStatus.UNFULFILLED,
+        LessonStatus.FULLFILLED,
         }
 
 def is_valid_lessonDuration(Lesson):
