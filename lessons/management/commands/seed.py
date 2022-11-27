@@ -103,9 +103,9 @@ class Command(BaseCommand):
             student_Id = students[i].id
             students_id_string = str(student_Id)
             
-            lessons_with_30 = Lesson.objects.filter(student_id = students[i], is_booked = LessonStatus.BOOKED, duration = LessonDuration.THIRTY)
-            lessons_with_45 = Lesson.objects.filter(student_id = students[i], is_booked = LessonStatus.BOOKED, duration = LessonDuration.FOURTY_FIVE)
-            lessons_with_1_hr = Lesson.objects.filter(student_id = students[i], is_booked = LessonStatus.BOOKED, duration = LessonDuration.HOUR)
+            lessons_with_30 = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED, duration = LessonDuration.THIRTY)
+            lessons_with_45 = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED, duration = LessonDuration.FOURTY_FIVE)
+            lessons_with_1_hr = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED, duration = LessonDuration.HOUR)
             student_number_of_invoice = Invoice.objects.filter(student_ID = student_Id)
 
 
