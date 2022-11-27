@@ -4,7 +4,7 @@
 
 <html>
   <head>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <script src = "{% url 'js-catalog' %}"></script>
     <script src="{% static '/admin/js/core.js' %}"></script> -->
     <!-- <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
@@ -41,10 +41,10 @@
   <form action = "{% url 'save_lessons' %}" method="post">
     {% csrf_token %}
   <h1>Saved Lessons</h1>
-  <table>
+  <table class="table table-striped table-dark" >
     <tr>
-      <th>Lesson Date</th>
-      <th>Lesson</th>
+      <th>Lesson Date and Time</th>
+      <th>Lesson Type</th>
       <th>Lesson Duration</th>
       <th>Teacher</th>
     </tr>
