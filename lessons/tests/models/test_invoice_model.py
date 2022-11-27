@@ -138,4 +138,22 @@ class InvoiceModelTestCase(TestCase):
         self._assert_invoice_is_invalid()
 
 
+    def test_generate_reference_number_function_gives_correct_return_1(self):
+        temp_refer = Invoice.generate_new_invoice_reference_number('111', 0)
+        self.assertEqual(temp_refer, '111-001')
+
+    def test_generate_reference_number_function_gives_correct_return_2(self):
+        temp_refer = Invoice.generate_new_invoice_reference_number('111', 10)
+        self.assertEqual(temp_refer, '111-011')
+
+    def test_generate_reference_number_function_gives_correct_return_3(self):
+        temp_refer = Invoice.generate_new_invoice_reference_number('111', 99)
+        self.assertEqual(temp_refer, '111-100')
+
+    
+    def test_fees_amount_calculator_gives_correct_return(self):
+        temp_fees = Invoice.calculate_fees_amount(1,1,1)
+        self.assertEqual(temp_fees, '53')
+
+
 
