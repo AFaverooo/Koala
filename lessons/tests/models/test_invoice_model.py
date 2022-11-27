@@ -38,7 +38,6 @@ class InvoiceModelTestCase(TestCase):
         self._assert_invoice_is_valid()
 
 
-
     def test_reference_number_cannot_be_blank(self):
         self.invoice.reference_number = ''
         self._assert_invoice_is_invalid()
@@ -70,6 +69,28 @@ class InvoiceModelTestCase(TestCase):
 
     def test_reference_number_must_contain_only_number_and_hyphen(self):
         self.invoice.reference_number = '33a-444'
+        self._assert_invoice_is_invalid()
+
+
+    def test_student_id_cannot_be_blank(self):
+        self.invoice.student_ID = ''
+        self._assert_invoice_is_invalid()
+
+    def test_student_id_can_be_30_characters_long(self):
+        self.invoice.student_ID = '4' * 30 
+        self._assert_invoice_is_valid()
+
+    def test_student_id_cannot_be_over_30_characters_long(self):
+        self.invoice.student_ID = '4' * 31
+        self._assert_invoice_is_invalid()
+
+    def test_student_id_must_not_be_unique(self):
+        second_invoice = self._create_paid_invoice()
+        self.invoice.student_ID = second_invoice.student_ID
+        self._assert_invoice_is_valid()
+
+    def test_student_id_must_only_contain_number(self):
+        self.invoice.student_ID = '45s'
         self._assert_invoice_is_invalid()
 
     

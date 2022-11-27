@@ -224,10 +224,18 @@ class Invoice(models.Model):
     student_ID = models.CharField( 
         max_length = 30,
         blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d+$', 
+            message='Student ID must all be number'
+        )]
     )
 
     fees_amount = models.IntegerField(
         blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d+$', 
+            message='fees amount must all be number'
+        )]
     )
 
     invoice_status = models.CharField(
