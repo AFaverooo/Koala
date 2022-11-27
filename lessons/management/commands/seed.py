@@ -83,8 +83,8 @@ class Command(BaseCommand):
         lesson_status = list(LessonStatus)
         # increases chances to get booked lessons
         lesson_status.remove(LessonStatus.SAVED)
-        lesson_status.append(LessonStatus.BOOKED)
-        lesson_status.append(LessonStatus.BOOKED)
+        lesson_status.append(LessonStatus.FULLFILLED)
+        lesson_status.append(LessonStatus.FULLFILLED)
 
         for i in range(len(students)):
             for _ in range(random.randint(0,6)):
@@ -95,7 +95,7 @@ class Command(BaseCommand):
                     teacher_id = teachers[random.randint(0,len(teachers)-1)],
                     student_id = students[i],
                     request_date = datetime.date(2022, 10, 15),
-                    is_booked = lesson_status[random.randint(0,len(lesson_status)-1)],
+                    lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
                 )
 
             #TO DO : add paid, overpaid, and unpaid requests

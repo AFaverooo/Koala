@@ -13,8 +13,8 @@ from django.conf import settings
 
 class LessonStatus(models.TextChoices):
     SAVED = 'SA', _('The lesson has been saved')
-    PENDING = 'PN', _('The lesson request is pending')
-    BOOKED = 'BK', _('The lesson has been booked')
+    UNFULFILLED = 'PN', _('The lesson request is pending')
+    FULLFILLED = 'BK', _('The lesson has been booked')
 #test fot lesson type
 class LessonType(models.TextChoices):
     INSTRUMENT = 'INSTR', _('Learn To Play An Instrument'),
@@ -198,7 +198,7 @@ class Lesson(models.Model):
 
     student_id = models.ForeignKey(UserAccount, on_delete = models.CASCADE, related_name = 'student')
 
-    is_booked = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.SAVED, blank = False)
+    lesson_status = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.SAVED, blank = False)
 
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)

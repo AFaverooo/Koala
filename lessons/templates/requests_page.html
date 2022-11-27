@@ -15,14 +15,12 @@
 
   <body>
       <form action="{% url 'new_lesson' %}" method="post">
-        
+        {% csrf_token %}
         {% for message in messages %}
         <div class="alert alert-{{ message.level_tag }}" role="alert">
           {{ message }}
         </div>
         {% endfor %}
-
-           {% csrf_token %}
            {{ form.media }}
            {{ form.as_p }}
        <input type="submit" value="request lesson" class="btn btn-primary">
