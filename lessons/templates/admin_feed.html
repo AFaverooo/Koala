@@ -1,3 +1,54 @@
 <html>
-<h1> THIS IS THE ADMIN FEED PAGE</h1>
+  <h1> THIS IS THE ADMIN FEED PAGE</h1>
 </html>
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h1>Users</h1>
+
+      <style>
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+
+        th, td {
+          padding: 8px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
+        tr:hover {background-color: gray;}
+      </style>
+
+        <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Firstname</th>
+            <th scope="col">Lastname</th>
+            <th scope="col">Email</th>
+            <th scope="col">is_staff</th>
+            <th scope="col">is_active</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in student %}
+            <tr>
+              <th scope="row">{{user.id}}</th>
+              <td>{{ user.first_name }}</td>
+              <td>{{ user.last_name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.is_staff }}</td>
+              <td>{{ user.is_active }}</td>
+              <td>
+                <a href = '{% url 'student_requests' user.id %}' class = "btn btn-lg btn-secondary">Select User</a>
+              </td>
+            </tr>
+            {# <h2>user :{{user}}</h2> #}
+          {% endfor %}
+        </tbody>
+        </table>
+    </div>
+  </div>
+</div>

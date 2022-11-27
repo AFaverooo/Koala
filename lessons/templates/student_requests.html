@@ -1,0 +1,60 @@
+<html>
+  <h1>Selected Student's request</h1>
+</html>
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h1>Requests</h1>
+
+      <style>
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+
+        th, td {
+          padding: 8px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
+        tr:hover {background-color: gray;}
+      </style>
+
+        <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">lesson_id</th>
+            <th scope="col">request_date</th>
+            <th scope="col">type</th>
+            <th scope="col">duration</th>
+            <th scope="col">lesson_date_time</th>
+            <th scope="col">teacher</th>
+            <th scope="col">student (useless column atm)</th>
+            <th scope="col">is_booked</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for request in saved_lessons %}
+            <tr>
+              <th scope="row">{{ request.lesson_id }}</th>
+              <td>{{ request.request_date }}</td>
+              <td>{{ request.type }}</td>
+              <td>{{ request.duration }}</td>
+              <td>{{ request.lesson_date_time }}</td>
+              <td>{{ request.teacher_id }}</td>
+              <td>{{ request.student_id }}</td>
+              <td>{{ request.is_booked }}</td>
+              <td>
+                <a href = '' class = "btn btn-lg btn-secondary">Edit</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        </table>
+        {% if not saved_lessons %}
+          <h2>There are currently no items here</h2>
+        {% endif %}
+    </div>
+  </div>
+</div>

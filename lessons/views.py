@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.utils import timezone
 import datetime
+
+
 # Create your views here.
 
 def make_lesson_timetable_dictionary(student_user):
@@ -85,6 +87,12 @@ def get_saved_lessons(student):
 def get_pending_lessons(student):
      return Lesson.objects.filter(is_booked = LessonStatus.PENDING, student_id = student)
 
+def get_student_lessons(request,student):
+    saved_lessons = Lesson.objects.filter(student_id = student)
+    return render(request,'student_requests.html',{'saved_lessons':saved_lessons, 'student': student})
+
+
+
 def home(request):
     return render(request, 'home.html')
 
@@ -108,7 +116,11 @@ def requests_page(request):
         return redirect('log_in')
 
 def admin_feed(request):
-    return render(request,'admin_feed.html')
+    #student = request.user
+
+    student = UserAccount.objects.values()
+
+    return render(request,'admin_feed.html',{'student':student})
 
 def director_feed(request):
     return render(request,'director_feed.html')
