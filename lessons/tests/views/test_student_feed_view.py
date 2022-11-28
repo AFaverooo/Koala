@@ -6,7 +6,7 @@ from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,Les
 from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
 import datetime
 from django.utils import timezone
-from lessons.models import UserAccount, Gender
+# from lessons.models import UserAccount, Gender
 from lessons.tests.helpers import reverse_with_next
 
 class StudentFeedTestCase(TestCase):
