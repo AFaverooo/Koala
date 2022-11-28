@@ -38,8 +38,10 @@
       <td>{{value|get_lesson_duration}}</td>
       <td>{{value|get_teacher}}</td>
       <td>
-      <input type="button" class="btn btn-success"><i class="fas fa-edit">Edit</i></button>
-      <input type="button" class="btn btn-danger"><i class="far fa-trash-alt">Delete</i></button>
+      <form method = "post" action="{% url 'delete_pending' %}">
+          {% csrf_token %}
+        <button type="submit" value = {{key.lesson_id}} name = "delete_id">Delete</button>
+      </form>
     </td>
 
     </tr>

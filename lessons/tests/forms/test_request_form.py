@@ -26,7 +26,7 @@ class RequestFormTestCase(TestCase):
             'teachers': self.teacher
         }
 
-    
+
     def test_valid_request_form(self):
         form = RequestForm(data = self.form_input)
         self.assertTrue(form.is_valid())
@@ -43,18 +43,18 @@ class RequestFormTestCase(TestCase):
 
     ##form.save() causes an error
 
-    # def test_form_must_save_correctly(self):
-    #     form = RequestForm(data=self.form_input)
-    #     before_count = Lesson.objects.count()
-    #     ##This causes an error
-    #     form.save()
-    #     after_count = Lesson.objects.count()
-    #     self.assertEqual(after_count, before_count+1)
-    #     lesson = Lesson.objects.get(lesson_date_time =datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc))
-    #     self.assertEqual(lesson.type, LessonType.INSTRUMENT)
-    #     self.assertEqual(lesson.duration, LessonDuration.THIRTY)
-    #     self.assertEqual(lesson.teachers.email, 'barbdutch@example.org')
-    #     self.assertEqual(lesson.teachers.first_name, 'Barbare')
-    #     self.assertEqual(lesson.teachers.last_name, 'Dutch')
-    #     self.assertEqual(lesson.teachers.gender, Gender.FEMALE)
-      
+    #def test_form_must_save_correctly(self):
+
+    #    form = RequestForm(data=self.form_input)
+    #    before_count = Lesson.objects.count()
+        ##This causes an error
+    #    form.save()
+    #    after_count = Lesson.objects.count()
+    #    self.assertEqual(after_count, before_count+1)
+    #    lesson = Lesson.objects.get(lesson_date_time =datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc))
+    #    self.assertEqual(lesson.type, LessonType.INSTRUMENT)
+    #    self.assertEqual(lesson.duration, LessonDuration.THIRTY)
+    #    self.assertEqual(lesson.teachers.email, 'barbdutch@example.org')
+    #    self.assertEqual(lesson.teachers.first_name, 'Barbare')
+    #    self.assertEqual(lesson.teachers.last_name, 'Dutch')
+    #    self.assertEqual(lesson.teachers.gender, Gender.FEMALE)

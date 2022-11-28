@@ -311,6 +311,25 @@ def save_lessons(request):
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 
-def delete_request(request):
-    if request.user.is_authenticated:
+def delete_pending(request):
+    #print('delete')
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
+        if request.method == 'POST':
+            if(request.POST.get('delete_id')):
+                try:
+                    #print(int(request.POST.get['delete_id']))
+                    Lesson.objects.get(lesson_id = request.POST.get('delete_id')).delete()
+                except ObjectDoesNotExist:
+                    messages.add_message(request,messages.ERROR, "Lesson requests could not be deleted")
+
+                return redirect('student_feed')
+
+            else:
+                print('no delete id')
+        else:
+            #print('not post')
+            return redirect('student_feed')
+    else:
+        #print('cannot be accessed')
+        return redirect('log_in')

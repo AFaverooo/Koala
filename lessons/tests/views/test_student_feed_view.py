@@ -16,6 +16,16 @@ class StudentFeedTestCase(TestCase):
 
         self.url = reverse('student_feed')
 
+        self.delete_url = reverse('delete_pending')
+
+        self.admin = UserAccount.objects.create_admin(
+            first_name='Bob',
+            last_name='Jacobs',
+            email='bobby@example.org',
+            password='Password123',
+            gender = Gender.MALE,
+        )
+
         self.teacher = UserAccount.objects.create_teacher(
             first_name='Barbare',
             last_name='Dutch',
@@ -179,3 +189,38 @@ class StudentFeedTestCase(TestCase):
         redirect_url = reverse_with_next('log_in', self.url)
         response = self.client.get(self.url)
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+    #def test_not_student_accessing_student_feed(self):
+    #    self.client.login(email=self.admin.email, password="Password123")
+    #    redirect_url = reverse_with_next('log_in', self.url)
+    #    response = self.client.get(self.url)
+    #    self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+    def test_student_not_logged_in_deleting_lessons(self):
+        response = self.client.get(self.delete_url)
+        redirect_url = reverse('log_in')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+    def test_not_student_accessing_deleting_pending_lessons(self):
+        self.client.login(email=self.admin.email, password="Password123")
+        response = self.client.get(self.delete_url)
+        redirect_url = reverse('log_in')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+    def test_succesful_deletion_of_lesson(self):
+        self.change_lessons_status_to_unfulfilled()
+        
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.delete_url, {'delete_id': self.lesson.lesson_id})
+
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        #self.assertTemplateUsed(response, 'student_feed.html')
+
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-1, after_count)
+        self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),4)
+
+
+        #test more after to make sure
