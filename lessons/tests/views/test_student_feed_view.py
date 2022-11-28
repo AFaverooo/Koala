@@ -209,18 +209,61 @@ class StudentFeedTestCase(TestCase):
 
     def test_succesful_deletion_of_lesson(self):
         self.change_lessons_status_to_unfulfilled()
-        
+
         self.client.login(email=self.student.email, password="Password123")
         before_count = Lesson.objects.count()
-        response = self.client.post(self.delete_url, {'delete_id': self.lesson.lesson_id})
+        response = self.client.post(self.delete_url, {'delete_id': self.lesson.lesson_id}, follow = True)
 
         redirect_url = reverse('student_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        #self.assertTemplateUsed(response, 'student_feed.html')
+        self.assertTemplateUsed(response, 'student_feed.html')
 
         after_count = Lesson.objects.count()
         self.assertEqual(before_count-1, after_count)
         self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),4)
 
+    def test_succesful_multiple_deletion_of_lesson(self):
+        self.change_lessons_status_to_unfulfilled()
+        before_count = Lesson.objects.count()
 
+        self.client.login(email=self.student.email, password="Password123")
+
+        response = self.client.post(self.delete_url, {'delete_id': self.lesson.lesson_id}, follow = True)
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+        response_second = self.client.post(self.delete_url, {'delete_id': self.lesson2.lesson_id}, follow = True)
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response_second, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response_second, 'student_feed.html')
+
+        response_third = self.client.post(self.delete_url, {'delete_id': self.lesson3.lesson_id}, follow = True)
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response_third, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response_third, 'student_feed.html')
+
+        #self.assertTemplateUsed(response, 'student_feed.html')
+
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-3, after_count)
+        self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),2)
+
+    def test_incorrect_deletion_of_lesson(self):
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.delete_url, {'delete_id': 60}, follow = True)
+
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+        messages = list(response.context['messages'])
+        self.assertEqual(str(messages[0]), 'Incorrect lesson ID passed')
+
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count, after_count)
+
+        self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),5)
         #test more after to make sure

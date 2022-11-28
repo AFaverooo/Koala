@@ -42,6 +42,10 @@
           {% csrf_token %}
         <button type="submit" value = {{key.lesson_id}} name = "delete_id">Delete</button>
       </form>
+
+      <form method = "get" action="{% url 'edit_pending'%}">
+        <button type="submit" value = {{key.lesson_id}} name = "edit_id">Edit</button>
+      </form>
     </td>
 
     </tr>

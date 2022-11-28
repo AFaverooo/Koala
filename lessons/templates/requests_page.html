@@ -20,12 +20,6 @@
   <h1> Request a lesson</h1>
   <p> Form will be here </p>
 
-  {% for message in messages %}
-  <div class="alert alert-{{ message.level_tag }}" role="alert">
-    {{ message }}
-  </div>
-  {% endfor %}
-
   <body>
       <form action="{% url 'new_lesson' %}" method="post">
         {% csrf_token %}
