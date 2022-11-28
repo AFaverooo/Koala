@@ -240,12 +240,13 @@ def new_lesson(request):
         if request.method == 'POST':
             #test case, already unfulfilled lessons upon request
             previously_requested_lessons = get_unfulfilled_lessons(current_student)
+            previously_booked_lessons = get_fullfilled_lessons(current_student)
 
             #import widget tweaks
             #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            if previously_requested_lessons:
+            if previously_requested_lessons or previously_booked_lessons:
                 print('already made a set of requests')
-                messages.add_message(request,messages.ERROR,"You have already made requests for this term, contact admin to add extra lessons")
+                messages.add_message(request,messages.ERROR,"You have already made requests for this term or have booked lessons, contact admin to add extra lessons")
                 form = RequestForm()
                 return redirect('requests_page')
 
@@ -309,3 +310,7 @@ def save_lessons(request):
         return redirect('log_in')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
+
+def delete_request(request):
+    if request.user.is_authenticated:
+        current_student = request.user
