@@ -380,12 +380,12 @@ def edit_pending(request):
             if(request.GET.get('edit_id')):
                 return render_edit_request(request,request.GET.get('edit_id'))
             else:
-                print('no delete id')
+                print('not GET method used')
         else:
-            print('not get')
+            messages.add_message(request, messages.WARNING, "Attempted POST request to edit lessons")
             return redirect('student_feed')
     else:
-        #print('cannot be accessed')
+        print('cannot be accessed')
         return redirect('log_in')
 
 
@@ -406,6 +406,7 @@ def delete_pending(request):
 
             else:
                 print('no delete id')
+                #test this again to be sure
         else:
             #print('not post')
             return redirect('student_feed')
