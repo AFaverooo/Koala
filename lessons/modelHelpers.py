@@ -1,4 +1,4 @@
-from lessons.models import Lesson,UserAccount,UserRole, Gender,LessonStatus,LessonType,LessonDuration
+from lessons.models import Lesson,UserAccount,UserRole, Gender,LessonStatus,LessonType,LessonDuration, InvoiceStatus
 
 """helpers to test validity of TextChoices for various models"""
 def is_valid_gender(UserAccount):
@@ -37,3 +37,9 @@ def is_valid_lessonType(Lesson):
         LessonType.PRACTICE,
         LessonType.PERFORMANCE,
         }
+
+def is_valid_Invoice_status(Invoice):
+    return Invoice.invoice_status in {
+        InvoiceStatus.PAID,
+        InvoiceStatus.UNPAID,
+    }

@@ -30,6 +30,10 @@ urlpatterns = [
 
     path('new_lesson/', views.new_lesson, name = 'new_lesson'), #adds the single lesson to the database
     path('save_lessons/', views.save_lessons, name = 'save_lessons'),
+    path('delete_pending/', views.delete_pending, name = 'delete_pending'), #delete single pending lesson
+
+    path('edit_pending/', views.edit_pending, name = 'edit_pending'),
+    path('edit_lesson/<int:lesson_id>/', views.edit_lesson, name = 'edit_lesson'),
 
     path('admin_feed', views.admin_feed, name = 'admin_feed'),
     path('director_feed', views.director_feed, name = 'director_feed'),

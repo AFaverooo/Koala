@@ -159,16 +159,22 @@ def student_feed(request):
 
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         unfulfilled_lessons = get_unfulfilled_lessons(request.user)
+        fullfilled_lessons = get_fullfilled_lessons(request.user)
 
-        if len(unfulfilled_lessons) == 0:
+        if len(fullfilled_lessons) > 0:
             greeting_str = f'Welcome back {request.user} Below is your timetable for this term'
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
             return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
-        else:
+        elif len(unfulfilled_lessons) > 0:
             unfulfilled_requests = make_unfulfilled_dictionary(request.user)
             greeting_str = f'Welcome back {request.user} Below are your lesson requests'
             return render(request,'student_feed.html', {'unfulfilled_requests':unfulfilled_requests, 'greeting':greeting_str})
+        else:
+            greeting_str = f'Welcome back {request.user}'
+            return render(request,'student_feed.html', {'greeting':greeting_str})
+
     else:
+        print('not authorised')
         return redirect('log_in')
 
 @login_required
@@ -250,12 +256,13 @@ def new_lesson(request):
         if request.method == 'POST':
             #test case, already unfulfilled lessons upon request
             previously_requested_lessons = get_unfulfilled_lessons(current_student)
+            previously_booked_lessons = get_fullfilled_lessons(current_student)
 
             #import widget tweaks
             #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            if previously_requested_lessons:
+            if previously_requested_lessons or previously_booked_lessons:
                 print('already made a set of requests')
-                messages.add_message(request,messages.ERROR,"You have already made requests for this term, contact admin to add extra lessons")
+                messages.add_message(request,messages.ERROR,"You have already made requests for this term or have booked lessons, contact admin to add extra lessons")
                 form = RequestForm()
                 return redirect('requests_page')
 
@@ -279,7 +286,7 @@ def new_lesson(request):
 
                 #savedLessons = Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = current_student)
                 #return render(request,'requests_page.html', {'form': form, 'lessons' : savedLessons})
-                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
+                #return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
                 savedLessons = get_saved_lessons(current_student)
@@ -309,8 +316,7 @@ def save_lessons(request):
                 eachLesson.save()
 
             messages.add_message(request,messages.SUCCESS, "Lesson requests are now unfulfilled for validation by admin")
-            form = RequestForm()
-            return render(request,'requests_page.html', {'form': form})
+            return redirect('student_feed')
         else:
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
@@ -319,3 +325,101 @@ def save_lessons(request):
         return redirect('log_in')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
+
+def edit_lesson(request,lesson_id):
+    #print(lesson_id)
+    try:
+        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+        return redirect('student_feed')
+
+
+    if request.user.is_authenticated:
+        current_student = request.user
+        if request.method == 'POST':
+
+            request_form = RequestForm(request.POST)
+
+            if request_form.is_valid():
+                duration = request_form.cleaned_data.get('duration')
+                lesson_date = request_form.cleaned_data.get('lesson_date_time')
+                type = request_form.cleaned_data.get('type')
+                teacher_id = request_form.cleaned_data.get('teachers')
+
+                try:
+                    to_edit_lesson.duration = duration
+                    to_edit_lesson.lesson_date_time = lesson_date
+                    to_edit_lesson.type = type
+                    to_edit_lesson.teacher_id = teacher_id
+                    to_edit_lesson.save()
+
+                except IntegrityError:
+                    messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
+                    return render(request,'edit_request.html', {'form' : request_form, 'lesson_id':lesson_id})
+                    #print('attempted to duplicate lesson')
+
+                messages.add_message(request,messages.SUCCESS,"Succesfully edited lesson")
+                return redirect('student_feed')
+            else:
+                messages.add_message(request,messages.ERROR,"Form is not valid")
+        else:
+            return render(request,'edit_request.html', {'form' : request_form, 'lesson_id':lesson_id})
+    else:
+        redirect('log_in')
+
+def render_edit_request(request,lesson_id):
+    try:
+        to_edit_lesson = Lesson.objects.get(lesson_id = request.GET.get('edit_id'))
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+        return redirect('student_feed')
+
+    data = {'type': to_edit_lesson.type,
+            'duration': to_edit_lesson.duration,
+            'lesson_date_time': to_edit_lesson.lesson_date_time,
+            'teachers': to_edit_lesson.teacher_id}
+
+    form = RequestForm(data)
+    return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
+
+def edit_pending(request):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        current_student = request.user
+        if request.method == 'GET':
+            if(request.GET.get('edit_id')):
+                return render_edit_request(request,request.GET.get('edit_id'))
+            else:
+                print('no delete id')
+        else:
+            print('not get')
+            return redirect('student_feed')
+    else:
+        #print('cannot be accessed')
+        return redirect('log_in')
+
+
+def delete_pending(request):
+    #print('delete')
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        current_student = request.user
+        if request.method == 'POST':
+            if(request.POST.get('delete_id')):
+                try:
+                    #print(int(request.POST.get['delete_id']))
+                    Lesson.objects.get(lesson_id = request.POST.get('delete_id')).delete()
+                    #print('delete' + request.POST.get('delete_id'))
+                except ObjectDoesNotExist:
+                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+
+                return redirect('student_feed')
+
+            else:
+                print('no delete id')
+        else:
+            #print('not post')
+            return redirect('student_feed')
+    else:
+        #print(request.user.role)
+        #print('cannot be accessed')
+        return redirect('log_in')

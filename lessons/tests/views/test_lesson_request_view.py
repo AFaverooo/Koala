@@ -302,7 +302,8 @@ class LessonRequestViewTestCase(TestCase):
 
         self.assertEqual(before_count,after_count)
 
-        self.assertEqual(response.status_code, 200)
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
 
         all_student_lessons = Lesson.objects.filter(student_id = self.student)
         all_student_unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = self.student)
@@ -313,4 +314,7 @@ class LessonRequestViewTestCase(TestCase):
             self.assertEqual(lessons.lesson_status, LessonStatus.UNFULFILLED)
             self.assertEqual(lessons.student_id, self.student)
 
-        self.assertTemplateUsed(response, 'requests_page.html')
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+        messages = list(response.context['messages'])
+        self.assertEqual(str(messages[0]), 'Lesson requests are now unfulfilled for validation by admin')
