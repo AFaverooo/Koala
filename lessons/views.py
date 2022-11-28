@@ -4,7 +4,7 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
-
+from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.db import IntegrityError
@@ -152,18 +152,12 @@ def get_fullfilled_lessons(student):
 def home(request):
     return render(request, 'home.html')
 
-# def log_in(request):
-#     form = LogInForm()
-#     return render(request, 'log_in.html', {'form': form})
-#
-def log_out(request):
-    logout(request)
-    return redirect('home')
 
 @login_required
 def student_feed(request):
     #print("redirected")
-    if request.user.is_authenticated:
+
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         unfulfilled_lessons = get_unfulfilled_lessons(request.user)
         fullfilled_lessons = get_fullfilled_lessons(request.user)
 
@@ -185,7 +179,7 @@ def student_feed(request):
 
 @login_required
 def requests_page(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
             student = request.user
             savedLessons = get_saved_lessons(student)
@@ -195,12 +189,23 @@ def requests_page(request):
         #add message that the user should be logged in
         return redirect('log_in')
 
+@login_required
 def admin_feed(request):
-    return render(request,'admin_feed.html')
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
+        return render(request,'admin_feed.html')
+    else:
+        return redirect('log_in')
 
+@login_required
 def director_feed(request):
-    return render(request,'director_feed.html')
+    if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
+        return render(request,'director_feed.html')
+    else:
+        return redirect('log_in')
 
+
+
+@login_prohibited
 def log_in(request):
      if request.method == 'POST':
          form = LogInForm(request.POST)
@@ -229,6 +234,11 @@ def log_in(request):
      return render(request,'log_in.html', {'form' : form, 'next' : next})
 
 
+def log_out(request):
+    logout(request)
+    return redirect('home')
+
+@login_prohibited
 def sign_up(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -241,7 +251,7 @@ def sign_up(request):
     return render(request, 'sign_up.html', {'form': form})
 
 def new_lesson(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
         if request.method == 'POST':
             #test case, already unfulfilled lessons upon request

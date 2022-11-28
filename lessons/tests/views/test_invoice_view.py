@@ -1,3 +1,4 @@
+
 from django.test import TestCase
 from lessons.models import Invoice, InvoiceStatus, UserAccount, Gender
 from django.urls import reverse
@@ -32,6 +33,7 @@ class InvoiceTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice.html')
+
 
 
 
