@@ -316,8 +316,15 @@ def save_lessons(request):
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 
-def edit_lesson(request):
-    lesson = Lesson.objects.get()
+def edit_lesson(request,lesson_id):
+    #print(lesson_id)
+    try:
+        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+        return redirect('student_feed')
+
+
     if request.user.is_authenticated:
         current_student = request.user
         if request.method == 'POST':
@@ -330,11 +337,16 @@ def edit_lesson(request):
                 type = request_form.cleaned_data.get('type')
                 teacher_id = request_form.cleaned_data.get('teachers')
 
-                try:#if check_duplicate(timezone.now, lesson_date, current_student) is False:
-                    Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
+                try:
+                    to_edit_lesson.duration = duration
+                    to_edit_lesson.lesson_date_time = lesson_date
+                    to_edit_lesson.type = type
+                    to_edit_lesson.teacher_id = teacher_id
+                    to_edit_lesson.save()
+
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
-                    return render(request,'edit_request.html', {'form' : request_form})
+                    return render(request,'edit_request.html', {'form' : request_form, 'lesson_id':lesson_id})
                     #print('attempted to duplicate lesson')
 
                 messages.add_message(request,messages.SUCCESS,"Succesfully edited lesson")
@@ -342,7 +354,7 @@ def edit_lesson(request):
             else:
                 messages.add_message(request,messages.ERROR,"Form is not valid")
         else:
-            return render(request,'edit_request.html', {'form' : request_form})
+            return render(request,'edit_request.html', {'form' : request_form, 'lesson_id':lesson_id})
     else:
         redirect('log_in')
 
@@ -359,7 +371,7 @@ def render_edit_request(request,lesson_id):
             'teachers': to_edit_lesson.teacher_id}
 
     form = RequestForm(data)
-    return render(request,'edit_request.html', {'form' : form})
+    return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
 
 def edit_pending(request):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:

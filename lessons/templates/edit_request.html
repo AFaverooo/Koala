@@ -21,7 +21,7 @@
   <p> Form will be here </p>
 
 <body>
-  <form action="{% url 'edit_lesson' %}" method="post">
+  <form action='{% url 'edit_lesson' lesson_id %}' method="post">
     {% csrf_token %}
 
     {{ form.media }}
