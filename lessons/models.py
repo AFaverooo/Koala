@@ -11,10 +11,15 @@ from django.utils.translation import gettext_lazy as _
 #imports for Request
 from django.conf import settings
 
+class TransactionTypes(models.TextChoices):
+    IN = 'IN', _('Student transfer money from out into their balance')
+    OUT = 'OUT', _('Student transfer money from balance into school account')
+
 #Shows the status of the invoices
 class InvoiceStatus(models.TextChoices):
     PAID = 'PAID', _('This invoices has been paid')
     UNPAID = 'UNPAID', _('This invoice has not been paid')
+    PARTIALLY_PAID = 'PARTIALLY_PAID', _('This invoice has been partially paid')
 
 class LessonStatus(models.TextChoices):
     SAVED = 'SA', _('The lesson has been saved')
@@ -172,6 +177,16 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
     )
 
+    balance = models.IntegerField(
+        default=0,
+        blank = True,
+        editable=False,
+        validators=[
+            MaxValueValidator(10000),
+            MinValueValidator(0),
+        ]
+    )
+
     def get_student_id(self):
         return f'{self.id}'
 
@@ -286,3 +301,39 @@ class Invoice(models.Model):
         
     def get_invoice(self):
         return (self.reference_number, self.student_ID, self.fees_amount)
+
+class Transaction(models.Model):
+    Student_ID_transaction = models.CharField( 
+        max_length = 30,
+        blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d+$', 
+            message='Student ID must all be number'
+        )]
+    )
+
+    transaction_type = models.CharField(
+        max_length=30,
+        choices=TransactionTypes.choices,
+        default=TransactionTypes.OUT,
+        blank = False,
+    )
+
+    invoice_reference_transaction = models.CharField(
+        max_length=30,
+        unique=False,
+        blank=False,
+        validators=[RegexValidator(
+            regex = r'^\d*\d-\d\d\d\d*$', 
+            message='Reference number must all be number and consist of - in between followed by at least three numbers'
+        )]
+    )
+
+    transaction_amount = models.IntegerField(
+        blank=False,
+        default= 1,
+        validators=[
+            MaxValueValidator(10000),
+            MinValueValidator(1),
+        ]
+    )
