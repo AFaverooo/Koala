@@ -1,7 +1,13 @@
 #home-background{
-    background: url('images/homeMusicNotesWallpaper.jpg') no-repeat center center fixed;
+    background: url('images/homeMusicPiano.jpg') no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size:cover;
     background-size: cover;
     -o-background-size:cover;
+}
+
+#homecard{
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
