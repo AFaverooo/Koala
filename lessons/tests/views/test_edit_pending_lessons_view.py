@@ -211,10 +211,10 @@ class StudentFeedEditLessonTestCase(TestCase):
 
         self.assertTrue(response_form.is_valid())
 
-        self.assertEqual(response_form.cleaned_data.get("type"), LessonType.INSTRUMENT)
-        self.assertEqual(response_form.cleaned_data.get("duration"), LessonDuration.THIRTY)
+        self.assertEqual(response_form.cleaned_data.get("type"), self.lesson.type)
+        self.assertEqual(response_form.cleaned_data.get("duration"), self.lesson.duration)
         self.assertEqual(response_form.cleaned_data.get("teachers"),self.teacher)
-        self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc))
+        self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),self.lesson.lesson_date_time)
 
     def test_get_edit_pending_lesson_with_correct_lesson_third(self):
         before_count = Lesson.objects.count()
@@ -246,10 +246,10 @@ class StudentFeedEditLessonTestCase(TestCase):
 
         self.assertTrue(response_form.is_valid())
 
-        self.assertEqual(response_form.cleaned_data.get("type"), LessonType.PERFORMANCE)
-        self.assertEqual(response_form.cleaned_data.get("duration"), LessonDuration.HOUR)
+        self.assertEqual(response_form.cleaned_data.get("type"),self.lesson3.type)
+        self.assertEqual(response_form.cleaned_data.get("duration"),self.lesson3.duration)
         self.assertEqual(response_form.cleaned_data.get("teachers"),self.teacher2)
-        self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),datetime.datetime(2022, 9, 20, 9, 45, 00, tzinfo=timezone.utc))
+        self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),self.lesson3.lesson_date_time)
 
     def test_edit_lesson_without_form(self):
         before_count = Lesson.objects.count()
@@ -272,6 +272,22 @@ class StudentFeedEditLessonTestCase(TestCase):
         messages_list = list(response.context['messages'])
         self.assertEqual(str(messages_list[0]), 'Form is not valid')
         self.assertEqual(messages_list[0].level, messages.ERROR)
+
+        date_time_widget = response_form.fields['lesson_date_time'].widget
+        self.assertTrue(isinstance(date_time_widget, DateTimePickerInput))
+
+        self.assertTrue(response_form.is_valid())
+
+        self.assertTrue(isinstance(response_form.fields['type'], forms.TypedChoiceField))
+        self.assertTrue(isinstance(response_form.fields['duration'], forms.TypedChoiceField))
+        self.assertTrue(isinstance(response_form.fields['teachers'], forms.ModelChoiceField))
+
+        self.assertEqual(response_form.cleaned_data.get("type"), self.lesson.type)
+        self.assertEqual(response_form.cleaned_data.get("duration"), self.lesson.duration)
+        self.assertEqual(response_form.cleaned_data.get("teachers"),self.teacher)
+        self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),self.lesson.lesson_date_time)
+
+
 
 
     def test_edit_lesson_without_valid_form_type_data(self):
@@ -299,13 +315,19 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(str(messages_list[0]), 'Form is not valid')
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
-        before_count = Lesson.objects.count()
-        self.client.login(email=self.student.email, password="Password123")
-        self.change_lessons_status_to_unfulfilled()
+        date_time_widget = response_form.fields['lesson_date_time'].widget
+        self.assertTrue(isinstance(date_time_widget, DateTimePickerInput))
 
-        response = self.client.post(self.edit_url,self.form_input, follow = True)
-        after_count = Lesson.objects.count()
+        self.assertTrue(response_form.is_valid())
 
+        self.assertTrue(isinstance(response_form.fields['type'], forms.TypedChoiceField))
+        self.assertTrue(isinstance(response_form.fields['duration'], forms.TypedChoiceField))
+        self.assertTrue(isinstance(response_form.fields['teachers'], forms.ModelChoiceField))
+
+        self.assertEqual(response_form.cleaned_data.get("type"), self.lesson.type)
+        self.assertEqual(response_form.cleaned_data.get("duration"), self.lesson.duration)
+        self.assertEqual(response_form.cleaned_data.get("teachers"),self.teacher)
+        self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),self.lesson.lesson_date_time)
 
     def test_apply_edit_to_lesson_succesfully(self):
         self.create_forms()

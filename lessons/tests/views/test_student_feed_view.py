@@ -15,9 +15,6 @@ class StudentFeedTestCase(TestCase):
     def setUp(self):
 
         self.url = reverse('student_feed')
-
-        self.delete_url = reverse('delete_pending')
-
         self.admin = UserAccount.objects.create_admin(
             first_name='Bob',
             last_name='Jacobs',

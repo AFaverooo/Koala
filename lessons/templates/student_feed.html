@@ -39,9 +39,9 @@
       <td>{{value|get_lesson_duration}}</td>
       <td>{{value|get_teacher}}</td>
       <td>
-      <form method = "post" action='{% url 'delete_pending' %}'>
+      <form method = "post" action='{% url 'delete_pending' key.lesson_id %}'>
           {% csrf_token %}
-        <button type="submit" value = {{key.lesson_id}} name = "lesson_delete_id">Delete</button>
+        <button type="submit">Delete</button>
       </form>
 
       <form method = "get" action='{% url 'edit_lesson' key.lesson_id %}'>

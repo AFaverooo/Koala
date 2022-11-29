@@ -318,7 +318,7 @@ def save_lessons(request):
 
 def render_edit_request(request,lesson_id):
     try:
-        to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id)) #used to be lesson_lesson_edit_id from get method
+        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id) #used to be lesson_lesson_edit_id from get method
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
         return redirect('student_feed')
@@ -334,12 +334,11 @@ def render_edit_request(request,lesson_id):
 
 
 def edit_lesson(request,lesson_id):
-
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
 
         try:
-            to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id))
+            to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
         except ObjectDoesNotExist:
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
             return redirect('student_feed')
@@ -360,7 +359,7 @@ def edit_lesson(request,lesson_id):
                     to_edit_lesson.type = type
                     to_edit_lesson.teacher_id = teacher_id
                     to_edit_lesson.save()
-                    
+
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
                     return render_edit_request(request,lesson_id)
@@ -376,47 +375,35 @@ def edit_lesson(request,lesson_id):
     else:
         return redirect('log_in')
 
+def check_correct_student_lesson_deletion(student_id, lesson_id):
+    all_student_lessons = Lesson.objects.filter(student_id = student_id)
+    for lesson in all_student_lessons:
+        if lesson.lesson_id == lesson_id:
+            return True
 
+    return False
 
-#def edit_pending(request):
-#    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
-#        current_student = request.user
-#        if request.method == 'GET':
-#            if(request.GET.get('lesson_edit_id')):
-#                return render_edit_request(request,request.GET.get('lesson_edit_id'))
-#            else:
-#                messages.add_message(request, messages.ERROR, "Lesson ID to edit lesson was not provided")
-#                return redirect('student_feed')
-#        else:
-#            messages.add_message(request, messages.WARNING, "Attempted POST request to edit lessons")
-#            return redirect('student_feed')
-#    else:
-        #print('cannot be accessed')
-#        return redirect('log_in')
-
-
-def delete_pending(request):
-    #print('delete')
+def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
-        if request.method == 'POST':
-            if(request.POST.get('lesson_delete_id')):
-                try:
-                    #print(int(request.POST.get['lesson_delete_id']))
-                    Lesson.objects.get(lesson_id = request.POST.get('lesson_delete_id')).delete()
-                    #print('delete' + request.POST.get('lesson_delete_id'))
-                except ObjectDoesNotExist:
-                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
 
-                return redirect('student_feed')
+        if check_correct_student_lesson_deletion(current_student,lesson_id):
+            if request.method == 'POST':
+                    try:
+                        #print(int(request.POST.get['lesson_delete_id']))
+                        Lesson.objects.get(lesson_id = lesson_id).delete()
+                        #print('delete' + request.POST.get('lesson_delete_id'))
+                    except ObjectDoesNotExist:
+                        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                        return redirect('student_feed')
+
+                    messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
+                    return redirect('student_feed')
 
             else:
-                print('no delete id')
-                #test this again to be sure
+                return redirect('student_feed')
         else:
-            #print('not post')
+            messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
             return redirect('student_feed')
     else:
-        #print(request.user.role)
-        #print('cannot be accessed')
         return redirect('log_in')
