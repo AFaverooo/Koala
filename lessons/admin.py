@@ -16,7 +16,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['reference_number','student_ID','fees_amount', 'invoice_status'
+    list_display = ['reference_number','student_ID','fees_amount', 'invoice_status', 'amounts_need_to_pay'
     ]
 
 @admin.register(Transaction)

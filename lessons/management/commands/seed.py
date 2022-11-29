@@ -116,12 +116,12 @@ class Command(BaseCommand):
             for i in range(random.randint(1,5)):
                 pre_fees = random.randint(12, 78)
                 pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, i)
-                invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID)
+                invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0)
 
             reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice))
 
             if(fees != 0):
-                invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID)
+                invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees)
 
             #TO DO : add paid, overpaid, and unpaid requests
 

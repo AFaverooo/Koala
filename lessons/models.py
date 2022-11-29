@@ -263,6 +263,16 @@ class Invoice(models.Model):
         blank = False,
     )
 
+    # this field display the amounts left need to be paid by student
+    amounts_need_to_pay = models.IntegerField(
+        blank=False,
+        default = 0,
+        validators=[
+            MaxValueValidator(10000),
+            MinValueValidator(0),
+        ]
+    )
+
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
         #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
