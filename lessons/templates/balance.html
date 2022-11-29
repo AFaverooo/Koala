@@ -61,29 +61,6 @@
 </div>
 
 <div>
-        <h1>Transactions<h1>
-        <h4>Transaction type 'IN' means that student is transfer money from outsider to their school balance</h4>
-        <h4>Transaction type 'OUT' means that student is using money in their school balance to pay for the invoice</h4>
-    <table style="width:100%">
-        <tr>
-            <!-- table head of the transaction -->
-            <th>Student ID</th>
-            <th>Transaction Type</th>
-            <th>Invoice reference number</th>
-            <th>Transaction Amount</th>
-        </tr>
-        {% for transaction in Transaction reversed %} <!-- this function reads all the transactions under the student and print them out in one single table -->
-        <tr>
-            <td>{{transaction.Student_ID_transaction }}</td>
-            <td>{{transaction.transaction_type}}</td>
-            <td>{{transaction.invoice_reference_transaction }}</td>
-            <td>{{transaction.transaction_amount }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div> 
-
-<div>
         <h1>Invoices<h1>
     <table style="width:100%">
         <tr>
@@ -104,7 +81,30 @@
         </tr>
         {% endfor %}
     </table>
-</div>   
+</div>
+
+<div>
+    <h1>Transactions<h1>
+    <h4>Transaction type 'IN' means that student is transfer money from outsider to their school balance</h4>
+    <h4>Transaction type 'OUT' means that student is using money in their school balance to pay for the invoice</h4>
+<table style="width:100%">
+    <tr>
+        <!-- table head of the transaction -->
+        <th>Student ID</th>
+        <th>Transaction Type</th>
+        <th>Invoice reference number</th>
+        <th>Transaction Amount</th>
+    </tr>
+    {% for transaction in Transaction reversed %} <!-- this function reads all the transactions under the student and print them out in one single table -->
+    <tr>
+        <td>{{transaction.Student_ID_transaction }}</td>
+        <td>{{transaction.transaction_type}}</td>
+        <td>{{transaction.invoice_reference_transaction }}</td>
+        <td>{{transaction.transaction_amount }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</div> 
 
     </body>
 </html>
