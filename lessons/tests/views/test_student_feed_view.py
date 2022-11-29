@@ -2,7 +2,7 @@
 
 from django.test import TestCase
 from django.urls import reverse
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
+from lessons.models import UserAccount, Lesson, Gender, LessonType,LessonDuration,LessonStatus
 from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
 import datetime
 from django.utils import timezone

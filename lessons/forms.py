@@ -79,3 +79,26 @@ class RequestForm(forms.ModelForm):
         
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
 
+    # def clean(self, request):
+    #     """Clean the data and generate messages for any errors."""
+
+    #     super().clean()
+    #     #gender = self.cleaned_data.get('gender')
+    #     self.data = self.data.copy()
+    #     self.data['student_id'] = request.user
+    #     self.data['teacher_id'] = self.data['teachers']
+
+
+    # def save(self, request):
+    #     """Create a new user."""
+
+    #     super().save(commit=False)
+    #     lesson = Lesson.objects.create(
+    #         type=self.cleaned_data.get('type'),
+    #         duration=self.cleaned_data.get('duration'),
+    #         lesson_date_time=self.cleaned_data.get('lesson_date_time'),
+    #         student_id=self.cleaned_data.get('student_id'),
+    #         teacher_id=self.cleaned_data.get('teacher_id'),
+    #     )
+
+    #     return lesson
