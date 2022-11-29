@@ -1,0 +1,58 @@
+{% load static %}
+<html>
+    <style>
+        table, th, td {
+          border:1px solid black;
+        }
+        </style>
+<head>
+    <title>This is Balance and Transaction page for student</title>
+</head>
+    <body>
+
+
+<div>
+        <h1>Balances<h1>
+    <table style="width:100%">
+        <tr>
+            <!-- table head of the transaction -->
+            <th>Student ID</th>
+            <th>Transaction Type</th>
+            <th>Invoice reference number</th>
+            <th>Transaction Amount</th>
+        </tr>
+        {% for transaction in Transaction reversed %} <!-- this function reads all the transactions under the student and print them out in one single table -->
+        <tr>
+            <td>{{transaction.Student_ID_transaction }}</td>
+            <td>{{transaction.transaction_type}}</td>
+            <td>{{transaction.invoice_reference_transaction }}</td>
+            <td>{{transaction.transaction_amount }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div> 
+
+
+<div>
+        <h1>Invoices<h1>
+    <table style="width:100%">
+        <tr>
+            <!-- table head of the invoice -->
+            <th>Reference</th>
+            <th>Student ID</th>
+            <th>Amount of fees</th>
+            <th>Invoice status</th>
+        </tr>
+        {% for invoice in Invoice reversed %} <!-- this function reads all the invoices under the student and print them out in one single table -->
+        <tr>
+            <td>{{invoice.reference_number}}</td>
+            <td>{{invoice.student_ID}}</td>
+            <td>{{invoice.fees_amount}}</td>
+            <td>{{invoice.invoice_status}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>   
+
+    </body>
+</heml>

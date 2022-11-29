@@ -322,7 +322,7 @@ class Transaction(models.Model):
     invoice_reference_transaction = models.CharField(
         max_length=30,
         unique=False,
-        blank=False,
+        blank=True,
         validators=[RegexValidator(
             regex = r'^\d*\d-\d\d\d\d*$', 
             message='Reference number must all be number and consist of - in between followed by at least three numbers'
