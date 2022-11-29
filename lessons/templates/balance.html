@@ -13,9 +13,19 @@
 </head>
     <body>
 
+<div>
+    <body>
+        <form action="{% url 'student_feed' %}" method="post">
+             {% csrf_token %}
+         <button type="submit" value="student_feed" class="btn btn-primary">Return to Student Feed Page</button>
+      </form>
+</div>
+    
+<div>
     {% for msg in messages %}
     {{msg}}
     {% endfor %}
+</div>
 
 <div>
     {% for balance in Balance %}
