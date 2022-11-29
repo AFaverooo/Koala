@@ -35,18 +35,19 @@
           </tr>
         </thead>
         <tbody>
-          {% for request in saved_lessons %}
+          {% for lesson in saved_lessons %}
             <tr>
-              <th scope="row">{{ request.lesson_id }}</th>
-              <td>{{ request.request_date }}</td>
-              <td>{{ request.type }}</td>
-              <td>{{ request.duration }}</td>
-              <td>{{ request.lesson_date_time }}</td>
-              <td>{{ request.teacher_id }}</td>
-              <td>{{ request.student_id }}</td>
-              <td>{{ request.is_booked }}</td>
+              <th scope="row">{{ lesson.lesson_id }}</th>
+              <td>{{ lesson.request_date }}</td>
+              <td>{{ lesson.type }}</td>
+              <td>{{ lesson.duration }}</td>
+              <td>{{ lesson.lesson_date_time }}</td>
+              <td>{{ lesson.teacher_id }}</td>
+              <td>{{ lesson.student_id }}</td>
+              <td>{{ lesson.lesson_status }}</td>
               <td>
-                <a href = '' class = "btn btn-lg btn-secondary">Edit</a>
+                <a href = '{% url 'update_request' lesson.lesson_id %}' class = "btn btn-lg btn-secondary">Edit</a>
+                <a href = '{% url 'confirm_booking' lesson.lesson_id %}' class = "btn btn-lg btn-secondary" method="post">Confirm Booking</a>
               </td>
             </tr>
           {% endfor %}

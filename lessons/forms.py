@@ -3,7 +3,7 @@ from django.core.validators import RegexValidator
 from .models import UserAccount, Gender, Lesson
 from  django.contrib.admin.widgets import AdminSplitDateTime
 from django.shortcuts import render
-from .models import UserAccount, Gender, Lesson, UserRole
+from .models import UserAccount, Gender, Lesson, UserRole, LessonStatus
 
 
 class LogInForm(forms.Form):
@@ -81,3 +81,9 @@ class RequestForm(forms.ModelForm):
     #teacher_name = forms.CharField(
     #    label = "Teacher Name: ",
     #    widget = forms.Select(choices = teacher_choices))
+
+# class AdminUpdateRequestForm(RequestForm, forms.ModelForm):
+#     REQUEST_STATUS = [
+#         'saved', 'pending','booked'
+#     ]
+#     status = forms.CharField(label='What is your favorite fruit?', widget=forms.Select(choices=REQUEST_STATUS))
