@@ -4,6 +4,7 @@ from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,Les
 from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
 import datetime
 from django.utils import timezone
+from django.contrib import messages
 # from lessons.models import UserAccount, Gender
 from lessons.tests.helpers import reverse_with_next
 
@@ -117,6 +118,9 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.lesson5.save()
 
 
+    def test_delete_lesson_url(self):
+        self.assertEqual(self.delete_url, '/delete_pending/')
+
     def test_student_not_logged_in_deleting_lessons(self):
         response = self.client.get(self.delete_url)
         redirect_url = reverse('log_in')
@@ -134,7 +138,7 @@ class StudentFeedDeleteLessonTestCase(TestCase):
 
         self.client.login(email=self.student.email, password="Password123")
         before_count = Lesson.objects.count()
-        response = self.client.post(self.delete_url, {'delete_id': self.lesson.lesson_id}, follow = True)
+        response = self.client.post(self.delete_url, {'lesson_delete_id': self.lesson.lesson_id}, follow = True)
 
         redirect_url = reverse('student_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
@@ -150,17 +154,17 @@ class StudentFeedDeleteLessonTestCase(TestCase):
 
         self.client.login(email=self.student.email, password="Password123")
 
-        response = self.client.post(self.delete_url, {'delete_id': self.lesson.lesson_id}, follow = True)
+        response = self.client.post(self.delete_url, {'lesson_delete_id': self.lesson.lesson_id}, follow = True)
         redirect_url = reverse('student_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
-        response_second = self.client.post(self.delete_url, {'delete_id': self.lesson2.lesson_id}, follow = True)
+        response_second = self.client.post(self.delete_url, {'lesson_delete_id': self.lesson2.lesson_id}, follow = True)
         redirect_url = reverse('student_feed')
         self.assertRedirects(response_second, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response_second, 'student_feed.html')
 
-        response_third = self.client.post(self.delete_url, {'delete_id': self.lesson3.lesson_id}, follow = True)
+        response_third = self.client.post(self.delete_url, {'lesson_delete_id': self.lesson3.lesson_id}, follow = True)
         redirect_url = reverse('student_feed')
         self.assertRedirects(response_third, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response_third, 'student_feed.html')
@@ -174,13 +178,14 @@ class StudentFeedDeleteLessonTestCase(TestCase):
     def test_incorrect_deletion_of_lesson(self):
         self.client.login(email=self.student.email, password="Password123")
         before_count = Lesson.objects.count()
-        response = self.client.post(self.delete_url, {'delete_id': 60}, follow = True)
+        response = self.client.post(self.delete_url, {'lesson_delete_id': 60}, follow = True)
 
         redirect_url = reverse('student_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
 
-        messages = list(response.context['messages'])
-        self.assertEqual(str(messages[0]), 'Incorrect lesson ID passed')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'Incorrect lesson ID passed')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
         self.assertTemplateUsed(response, 'student_feed.html')
 

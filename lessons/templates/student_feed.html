@@ -19,6 +19,7 @@
 </div>
 
 {% endfor %}
+
 <h2>{{greeting}}</h2>
 
 {%  if unfulfilled_requests|length > 0 %}
@@ -38,13 +39,13 @@
       <td>{{value|get_lesson_duration}}</td>
       <td>{{value|get_teacher}}</td>
       <td>
-      <form method = "post" action="{% url 'delete_pending' %}">
+      <form method = "post" action='{% url 'delete_pending' %}'>
           {% csrf_token %}
-        <button type="submit" value = {{key.lesson_id}} name = "delete_id">Delete</button>
+        <button type="submit" value = {{key.lesson_id}} name = "lesson_delete_id">Delete</button>
       </form>
 
-      <form method = "get" action="{% url 'edit_pending'%}">
-        <button type="submit" value = {{key.lesson_id}} name = "edit_id">Edit</button>
+      <form method = "get" action='{% url 'edit_lesson' key.lesson_id %}'>
+        <button type="submit">Edit</button>
       </form>
     </td>
 
