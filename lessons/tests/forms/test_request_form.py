@@ -26,7 +26,7 @@ class RequestFormTestCase(TestCase):
             'teachers': self.teacher
         }
 
-    
+
     def test_valid_request_form(self):
         form = RequestForm(data = self.form_input)
         self.assertTrue(form.is_valid())
@@ -47,7 +47,7 @@ class RequestFormTestCase(TestCase):
     #     form = RequestForm(data=self.form_input)
     #     before_count = Lesson.objects.count()
     #     ##This causes an error
-    #     form.save(request)
+    #     form.save()
     #     after_count = Lesson.objects.count()
     #     self.assertEqual(after_count, before_count+1)
     #     lesson = Lesson.objects.get(lesson_date_time =datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc))

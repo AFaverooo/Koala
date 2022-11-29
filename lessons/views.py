@@ -4,7 +4,7 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
-
+from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.db import IntegrityError
@@ -152,34 +152,34 @@ def get_fullfilled_lessons(student):
 def home(request):
     return render(request, 'home.html')
 
-# def log_in(request):
-#     form = LogInForm()
-#     return render(request, 'log_in.html', {'form': form})
-#
-def log_out(request):
-    logout(request)
-    return redirect('home')
 
 @login_required
 def student_feed(request):
     #print("redirected")
-    if request.user.is_authenticated:
-        unfulfilled_lessons = get_unfulfilled_lessons(request.user)
 
-        if len(unfulfilled_lessons) == 0:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
+        unfulfilled_lessons = get_unfulfilled_lessons(request.user)
+        fullfilled_lessons = get_fullfilled_lessons(request.user)
+
+        if len(fullfilled_lessons) > 0:
             greeting_str = f'Welcome back {request.user} Below is your timetable for this term'
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
             return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
-        else:
+        elif len(unfulfilled_lessons) > 0:
             unfulfilled_requests = make_unfulfilled_dictionary(request.user)
             greeting_str = f'Welcome back {request.user} Below are your lesson requests'
             return render(request,'student_feed.html', {'unfulfilled_requests':unfulfilled_requests, 'greeting':greeting_str})
+        else:
+            greeting_str = f'Welcome back {request.user}'
+            return render(request,'student_feed.html', {'greeting':greeting_str})
+
     else:
+        print('not authorised')
         return redirect('log_in')
 
 @login_required
 def requests_page(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
             student = request.user
             savedLessons = get_saved_lessons(student)
@@ -189,12 +189,23 @@ def requests_page(request):
         #add message that the user should be logged in
         return redirect('log_in')
 
+@login_required
 def admin_feed(request):
-    return render(request,'admin_feed.html')
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
+        return render(request,'admin_feed.html')
+    else:
+        return redirect('log_in')
 
+@login_required
 def director_feed(request):
-    return render(request,'director_feed.html')
+    if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
+        return render(request,'director_feed.html')
+    else:
+        return redirect('log_in')
 
+
+
+@login_prohibited
 def log_in(request):
      if request.method == 'POST':
          form = LogInForm(request.POST)
@@ -223,6 +234,11 @@ def log_in(request):
      return render(request,'log_in.html', {'form' : form, 'next' : next})
 
 
+def log_out(request):
+    logout(request)
+    return redirect('home')
+
+@login_prohibited
 def sign_up(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -235,17 +251,18 @@ def sign_up(request):
     return render(request, 'sign_up.html', {'form': form})
 
 def new_lesson(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
         if request.method == 'POST':
             #test case, already unfulfilled lessons upon request
             previously_requested_lessons = get_unfulfilled_lessons(current_student)
+            previously_booked_lessons = get_fullfilled_lessons(current_student)
 
             #import widget tweaks
             #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            if previously_requested_lessons:
+            if previously_requested_lessons or previously_booked_lessons:
                 print('already made a set of requests')
-                messages.add_message(request,messages.ERROR,"You have already made requests for this term, contact admin to add extra lessons")
+                messages.add_message(request,messages.ERROR,"You have already made requests for this term or have booked lessons, contact admin to add extra lessons")
                 form = RequestForm()
                 return redirect('requests_page')
 
@@ -269,7 +286,7 @@ def new_lesson(request):
 
                 #savedLessons = Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = current_student)
                 #return render(request,'requests_page.html', {'form': form, 'lessons' : savedLessons})
-                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
+                #return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
                 savedLessons = get_saved_lessons(current_student)
@@ -299,8 +316,7 @@ def save_lessons(request):
                 eachLesson.save()
 
             messages.add_message(request,messages.SUCCESS, "Lesson requests are now unfulfilled for validation by admin")
-            form = RequestForm()
-            return render(request,'requests_page.html', {'form': form})
+            return redirect('student_feed')
         else:
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
@@ -309,3 +325,95 @@ def save_lessons(request):
         return redirect('log_in')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
+
+def render_edit_request(request,lesson_id):
+    try:
+        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id) #used to be lesson_lesson_edit_id from get method
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+        return redirect('student_feed')
+
+    data = {'type': to_edit_lesson.type,
+            'duration': to_edit_lesson.duration,
+            'lesson_date_time': to_edit_lesson.lesson_date_time,
+            'teachers': to_edit_lesson.teacher_id}
+
+    form = RequestForm(data)
+    #print('render')
+    return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
+
+
+def edit_lesson(request,lesson_id):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        current_student = request.user
+
+        try:
+            to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+        except ObjectDoesNotExist:
+            messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+            return redirect('student_feed')
+
+        if request.method == 'POST':
+            request_form = RequestForm(request.POST)
+
+            if request_form.is_valid():
+                #request_date = timezone.now
+                duration = request_form.cleaned_data.get('duration')
+                lesson_date = request_form.cleaned_data.get('lesson_date_time')
+                type = request_form.cleaned_data.get('type')
+                teacher_id = request_form.cleaned_data.get('teachers')
+
+                try:
+                    to_edit_lesson.duration = duration
+                    to_edit_lesson.lesson_date_time = lesson_date
+                    to_edit_lesson.type = type
+                    to_edit_lesson.teacher_id = teacher_id
+                    to_edit_lesson.save()
+
+                except IntegrityError:
+                    messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
+                    return render_edit_request(request,lesson_id)
+                    #print('attempted to duplicate lesson')
+
+                messages.add_message(request,messages.SUCCESS,"Succesfully edited lesson")
+                return redirect('student_feed')
+            else:
+                messages.add_message(request,messages.ERROR,"Form is not valid")
+                return render_edit_request(request,lesson_id)
+        else:
+            return render_edit_request(request,lesson_id)
+    else:
+        return redirect('log_in')
+
+def check_correct_student_lesson_deletion(student_id, lesson_id):
+    all_student_lessons = Lesson.objects.filter(student_id = student_id)
+    for lesson in all_student_lessons:
+        if lesson.lesson_id == lesson_id:
+            return True
+
+    return False
+
+def delete_pending(request,lesson_id):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        current_student = request.user
+
+        if check_correct_student_lesson_deletion(current_student,lesson_id):
+            if request.method == 'POST':
+                    try:
+                        #print(int(request.POST.get['lesson_delete_id']))
+                        Lesson.objects.get(lesson_id = lesson_id).delete()
+                        #print('delete' + request.POST.get('lesson_delete_id'))
+                    except ObjectDoesNotExist:
+                        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                        return redirect('student_feed')
+
+                    messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
+                    return redirect('student_feed')
+
+            else:
+                return redirect('student_feed')
+        else:
+            messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+            return redirect('student_feed')
+    else:
+        return redirect('log_in')

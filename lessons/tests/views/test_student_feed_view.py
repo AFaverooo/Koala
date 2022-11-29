@@ -15,6 +15,13 @@ class StudentFeedTestCase(TestCase):
     def setUp(self):
 
         self.url = reverse('student_feed')
+        self.admin = UserAccount.objects.create_admin(
+            first_name='Bob',
+            last_name='Jacobs',
+            email='bobby@example.org',
+            password='Password123',
+            gender = Gender.MALE,
+        )
 
         self.teacher = UserAccount.objects.create_teacher(
             first_name='Barbare',
@@ -179,3 +186,9 @@ class StudentFeedTestCase(TestCase):
         redirect_url = reverse_with_next('log_in', self.url)
         response = self.client.get(self.url)
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+    #def test_not_student_accessing_student_feed(self):
+    #    self.client.login(email=self.admin.email, password="Password123")
+    #    redirect_url = reverse_with_next('log_in', self.url)
+    #    response = self.client.get(self.url)
+    #    self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
