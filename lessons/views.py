@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, TransactionTypes
 from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -83,6 +83,31 @@ def get_student_transaction(student):
 
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
+
+def updateBalance(request):
+    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
+        if(request.method == 'POST'):
+            extra_fees = request.POST.get('inputFees')
+            extra_fees_int = int(extra_fees)
+            # temp_total = student.balance + extra_fees_int
+
+            student = request.user
+
+            if(extra_fees_int  1):
+                messages.add_message(request,messages.ERROR,"You cannont insert a value less than 1!!!")
+            elif(student.balance + extra_fees_int > 10000):
+                messages.add_message(request,messages.ERROR,"Your account balance cannot exceed £10000!!!")
+            else:
+                student.balance += extra_fees_int
+                student.save()
+                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.IN, transaction_amount = extra_fees_int)
+            
+            student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
+            student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
+            student_balance = get_student_balance(student)
+            return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
+    else:
+        return redirect('log_in')
 
 
 def make_lesson_timetable_dictionary(student_user):

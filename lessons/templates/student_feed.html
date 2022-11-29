@@ -69,3 +69,9 @@
   {% endfor %}
 </table>
 {%  endif %}
+
+<body>
+  <form action="{% url 'log_out' %}" method="post">
+       {% csrf_token %}
+   <button type="submit" value="log out" class="btn btn-primary">Log out</button>
+</form>

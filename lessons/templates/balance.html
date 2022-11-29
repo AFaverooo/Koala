@@ -1,4 +1,5 @@
 {% load static %}
+
 <html>
     <style>
         table, th, td {
@@ -14,6 +15,17 @@
 <div>
     {% for balance in Balance %}
     <h3>here is your balance in £: {{balance}} </h3>
+    {% endfor %}
+</div>
+
+<div>
+    <form action="{% url 'updateBalance' %}" method = 'post'>
+        {% csrf_token %}
+        <input type='number' name="inputFees" class = "form-control" />
+        <button type = 'submit',  class = "btn btn-secondary">submit</button>
+    </form>
+    {% for msg in messages %}
+    {{msg}}
     {% endfor %}
 </div>
 

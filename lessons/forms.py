@@ -8,7 +8,6 @@ from django.forms import DateTimeInput
 import datetime
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 
-
 class LogInForm(forms.Form):
     email = forms.CharField(label='email')
     password = forms.CharField(label='password',widget=forms.PasswordInput())
