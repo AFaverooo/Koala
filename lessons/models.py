@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 class TransactionTypes(models.TextChoices):
-    IN = 'IN', _('Student transfer money from out into their balance')
+    IN = 'IN', _('Student transfer money from outside into their balance')
     OUT = 'OUT', _('Student transfer money from balance into school account')
 
 #Shows the status of the invoices

@@ -133,6 +133,8 @@ def pay_fo_invoice(request):
                 messages.add_message(request,messages.ERROR,"this invoice does not belong to you!")
             elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
+            elif(int(student.balance) < input_amounts_pay_int):
+                messages.add_message(request,messages.ERROR,"You dont have enough money!")
             else:
                 if(temp_invoice.amounts_need_to_pay == input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PAID
@@ -143,12 +145,16 @@ def pay_fo_invoice(request):
                 elif(temp_invoice.amounts_need_to_pay < input_amounts_pay_int):
                     messages.add_message(request,messages.ERROR,"The amount you insert has exceed the amount you have to pay!")
                     return redirect('balance')
-
+                student.balance -= input_amounts_pay_int
+                student.save()
                 temp_invoice.save()
 
                 Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.OUT, invoice_reference_transaction = input_invoice_reference, transaction_amount = input_amounts_pay_int)
 
+            return redirect('balance')
+
         return redirect('balance')
+
     else:
         return redirect('log_in')
 
