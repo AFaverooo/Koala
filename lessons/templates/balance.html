@@ -7,12 +7,18 @@
         </style>
 <head>
     <title>This is Balance and Transaction page for student</title>
+    <h1>This is Balance and Transaction page for student</h1>
 </head>
     <body>
 
+<div>
+    {% for balance in Balance %}
+    <h3>here is your balance in £: {{balance}} </h3>
+    {% endfor %}
+</div>
 
 <div>
-        <h1>Balances<h1>
+        <h1>Transactions<h1>
     <table style="width:100%">
         <tr>
             <!-- table head of the transaction -->
@@ -55,4 +61,4 @@
 </div>   
 
     </body>
-</heml>
+</html>

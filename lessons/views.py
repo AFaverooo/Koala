@@ -62,15 +62,28 @@ def make_unfulfilled_dictionary(student_user):
 
     return unfulfilled_lessons_dict
 
+
+@login_required
 def balance(request):
     if request.user.is_authenticated:
         if request.method == 'GET':
             student = request.user
-            student_invoice = Invoice.objects.filter(student_ID = student.id) #this function filter out the invocie with the same student id as the current user
-            student_transaction = Transaction.objects.filter( Student_ID_transaction = student.id) #this function filter out the transaction with the same student id as the current user
-            return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction})
+            student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
+            student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
+            student_balance = get_student_balance(student)
+            return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
     else:
         return redirect('log_in')
+
+def get_student_invoice(student):
+    return Invoice.objects.filter(student_ID = student.id)
+
+def get_student_transaction(student):
+    return Transaction.objects.filter( Student_ID_transaction = student.id)
+
+def get_student_balance(student):
+    return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
+
 
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
@@ -144,7 +157,7 @@ def get_saved_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
 
 def get_unfulfilled_lessons(student):
-     return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
+    return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
 
 def get_fullfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)

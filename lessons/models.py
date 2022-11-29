@@ -187,6 +187,9 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         ]
     )
 
+    def get_student_balance(self):
+        return f'{self.balance}'
+
     def get_student_id(self):
         return f'{self.id}'
 
