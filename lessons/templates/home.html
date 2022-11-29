@@ -18,37 +18,50 @@
 
   <body id="home-background">
 
-    <div class ="container-vh-100" id="homecard">
-      <div class = "row-h-100">
+    <div class ="container vh-100" id="homecardholder">
+      <div class = "row h-100">
         <div class = "col-12 my-auto">
-          <div class="card mx-auto" >
+          <div class="card mx-auto" id="homecard">
         
     <h1>Music Management System</h1>
 
-    <p><a href="{% url 'sign_up' %}">Sign up</a> </p> <br>
+    <p><a href="{% url 'sign_up' %}" class="btn btn-primary">Sign up</a> </p> <br>
 
 
     
-    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
+    <!-- <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
       Login
-    </button>
-
+    </button> -->
+    <p>
+      <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Login
+      </a>
+    </p>
 
 
 
     <div id="collapseExample" class="collapse">
+
+
+      <!-- {% for message in messages %}
+  <div class="alert alert-{{ message.level_tag }}" role="alert">
+  {{ message }}
+    </div>
+{% endfor %} -->
     <form action="{% url 'log_in' %}" method="post" >
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}">
 
       <div class="form-outline flex-fill mb-0">
-        <input type="email" class="form-control" id="floatingInput">
         <label for="floatingInput">Email address</label>
+        <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+       
       </div>
 
       <div class="form-floating mb-3">
-        <input type="password" class="form-control" id="floatingPassword">
         <label for="floatingPassword">Password</label>
+        <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+        
       </div>
       <input type="submit" value="log in">
   </form>
