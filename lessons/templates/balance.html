@@ -9,6 +9,7 @@
 <head>
     <title>This is Balance and Transaction page for student</title>
     <h1>This is Balance and Transaction page for student</h1>
+    <br>
 </head>
     <body>
 
@@ -16,9 +17,11 @@
     {% for balance in Balance %}
     <h3>here is your balance in £: {{balance}} </h3>
     {% endfor %}
+    <br>
 </div>
 
 <div>
+    <h3>Please enter amounts of money you want to transfer into your school balance below: </h3>
     <form action="{% url 'updateBalance' %}" method = 'post'>
         {% csrf_token %}
         <input type='number' name="inputFees" class = "form-control" />
@@ -27,6 +30,7 @@
     {% for msg in messages %}
     {{msg}}
     {% endfor %}
+    <br>
 </div>
 
 <div>

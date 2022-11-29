@@ -84,16 +84,17 @@ def get_student_transaction(student):
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
+@login_required
+# this function update the student balance once student transfer some money into their school balance
 def updateBalance(request):
     if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if(request.method == 'POST'):
             extra_fees = request.POST.get('inputFees')
             extra_fees_int = int(extra_fees)
-            # temp_total = student.balance + extra_fees_int
 
             student = request.user
 
-            if(extra_fees_int  1):
+            if(extra_fees_int < 1):
                 messages.add_message(request,messages.ERROR,"You cannont insert a value less than 1!!!")
             elif(student.balance + extra_fees_int > 10000):
                 messages.add_message(request,messages.ERROR,"Your account balance cannot exceed £10000!!!")
