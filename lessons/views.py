@@ -326,22 +326,38 @@ def save_lessons(request):
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 
-def edit_lesson(request,lesson_id):
-    #print(lesson_id)
+def render_edit_request(request,lesson_id):
     try:
-        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id) #used to be lesson_lesson_edit_id from get method
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
         return redirect('student_feed')
 
+    data = {'type': to_edit_lesson.type,
+            'duration': to_edit_lesson.duration,
+            'lesson_date_time': to_edit_lesson.lesson_date_time,
+            'teachers': to_edit_lesson.teacher_id}
 
-    if request.user.is_authenticated:
+    form = RequestForm(data)
+    #print('render')
+    return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
+
+
+def edit_lesson(request,lesson_id):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
-        if request.method == 'POST':
 
+        try:
+            to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+        except ObjectDoesNotExist:
+            messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+            return redirect('student_feed')
+
+        if request.method == 'POST':
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():
+                #request_date = timezone.now
                 duration = request_form.cleaned_data.get('duration')
                 lesson_date = request_form.cleaned_data.get('lesson_date_time')
                 type = request_form.cleaned_data.get('type')
@@ -356,70 +372,48 @@ def edit_lesson(request,lesson_id):
 
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
-                    return render(request,'edit_request.html', {'form' : request_form, 'lesson_id':lesson_id})
+                    return render_edit_request(request,lesson_id)
                     #print('attempted to duplicate lesson')
 
                 messages.add_message(request,messages.SUCCESS,"Succesfully edited lesson")
                 return redirect('student_feed')
             else:
                 messages.add_message(request,messages.ERROR,"Form is not valid")
+                return render_edit_request(request,lesson_id)
         else:
-            return render(request,'edit_request.html', {'form' : request_form, 'lesson_id':lesson_id})
+            return render_edit_request(request,lesson_id)
     else:
-        redirect('log_in')
-
-def render_edit_request(request,lesson_id):
-    try:
-        to_edit_lesson = Lesson.objects.get(lesson_id = request.GET.get('edit_id'))
-    except ObjectDoesNotExist:
-        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
-        return redirect('student_feed')
-
-    data = {'type': to_edit_lesson.type,
-            'duration': to_edit_lesson.duration,
-            'lesson_date_time': to_edit_lesson.lesson_date_time,
-            'teachers': to_edit_lesson.teacher_id}
-
-    form = RequestForm(data)
-    return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
-
-def edit_pending(request):
-    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
-        current_student = request.user
-        if request.method == 'GET':
-            if(request.GET.get('edit_id')):
-                return render_edit_request(request,request.GET.get('edit_id'))
-            else:
-                print('no delete id')
-        else:
-            print('not get')
-            return redirect('student_feed')
-    else:
-        #print('cannot be accessed')
         return redirect('log_in')
 
+def check_correct_student_lesson_deletion(student_id, lesson_id):
+    all_student_lessons = Lesson.objects.filter(student_id = student_id)
+    for lesson in all_student_lessons:
+        if lesson.lesson_id == lesson_id:
+            return True
 
-def delete_pending(request):
-    #print('delete')
+    return False
+
+def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
-        if request.method == 'POST':
-            if(request.POST.get('delete_id')):
-                try:
-                    #print(int(request.POST.get['delete_id']))
-                    Lesson.objects.get(lesson_id = request.POST.get('delete_id')).delete()
-                    #print('delete' + request.POST.get('delete_id'))
-                except ObjectDoesNotExist:
-                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
 
-                return redirect('student_feed')
+        if check_correct_student_lesson_deletion(current_student,lesson_id):
+            if request.method == 'POST':
+                    try:
+                        #print(int(request.POST.get['lesson_delete_id']))
+                        Lesson.objects.get(lesson_id = lesson_id).delete()
+                        #print('delete' + request.POST.get('lesson_delete_id'))
+                    except ObjectDoesNotExist:
+                        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                        return redirect('student_feed')
+
+                    messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
+                    return redirect('student_feed')
 
             else:
-                print('no delete id')
+                return redirect('student_feed')
         else:
-            #print('not post')
+            messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
             return redirect('student_feed')
     else:
-        #print(request.user.role)
-        #print('cannot be accessed')
         return redirect('log_in')

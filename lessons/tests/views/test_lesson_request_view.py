@@ -42,7 +42,7 @@ class LessonRequestViewTestCase(TestCase):
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.THIRTY,
             'lesson_date_time' : datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
-            'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
+            'teachers': self.teacher.id,
         }
 
     def create_lesson_form_copy(self):
@@ -50,7 +50,7 @@ class LessonRequestViewTestCase(TestCase):
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.THIRTY,
             'lesson_date_time' : datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
-            'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
+            'teachers': self.teacher.id,
         }
 
     def create_saved_lessons(self):
