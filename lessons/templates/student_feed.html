@@ -11,7 +11,7 @@
 
 <p> <a href = '{% url 'requests_page' %}' class = "btn btn-lg btn-secondary"> Book lessons  </a></p>
 
-<p> <a href = '{% url 'invoice' %}' class = "btn btn-lg btn-secondary"> Check invoice  </a></p>
+<p> <a href = '{% url 'balance' %}' class = "btn btn-lg btn-secondary"> Check balance and Transaction  </a></p>
 
 {% for message in messages %}
 <div class="alert alert-{{ message.level_tag }}" role="alert">
@@ -70,3 +70,9 @@
   {% endfor %}
 </table>
 {%  endif %}
+
+<body>
+  <form action="{% url 'log_out' %}" method="post">
+       {% csrf_token %}
+   <button type="submit" value="log out" class="btn btn-primary">Log out</button>
+</form>
