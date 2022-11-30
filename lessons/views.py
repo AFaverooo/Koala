@@ -245,7 +245,7 @@ def requests_page(request):
 @login_required
 def admin_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
-        student = UserAccount.objects.values()
+        student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         return render(request,'admin_feed.html',{'student':student})
     else:
         return redirect('log_in')
