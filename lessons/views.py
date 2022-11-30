@@ -159,6 +159,17 @@ def pay_fo_invoice(request):
     else:
         return redirect('log_in')
 
+def get_all_transactions(request):
+    all_transactions = Transaction.objects.all()
+    total = 0 
+    for each_transaction in all_transactions:
+        if(each_transaction.transaction_type == TransactionTypes.OUT):
+            total-= each_transaction.transaction_amount
+        elif(each_transaction.transaction_type == TransactionTypes.IN):
+            total+= each_transaction.transaction_amount
+
+    return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
 
@@ -332,7 +343,9 @@ def requests_page(request):
 def admin_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
-        return render(request,'admin_feed.html',{'student':student})
+        fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
+        unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
+        return render(request,'admin_feed.html',{'student':student,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
     else:
         return redirect('log_in')
 
