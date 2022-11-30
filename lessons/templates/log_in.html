@@ -13,13 +13,16 @@ Issue 1)
 Issue 2)
   Also, redirect to login if credentials are incorrect, preferrably
   back to home page with alert
+
+
+ Should be replaced with home.html
 -->
 
 
 
 
 
-<!-- {%load crispy_forms_tags%} -->
+{%load crispy_forms_tags%}
 {% load widget_tweaks %}
 {%load static%}
 
@@ -45,7 +48,7 @@ Issue 2)
 
   <body>
       <form action="{% url 'log_in' %}" method="post">
-        <!-- {{form.email|crispy}} -->
+        {{form.email|as_crispy_field}}
        <input type="submit" value="log in" class="btn btn-primary">
   </form>
 

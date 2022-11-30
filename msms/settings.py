@@ -147,7 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'lessons.UserAccount'
 
 #Login URL to redirect users to login page frin login protected views
-LOGIN_URL = 'log_in'
+LOGIN_URL = 'home'
 
 # URL where @login_prohibited redirects to
 REDIRECT_URL_WHEN_LOGGED_IN_STUDENT = 'student_feed'

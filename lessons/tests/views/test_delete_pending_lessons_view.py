@@ -155,9 +155,9 @@ class StudentFeedDeleteLessonTestCase(TestCase):
 
     def test_student_not_logged_in_deleting_lessons(self):
         response = self.client.get(self.delete_url, follow = True)
-        redirect_url = reverse('log_in')
+        redirect_url = reverse('home')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
 
     #prev causing errors
     def test_not_student_accessing_deleting_pending_lessons(self):
