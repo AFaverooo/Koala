@@ -14,11 +14,16 @@
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 
-  <head>
+</head>
 
+{% for message in messages %}
+<div class="alert alert-{{ message.level_tag }}" role="alert">
+  {{ message }}
+</div>
+
+{% endfor %}
 
   <h1> Request a lesson</h1>
-  <p> Form will be here </p>
 
   <body>
       <form action="{% url 'new_lesson' %}" method="post">
@@ -42,7 +47,7 @@
       <th>Lesson Date and Time</th>
       <th>Lesson Type</th>
       <th>Lesson Duration</th>
-      <th>Teacher</th>
+      <th>Teacher Name</th>
     </tr>
     {% for lesson in lessons %}
       <tr>

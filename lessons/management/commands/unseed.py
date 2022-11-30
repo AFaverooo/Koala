@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Invoice
+from lessons.models import UserAccount, Invoice, Transaction
 
 class Command(BaseCommand):
     # Delete all users, except for email admin@example.org
@@ -15,3 +15,7 @@ class Command(BaseCommand):
         invoices = Invoice.objects.all()
         for i in range(len(invoices)):
             invoices[i].delete()
+
+        transactions = Transaction.objects.all()
+        for i in range(len(transactions)):
+            transactions[i].delete()

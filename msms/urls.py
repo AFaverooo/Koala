@@ -39,6 +39,16 @@ urlpatterns = [
     path('director_feed', views.director_feed, name = 'director_feed'),
     path('sign_up/', views.sign_up, name = 'sign_up'),
 
-    path('invoice/', views.invoice, name = 'invoice'),
+    path('balance/', views.balance, name = 'balance'),
+    path('update_balance/', views.update_balance, name = 'update_balance'),
+    path('pay_for_invoice/', views.pay_fo_invoice, name = 'pay_for_invoice'),
+    path('transaction_history', views.get_all_transactions,name='transaction_history'),
+
     path('log_out/', views.log_out, name = 'log_out'),
+
+    path('student_requests/<str:student_id>', views.student_requests, name='student_requests'),
+    path('admin_update_request_page/<str:id>', views.admin_update_request_page,name='admin_update_request_page'),
+    path('admin_confirm_booking/<str:lesson_id>', views.admin_confirm_booking,name='admin_confirm_booking'),
+    path('admin_update_request/<str:lesson_id>', views.admin_update_request, name='admin_update_request'),
+    path('delete_lesson/<str:lesson_id>', views.delete_lesson, name='delete_lesson'),
 ]

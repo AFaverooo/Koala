@@ -7,7 +7,7 @@ class InvoiceTestCase(TestCase):
     '''Tests of the invoice view'''
 
     def setUp(self):
-        self.url = reverse('invoice')
+        self.url = reverse('balance')
 
         self.student = UserAccount.objects.create_student(
             first_name='John',
@@ -25,14 +25,14 @@ class InvoiceTestCase(TestCase):
         )
         self.invoice = Invoice.objects.get(reference_number = '111-001')
 
-    def test_invoice_url(self):
-        self.assertEqual(self.url, '/invoice/')
+    def test_balance_url(self):
+        self.assertEqual(self.url, '/balance/')
 
-    def test_get_invoice(self):
+    def test_get_balance(self):
         self.client.login(username=self.student.email, password='Password123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'invoice.html')
+        self.assertTemplateUsed(response, 'balance.html')
 
 
 
