@@ -240,6 +240,8 @@ def promote_director(request,current_user_email):
     else:
         user = UserAccount.objects.get(email=current_user_email)
         user.role = UserRole.DIRECTOR
+        user.is_staff = True
+        user.is_superuser = True
         user.save()
         messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
         return director_manage_roles(request)
@@ -252,6 +254,8 @@ def promote_admin(request,current_user_email):
     else:
         user = UserAccount.objects.get(email=current_user_email)
         user.role = UserRole.ADMIN
+        user.is_staff = True
+        user.is_superuser = False
         user.save()
         messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role admin")
         return director_manage_roles(request)
@@ -264,6 +268,8 @@ def promote_teacher(request,current_user_email):
     else:
         user = UserAccount.objects.get(email=current_user_email)
         user.role = UserRole.TEACHER
+        user.is_staff = False
+        user.is_superuser = False
         user.save()
         messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role teacher")
         return director_manage_roles(request)
@@ -276,6 +282,8 @@ def promote_student(request,current_user_email):
     else:
         user = UserAccount.objects.get(email=current_user_email)
         user.role = UserRole.STUDENT
+        user.is_staff = False
+        user.is_superuser = False
         user.save()
         messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role student")
         return director_manage_roles(request)
@@ -322,7 +330,6 @@ def create_admin_page(request):
         print(form.is_valid)
         if form.is_valid():
             admin = form.save()
-            login(request, admin)
             return redirect('director_manage_roles')
     else:
         form = CreateAdminForm()
