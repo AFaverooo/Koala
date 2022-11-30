@@ -24,11 +24,20 @@
 #signupcard{
     max-width: 100rem;
     padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
     padding-bottom: 0px;
-    border-radius: 20px;
+    border-radius: 30px;
 }
+
+.successbutton {
+    transition-duration: 0.4s;
+  }
+  
+  .successbutton:hover {
+    background-color: #4CAF50; 
+    color: white;
+  }
 
 #SignUpButton {
     margin-top:15px;
