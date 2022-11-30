@@ -185,31 +185,22 @@ def admin_update_request(request, lesson_id):
     lesson.save()
 
     student = UserAccount.objects.get(id=lesson.student_id.id)
-    saved_lessons = Lesson.objects.filter(student_id = student)
-    return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
+    return redirect('student_requests',student.id)
 
 def admin_confirm_booking(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
     lesson.lesson_status = 'BK'
     lesson.save()
     student = UserAccount.objects.get(id=lesson.student_id.id)
-    saved_lessons = Lesson.objects.filter(student_id = student)
-    return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
+    return redirect('student_requests',student.id)
 
 def delete_lesson(request, lesson_id):
-    # reverse('student_requests')
-    try:
-        lesson = Lesson.objects.get(lesson_id=lesson_id)
-        if lesson is not None:
-            lesson.delete()
-
-            student = UserAccount.objects.get(id=lesson.student_id.id)
-            saved_lessons = Lesson.objects.filter(student_id = student)
-
-            return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student, 'next' : next})
-    except Lesson.DoesNotExist:
-        return redirect('admin_feed')
-
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    if lesson is not None:
+        lesson.delete()
+        student = UserAccount.objects.get(id=lesson.student_id.id)
+        return redirect('student_requests',student.id)
+            
 
 def home(request):
     return render(request, 'home.html')
