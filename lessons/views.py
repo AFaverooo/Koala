@@ -69,7 +69,8 @@ def invoice(request):
             student_invoice = Invoice.objects.filter(student_ID = student.id) #this function filter out the invocie with the same student id as the current user
             return render(request, 'invoice.html', {'Invoice': student_invoice})
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
@@ -149,8 +150,8 @@ def get_fullfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
 
-def home(request):
-    return render(request, 'home.html')
+# def home(request):
+#     return render(request, 'home.html')
 
 
 @login_required
@@ -175,7 +176,8 @@ def student_feed(request):
 
     else:
         print('not authorised')
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 @login_required
 def requests_page(request):
@@ -187,28 +189,36 @@ def requests_page(request):
             return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
     else:
         #add message that the user should be logged in
-        return redirect('log_in')
+        #return redirect('log_in')
+        return redirect('home')
 
 @login_required
 def admin_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
         return render(request,'admin_feed.html')
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 @login_required
 def director_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
         return render(request,'director_feed.html')
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 
 
 @login_prohibited
-def log_in(request):
+def home(request):
      if request.method == 'POST':
          form = LogInForm(request.POST)
+         print(f"Is form valid: {form.is_valid()}")
+         email = request.POST.get("email")
+         print(email)
+         password = request.POST.get("password")
+         print(password)
          if  form.is_valid():
              email = form.cleaned_data.get('email')
              password = form.cleaned_data.get('password')
@@ -231,7 +241,8 @@ def log_in(request):
          messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
      form = LogInForm()
      next = request.GET.get('next') or ''
-     return render(request,'log_in.html', {'form' : form, 'next' : next})
+     #return render(request,'log_in.html', {'form' : form, 'next' : next})
+     return render(request,'home.html', {'form' : form, 'next' : next})
 
 
 def log_out(request):
@@ -296,8 +307,8 @@ def new_lesson(request):
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
         #print('user should be logged in')
-        return redirect('log_in')
-
+        #return redirect('log_in')
+        return redirect('home')
 
 def save_lessons(request):
     if request.user.is_authenticated:
@@ -322,7 +333,8 @@ def save_lessons(request):
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
         #print('user should be logged in')
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 
@@ -383,7 +395,8 @@ def edit_lesson(request,lesson_id):
         else:
             return render_edit_request(request,lesson_id)
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 def check_correct_student_lesson_deletion(student_id, lesson_id):
     all_student_lessons = Lesson.objects.filter(student_id = student_id)
@@ -416,4 +429,5 @@ def delete_pending(request,lesson_id):
             messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
             return redirect('student_feed')
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')

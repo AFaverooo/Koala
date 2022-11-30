@@ -36,8 +36,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'lessons',
+    'widget_tweaks',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'bootstrap4',
     'bootstrap_datepicker_plus',
+
 ]
 
 MIDDLEWARE = [
@@ -111,6 +115,17 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+
+
+#For django-crispy-forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+
+
 
 
 # Static files (CSS, JavaScript, Images)
