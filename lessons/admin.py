@@ -7,6 +7,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = [
         'id','email', 'first_name', 'last_name','role', 'gender' , 'balance', 'is_active', 'is_staff', 'is_superuser'
     ]
+    # ordering = ('email',)
 
 @admin.register(Lesson)
 class UserAdmin(admin.ModelAdmin):
@@ -23,3 +24,6 @@ class InvoiceAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ['Student_ID_transaction', 'transaction_type', 'invoice_reference_transaction', 'transaction_amount'
     ]
+    # ordering = ('request_date',)
+    # search_fields = ('lesson_id','duration')
+    # list_filter = ('lesson_date_time','duration','is_booked','student_id')
