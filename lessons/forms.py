@@ -88,15 +88,15 @@ class CreateAdminForm(forms.ModelForm):
     )
     password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
 
-    def clean(self):
-        """Clean the data and generate messages for any errors."""
-
-        super().clean()
-        #gender = self.cleaned_data.get('gender')
-        new_password = self.cleaned_data.get('new_password')
-        password_confirmation = self.cleaned_data.get('password_confirmation')
-        if new_password != password_confirmation:
-            self.add_error('password_confirmation', 'Confirmation does not match password.')
+    # def clean(self):
+    #     """Clean the data and generate messages for any errors."""
+    #
+    #     super().clean()
+    #     #gender = self.cleaned_data.get('gender')
+    #     new_password = self.cleaned_data.get('new_password')
+    #     password_confirmation = self.cleaned_data.get('password_confirmation')
+    #     if new_password != password_confirmation:
+    #         self.add_error('password_confirmation', 'Confirmation does not match password.')
 
     def save(self):
         """Create a new user."""

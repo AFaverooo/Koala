@@ -1,6 +1,6 @@
 
 <h1> Create admin</h1>
- <form action="{% url 'director_manage_roles' %}" method="post">
+ <form action="{% url 'create_admin_page' %}" method="post">
         {% csrf_token %}
         {{form.as_p}}
  <input type="submit" value="Create admin" class="btn btn-primary">

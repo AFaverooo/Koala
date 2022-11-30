@@ -316,8 +316,10 @@ def delete_user(request,current_user_email):
 
 
 def create_admin_page(request):
+    print("ok")
     if request.method == 'POST':
         form = CreateAdminForm(request.POST)
+        print(form.is_valid)
         if form.is_valid():
             admin = form.save()
             login(request, admin)
