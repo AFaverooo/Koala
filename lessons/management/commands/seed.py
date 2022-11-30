@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction, TransactionTypes
 import random
 import string
 import datetime
@@ -58,6 +58,7 @@ class Command(BaseCommand):
             )
 
 
+
         # Seed the teachers
         for i in range(5):
 
@@ -113,15 +114,32 @@ class Command(BaseCommand):
             fees = int(fees) # this change the fees type to int so the if loops below will work 
 
             #this generate random number of pre-exist invoices
-            for i in range(random.randint(1,5)):
+            for x in range(random.randint(1,5)):
                 pre_fees = random.randint(12, 78)
-                pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, i)
-                invoice = Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID)
+                number_for_unpaid_and_partially_paid_invoice = random.randint(0, 12)
+                pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, x)
+                if(number_for_unpaid_and_partially_paid_invoice == 3 or number_for_unpaid_and_partially_paid_invoice == 4):
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = pre_fees)
+                elif(number_for_unpaid_and_partially_paid_invoice == 5 or number_for_unpaid_and_partially_paid_invoice == 6):
+                    amount_paid = random.randint(10, pre_fees)
+                    amount_needs_to_be_pay = pre_fees - amount_paid
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = amount_needs_to_be_pay)
+                    Transaction.objects.create(Student_ID_transaction = students_id_string, transaction_type = TransactionTypes.IN, transaction_amount = amount_paid)
+                    Transaction.objects.create(Student_ID_transaction = students_id_string, transaction_type = TransactionTypes.OUT, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
+                else:
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0)
+                    Transaction.objects.create(Student_ID_transaction = students_id_string, transaction_type = TransactionTypes.IN, transaction_amount = pre_fees)
+                    Transaction.objects.create(Student_ID_transaction = students_id_string, transaction_type = TransactionTypes.OUT, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = pre_fees)
+
+            balance_in_student_account = random.randint(1, 200)
+            students[i].balance += balance_in_student_account
+            students[i].save()
+            Transaction.objects.create(Student_ID_transaction = students_id_string, transaction_type = TransactionTypes.IN, transaction_amount = balance_in_student_account)
 
             reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice))
 
             if(fees != 0):
-                invoice = Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID)
+                Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees)
 
             #TO DO : add paid, overpaid, and unpaid requests
 

@@ -30,16 +30,19 @@ urlpatterns = [
 
     path('new_lesson/', views.new_lesson, name = 'new_lesson'), #adds the single lesson to the database
     path('save_lessons/', views.save_lessons, name = 'save_lessons'),
-    path('delete_pending/', views.delete_pending, name = 'delete_pending'), #delete single pending lesson
+    path('delete_pending/<int:lesson_id>', views.delete_pending, name = 'delete_pending'), #delete single pending lesson
 
-    path('edit_pending/', views.edit_pending, name = 'edit_pending'),
-    path('edit_lesson/<int:lesson_id>/', views.edit_lesson, name = 'edit_lesson'),
+    #path('edit_pending/', views.edit_pending, name = 'edit_pending'),
+    path('edit_lesson/<int:lesson_id>', views.edit_lesson, name = 'edit_lesson'),
 
     path('admin_feed', views.admin_feed, name = 'admin_feed'),
     path('director_feed', views.director_feed, name = 'director_feed'),
     path('sign_up/', views.sign_up, name = 'sign_up'),
 
-    path('invoice/', views.invoice, name = 'invoice'),
+    path('balance/', views.balance, name = 'balance'),
+    path('update_balance/', views.update_balance, name = 'update_balance'),
+    path('pay_for_invoice/', views.pay_fo_invoice, name = 'pay_for_invoice'),
+
     path('log_out/', views.log_out, name = 'log_out'),
 
     path('student_requests/<str:student_id>', views.student_requests, name='student_requests'),

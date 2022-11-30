@@ -11,7 +11,7 @@
 
 <p> <a href = '{% url 'requests_page' %}' class = "btn btn-lg btn-secondary"> Book lessons  </a></p>
 
-<p> <a href = '{% url 'invoice' %}' class = "btn btn-lg btn-secondary"> Check invoice  </a></p>
+<p> <a href = '{% url 'balance' %}' class = "btn btn-lg btn-secondary"> Check balance and Transaction  </a></p>
 
 {% for message in messages %}
 <div class="alert alert-{{ message.level_tag }}" role="alert">
@@ -19,6 +19,7 @@
 </div>
 
 {% endfor %}
+
 <h2>{{greeting}}</h2>
 
 {%  if unfulfilled_requests|length > 0 %}
@@ -38,13 +39,13 @@
       <td>{{value|get_lesson_duration}}</td>
       <td>{{value|get_teacher}}</td>
       <td>
-      <form method = "post" action="{% url 'delete_pending' %}">
+      <form method = "post" action='{% url 'delete_pending' key.lesson_id %}'>
           {% csrf_token %}
-        <button type="submit" value = {{key.lesson_id}} name = "delete_id">Delete</button>
+        <button type="submit">Delete</button>
       </form>
 
-      <form method = "get" action="{% url 'edit_pending'%}">
-        <button type="submit" value = {{key.lesson_id}} name = "edit_id">Edit</button>
+      <form method = "get" action='{% url 'edit_lesson' key.lesson_id %}'>
+        <button type="submit">Edit</button>
       </form>
     </td>
 
@@ -69,3 +70,7 @@
   {% endfor %}
 </table>
 {%  endif %}
+
+<p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
+
+<body>
