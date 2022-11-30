@@ -44,4 +44,5 @@ urlpatterns = [
     path('pay_for_invoice/', views.pay_fo_invoice, name = 'pay_for_invoice'),
 
     path('log_out/', views.log_out, name = 'log_out'),
+
 ]

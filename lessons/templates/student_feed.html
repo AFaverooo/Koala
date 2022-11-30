@@ -70,8 +70,6 @@
 </table>
 {%  endif %}
 
+<p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
+
 <body>
-  <form action="{% url 'log_out' %}" method="post">
-       {% csrf_token %}
-   <button type="submit" value="log out" class="btn btn-primary">Log out</button>
-</form>
