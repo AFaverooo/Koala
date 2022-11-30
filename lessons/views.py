@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.utils import timezone
 import datetime
+
+
 # Create your views here.
 
 from django.template.defaulttags import register
@@ -149,6 +151,29 @@ def get_fullfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
 
+def get_student_lessons(request,student):
+    saved_lessons = Lesson.objects.filter(student_id = student)
+    return render(request,'student_requests.html',{'saved_lessons':saved_lessons, 'student': student})
+
+def update_request(request, id):
+    lesson = Lesson.objects.get(lesson_id=id)
+    # data = {
+    #     'type' : lesson.type,
+    #     'duration': lesson.duration,
+    #     'lesson_date_time': lesson.lesson_date_time,
+    #     'teachers' : lesson.teacher_id
+    #        }
+    form = RequestForm(instance=lesson)
+    return render(request,'update_request.html', {'form': form , 'lesson': lesson})
+
+def confirm_booking(request, current_lesson_id):
+    lesson = Lesson.objects.get(lesson_id=current_lesson_id)
+    lesson.lesson_status = 'BK'
+    lesson.save()
+    student = UserAccount.objects.get(id=lesson.student_id.id)
+    saved_lessons = Lesson.objects.filter(student_id = student)
+    return render(request,'student_requests.html',{'saved_lessons':saved_lessons, 'student': student})
+
 def home(request):
     return render(request, 'home.html')
 
@@ -191,10 +216,12 @@ def requests_page(request):
 
 @login_required
 def admin_feed(request):
+
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
         return render(request,'admin_feed.html')
     else:
         return redirect('log_in')
+
 
 @login_required
 def director_feed(request):

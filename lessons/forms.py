@@ -79,3 +79,16 @@ class RequestForm(forms.ModelForm):
         
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
 
+
+    #This is the choice of teachers the student is able to pick out of
+    #teacher_choices = []
+    #teacher_name = forms.CharField(
+    #    label = "Teacher Name: ",
+    #    widget = forms.Select(choices = teacher_choices))
+
+# class AdminUpdateRequestForm(RequestForm, forms.ModelForm):
+#     REQUEST_STATUS = [
+#         'saved', 'pending','booked'
+#     ]
+#     status = forms.CharField(label='What is your favorite fruit?', widget=forms.Select(choices=REQUEST_STATUS))
+

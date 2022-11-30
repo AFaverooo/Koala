@@ -41,4 +41,8 @@ urlpatterns = [
 
     path('invoice/', views.invoice, name = 'invoice'),
     path('log_out/', views.log_out, name = 'log_out'),
+
+    path('student_requests/<str:student>', views.get_student_lessons, name="student_requests"),
+    path('update_request/<str:id>', views.update_request,name='update_request'),
+    path('confirm_booking/<str:current_lesson_id>', views.confirm_booking,name='confirm_booking')
 ]
