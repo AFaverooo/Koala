@@ -18,6 +18,14 @@ from django.db import transaction
 class LessonRequestViewTestCase(TestCase):
     def setUp(self):
 
+        self.admin = UserAccount.objects.create_admin(
+            first_name='Bob',
+            last_name='Jacobs',
+            email='bobby@example.org',
+            password='Password123',
+            gender = Gender.MALE,
+        )
+
         self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
@@ -126,8 +134,6 @@ class LessonRequestViewTestCase(TestCase):
         self.unfulfilled_lesson2.delete()
         self.unfulfilled_lesson3.delete()
 
-    #FIRST TESTS COVER FUNCTIONALITY TO ADD A NEW LESSON IN SAVED STATE
-
     def check_user_information(self,email,name,last_name,gender):
         user = UserAccount.objects.get(email =email)
         self.assertEqual(user.first_name, name)
@@ -139,9 +145,7 @@ class LessonRequestViewTestCase(TestCase):
 
     def test_get_saved_lessons(self):
         self.create_saved_lessons()
-
         saved_lessons = get_saved_lessons(self.student)
-
         self.assertEqual(len(saved_lessons),3)
 
     def test_get_unfulfilled_lessons(self):
@@ -167,7 +171,6 @@ class LessonRequestViewTestCase(TestCase):
         form = response.context['form']
 
         self.assertEqual(len(response.context['lessons']),0)
-
         self.assertTrue(isinstance(form, RequestForm))
         self.assertFalse(form.is_bound)
 
@@ -195,6 +198,17 @@ class LessonRequestViewTestCase(TestCase):
 
         response_url = reverse('log_in')
         self.assertTemplateUsed(response, 'log_in.html')
+
+    def test_unsuccesful_lesson_request_user_is_admin(self):
+        self.client.login(email=self.admin.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.get(self.url, follow=True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+
+        redirect_url = reverse('admin_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'admin_feed.html')
 
 
     def test_unsuccesful_lesson_request_bad_data(self):
@@ -317,4 +331,4 @@ class LessonRequestViewTestCase(TestCase):
         self.assertTemplateUsed(response, 'student_feed.html')
 
         messages = list(response.context['messages'])
-        self.assertEqual(str(messages[0]), 'Lesson requests are now unfulfilled for validation by admin')
+        self.assertEqual(str(messages[0]), 'Lesson requests are now pending for validation by admin')
