@@ -32,7 +32,16 @@ urlpatterns = [
     path('save_lessons/', views.save_lessons, name = 'save_lessons'),
 
     path('admin_feed', views.admin_feed, name = 'admin_feed'),
+
+    path('director_manage_roles', views.director_manage_roles, name = 'director_manage_roles'),
     path('director_feed', views.director_feed, name = 'director_feed'),
+    path('promote_director/<str:current_user_email>', views.promote_director, name = 'promote_director'),
+    path('promote_admin/<str:current_user_email>', views.promote_admin, name = 'promote_admin'),
+    path('promote_teacher/<str:current_user_email>', views.promote_teacher, name = 'promote_teacher'),
+    path('promote_student/<str:current_user_email>', views.promote_student, name = 'promote_student'),
+    path('delete_user/<str:current_user_email>', views.delete_user, name = 'delete_user'),
+
+
     path('sign_up/', views.sign_up, name = 'sign_up'),
 
     path('invoice/', views.invoice, name = 'invoice'),

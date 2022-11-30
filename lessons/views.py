@@ -218,12 +218,78 @@ def admin_feed(request):
     #student = request.user
 
     student = UserAccount.objects.values()
-
     return render(request,'admin_feed.html',{'student':student})
 
-
+@login_required
 def director_feed(request):
     return render(request,'director_feed.html')
+
+@login_required
+def director_manage_roles(request):
+    students = UserAccount.objects.filter(role = UserRole.STUDENT)
+    teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
+    admins = UserAccount.objects.filter(role = UserRole.ADMIN)
+    directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
+    return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
+
+@login_required
+def promote_director(request,current_user_email):
+    if (request.user.email == current_user_email):
+        messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
+        return director_manage_roles(request)
+    else:
+        user = UserAccount.objects.get(email=current_user_email)
+        user.role = UserRole.DIRECTOR
+        user.save()
+        messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
+        return director_manage_roles(request)
+
+@login_required
+def promote_admin(request,current_user_email):
+    if (request.user.email == current_user_email):
+        messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
+        return director_manage_roles(request)
+    else:
+        user = UserAccount.objects.get(email=current_user_email)
+        user.role = UserRole.ADMIN
+        user.save()
+        messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role admin")
+        return director_manage_roles(request)
+
+@login_required
+def promote_teacher(request,current_user_email):
+    if (request.user.email == current_user_email):
+        messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
+        return director_manage_roles(request)
+    else:
+        user = UserAccount.objects.get(email=current_user_email)
+        user.role = UserRole.TEACHER
+        user.save()
+        messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role teacher")
+        return director_manage_roles(request)
+
+@login_required
+def promote_student(request,current_user_email):
+    if (request.user.email == current_user_email):
+        messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
+        return director_manage_roles(request)
+    else:
+        user = UserAccount.objects.get(email=current_user_email)
+        user.role = UserRole.STUDENT
+        user.save()
+        messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role student")
+
+@login_required
+def delete_user(request,current_user_email):
+    if (request.user.email == current_user_email):
+        messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
+        return director_manage_roles(request)
+    else:
+        user = UserAccount.objects.get(email=current_user_email)
+        user.delete()
+        messages.add_message(request,messages.SUCCESS,"User has been sucessfuly deleted!")
+        return director_manage_roles(request)
+
 
 def log_in(request):
      if request.method == 'POST':

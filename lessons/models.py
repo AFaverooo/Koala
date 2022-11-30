@@ -216,7 +216,7 @@ class Invoice(models.Model):
     )
 
     # student number store the student
-    student_ID = models.CharField( 
+    student_ID = models.CharField(
         max_length = 30,
     )
 
@@ -230,7 +230,7 @@ class Invoice(models.Model):
         blank = False
     )
 
-    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
+    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):
         #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
         if(number_of_exist_invoice < 10):
@@ -268,6 +268,6 @@ class Invoice(models.Model):
 
     # def delete_lesson(self, lesson_name, lesson_price):
     #     pass
-        
+
     def get_invoice(self):
         return (self.reference_number, self.student_ID, self.fees_amount)
