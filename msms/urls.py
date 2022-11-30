@@ -39,6 +39,7 @@ urlpatterns = [
     path('promote_admin/<str:current_user_email>', views.promote_admin, name = 'promote_admin'),
     path('promote_teacher/<str:current_user_email>', views.promote_teacher, name = 'promote_teacher'),
     path('promote_student/<str:current_user_email>', views.promote_student, name = 'promote_student'),
+    path('disable_user/<str:current_user_email>', views.disable_user, name = 'disable_user'),
     path('delete_user/<str:current_user_email>', views.delete_user, name = 'delete_user'),
 
 

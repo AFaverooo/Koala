@@ -280,6 +280,28 @@ def promote_student(request,current_user_email):
         messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role student")
         return director_manage_roles(request)
 
+
+@login_required
+def disable_user(request,current_user_email):
+
+    if (request.user.email == current_user_email):
+        messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
+        return director_manage_roles(request)
+    else:
+        user = UserAccount.objects.get(email=current_user_email)
+        if (user.is_active == True):
+            user.is_active = False
+            user.save()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly disabled!")
+        else:
+            user.is_active = True
+            user.save()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly enabled!")
+
+        return director_manage_roles(request)
+
+
+
 @login_required
 def delete_user(request,current_user_email):
 

@@ -42,6 +42,7 @@
             <th scope="col">Lastname</th>
             <th scope="col">Email</th>
             <th scope="col">Active</th>
+            <th scope="col">Role management</th>
           </tr>
         </thead>
         <tbody>
@@ -60,6 +61,7 @@
                   <a href = '{% url 'promote_teacher' user.email %}'>Make teacher</a>
                   <a href = '{% url 'promote_student' user.email %}'>Make student</a>
                   <a href = '{% url 'delete_user' user.email %}'>Delete user</a>
+                  <a href = '{% url 'disable_user' user.email %}'>Disable user</a>
               </td>
 
             </tr>
@@ -98,6 +100,7 @@
             <th scope="col">Lastname</th>
             <th scope="col">Email</th>
             <th scope="col">Active</th>
+            <th scope="col">Role management</th>
           </tr>
         </thead>
         <tbody>
@@ -115,6 +118,7 @@
                 <a href = '{% url 'promote_teacher' user.email %}'>Make teacher</a>
                 <a href = '{% url 'promote_student' user.email %}'>Make student</a>
                 <a href = '{% url 'delete_user' user.email %}'>Delete user</a>
+                <a href = '{% url 'disable_user' user.email %}'>Disable user</a>
               </td>
             </tr>
 
@@ -152,6 +156,7 @@
             <th scope="col">Lastname</th>
             <th scope="col">Email</th>
             <th scope="col">Active</th>
+            <th scope="col">Role management</th>
           </tr>
         </thead>
         <tbody>
@@ -169,6 +174,7 @@
                 <a href = '{% url 'promote_teacher' user.email %}'>Make teacher</a>
                 <a href = '{% url 'promote_student' user.email %}'>Make student</a>
                 <a href = '{% url 'delete_user' user.email %}'>Delete user</a>
+                <a href = '{% url 'disable_user' user.email %}'>Disable user</a>
               </td>
             </tr>
 
@@ -206,6 +212,7 @@
             <th scope="col">Lastname</th>
             <th scope="col">Email</th>
             <th scope="col">Active</th>
+            <th scope="col">Role management</th>
           </tr>
         </thead>
         <tbody>
@@ -223,6 +230,7 @@
                 <a href = '{% url 'promote_teacher' user.email %}'>Make teacher</a>
                 <a href = '{% url 'promote_student' user.email %}'>Make student</a>
                 <a href = '{% url 'delete_user' user.email %}'>Delete user</a>
+                <a href = '{% url 'disable_user' user.email %}'>Disable user</a>
               </td>
             </tr>
 
