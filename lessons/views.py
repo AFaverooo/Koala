@@ -278,9 +278,11 @@ def promote_student(request,current_user_email):
         user.role = UserRole.STUDENT
         user.save()
         messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role student")
+        return director_manage_roles(request)
 
 @login_required
 def delete_user(request,current_user_email):
+
     if (request.user.email == current_user_email):
         messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
         return director_manage_roles(request)
