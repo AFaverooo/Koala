@@ -72,6 +72,7 @@ def make_lesson_dictionary(student_user,lessonStatus):
 
     return lessons_dict
 
+
 @login_required
 def balance(request):
     if request.user.is_authenticated:
@@ -82,7 +83,7 @@ def balance(request):
             student_balance = get_student_balance(student)
             return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
     else:
-        return redirect('log_in')
+        return redirect('home')
 
 def get_student_invoice(student):
     return Invoice.objects.filter(student_ID = student.id)
@@ -257,8 +258,55 @@ def get_fullfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
 
-def home(request):
-    return render(request, 'home.html')
+def student_requests(request,student_id):
+    saved_lessons = Lesson.objects.filter(student_id = student_id)
+    student = UserAccount.objects.get(id=student_id)
+    return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
+
+def admin_update_request_page(request, id):
+    lesson = Lesson.objects.get(lesson_id=id)
+    data = {
+        'type' : lesson.type,
+        'duration': lesson.duration,
+        'lesson_date_time': lesson.lesson_date_time,
+        'teachers' : lesson.teacher_id
+           }
+    form = RequestForm(data)
+    return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+
+def admin_update_request(request, lesson_id):
+
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    request_form = RequestForm(request.POST)
+
+    if request_form.is_valid():
+        type = request_form.cleaned_data.get('type')
+        duration = request_form.cleaned_data.get('duration')
+        lesson_date_time = request_form.cleaned_data.get('lesson_date_time')
+        teacher_id = request_form.cleaned_data.get('teachers')
+
+    lesson.type = type
+    lesson.duration = duration
+    lesson.lesson_date_time = lesson_date_time
+    lesson.teacher_id = teacher_id
+    lesson.save()
+
+    student = UserAccount.objects.get(id=lesson.student_id.id)
+    return redirect('student_requests',student.id)
+
+def admin_confirm_booking(request, lesson_id):
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    lesson.lesson_status = 'BK'
+    lesson.save()
+    student = UserAccount.objects.get(id=lesson.student_id.id)
+    return redirect('student_requests',student.id)
+
+def delete_lesson(request, lesson_id):
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    if lesson is not None:
+        lesson.delete()
+        student = UserAccount.objects.get(id=lesson.student_id.id)
+        return redirect('student_requests',student.id)
 
 
 @login_required
@@ -434,9 +482,10 @@ def save_lessons(request):
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
-        # return redirect('log_in')
+        #print('user should be logged in')
         return redirect('home')
-
+        #form = RequestForm()
+        #return render(rquest,'requests_page.html', {'form':form})
 
 def render_edit_request(request,lesson_id):
     try:

@@ -10,11 +10,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 
 #homecard{
-    max-width: 30rem;
+    max-width: 50rem;
     padding-top: 10px;
     padding-left: 10px;
     padding-right: 10px;

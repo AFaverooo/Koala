@@ -24,7 +24,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name = 'home'),
     path('jsi18n', JavaScriptCatalog.as_view(), name = 'js-catalog'),
-    # path('log_in/', views.home, name = 'log_in'),
     path('student_feed', views.student_feed, name = 'student_feed'),
     path('requests_page', views.requests_page, name = 'requests_page'),
 
