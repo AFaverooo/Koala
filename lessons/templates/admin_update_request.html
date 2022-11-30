@@ -14,7 +14,7 @@
   <p> Form will be here </p>
 
   <body>
-      <form action="{% url 'new_lesson' %}" method="post">
+      <form action="{% url 'admin_update_request' lesson.lesson_id %}" method="post">
         {% csrf_token %}
           {% for message in messages %}
             <div class="alert alert-{{ message.level_tag }}" role="alert">

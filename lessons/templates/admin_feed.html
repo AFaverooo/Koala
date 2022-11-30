@@ -19,6 +19,16 @@
           border-bottom: 1px solid #ddd;
         }
         tr:hover {background-color: gray;}
+
+        .button {
+          background-color: #1183ca;
+          padding: 10px 10px;
+          font-size: 12px;
+          color: white;
+          font-weight:bold;
+          border-radius: 10px;
+          border:none;
+        }
       </style>
 
         <table class="table">
@@ -42,7 +52,9 @@
               <td>{{ user.is_staff }}</td>
               <td>{{ user.is_active }}</td>
               <td>
-                <a href = '{% url 'student_requests' user.id %}' class = "btn btn-lg btn-secondary">Select User</a>
+                <a href = '{% url 'student_requests' user.id %}' class = "btn">
+                  <button type="button" class="btn button">Select Student</button>
+                </a>
               </td>
             </tr>
             {# <h2>user :{{user}}</h2> #}
