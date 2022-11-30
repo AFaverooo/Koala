@@ -62,7 +62,6 @@ def make_unfulfilled_dictionary(student_user):
 
     return unfulfilled_lessons_dict
 
-
 @login_required
 def balance(request):
     if request.user.is_authenticated:

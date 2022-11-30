@@ -15,10 +15,7 @@
 
 <div>
     <body>
-        <form action="{% url 'student_feed' %}" method="post">
-             {% csrf_token %}
-         <button type="submit" value="student_feed" class="btn btn-primary">Return to Student Feed Page</button>
-      </form>
+      <p> <a href = '{% url 'student_feed' %}' class = "btn btn-lg btn-secondary">Return to Student Feed Page</a></p>
 </div>
     
 <div>
