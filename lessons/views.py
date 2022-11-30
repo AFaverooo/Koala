@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.utils import timezone
 import datetime
+from django.core.exceptions import ObjectDoesNotExist
+
 # Create your views here.
 
 from django.template.defaulttags import register
@@ -149,6 +151,57 @@ def get_fullfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
 
+def student_requests(request,student_id):
+    saved_lessons = Lesson.objects.filter(student_id = student_id)
+    student = UserAccount.objects.get(id=student_id)
+    return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
+
+def admin_update_request_page(request, id):
+    lesson = Lesson.objects.get(lesson_id=id)
+    data = {
+        'type' : lesson.type,
+        'duration': lesson.duration,
+        'lesson_date_time': lesson.lesson_date_time,
+        'teachers' : lesson.teacher_id
+           }
+    form = RequestForm(data)
+    return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+
+def admin_update_request(request, lesson_id):
+
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    request_form = RequestForm(request.POST)
+
+    if request_form.is_valid():
+        type = request_form.cleaned_data.get('type')
+        duration = request_form.cleaned_data.get('duration')
+        lesson_date_time = request_form.cleaned_data.get('lesson_date_time')
+        teacher_id = request_form.cleaned_data.get('teachers')
+
+    lesson.type = type
+    lesson.duration = duration
+    lesson.lesson_date_time = lesson_date_time
+    lesson.teacher_id = teacher_id
+    lesson.save()
+
+    student = UserAccount.objects.get(id=lesson.student_id.id)
+    return redirect('student_requests',student.id)
+
+def admin_confirm_booking(request, lesson_id):
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    lesson.lesson_status = 'BK'
+    lesson.save()
+    student = UserAccount.objects.get(id=lesson.student_id.id)
+    return redirect('student_requests',student.id)
+
+def delete_lesson(request, lesson_id):
+    lesson = Lesson.objects.get(lesson_id=lesson_id)
+    if lesson is not None:
+        lesson.delete()
+        student = UserAccount.objects.get(id=lesson.student_id.id)
+        return redirect('student_requests',student.id)
+            
+
 def home(request):
     return render(request, 'home.html')
 
@@ -192,7 +245,8 @@ def requests_page(request):
 @login_required
 def admin_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
-        return render(request,'admin_feed.html')
+        student = UserAccount.objects.values()
+        return render(request,'admin_feed.html',{'student':student})
     else:
         return redirect('log_in')
 

@@ -1,0 +1,30 @@
+{% load static %}
+<html>
+  <head>
+
+    <script src = "{% url 'js-catalog' %}"></script>
+    <script src="{% static '/admin/js/core.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+
+  <head>
+
+
+  <h1> Request a lesson</h1>
+  <p> Form will be here </p>
+
+  <body>
+      <form action="{% url 'admin_update_request' lesson.lesson_id %}" method="post">
+        {% csrf_token %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.level_tag }}" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+           {{ form.media }}
+           {{ form.as_p }}
+           Lesson Status: {{lesson.lesson_status}}<br>
+           <input type="submit" value="Update" class="btn btn-primary"></input>
+      </form>
+</body>
+</html>
