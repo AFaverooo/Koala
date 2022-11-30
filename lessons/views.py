@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from django.contrib import messages
-from .forms import LogInForm,SignUpForm,RequestForm
+from .forms import LogInForm,SignUpForm,RequestForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
 
@@ -313,6 +313,31 @@ def delete_user(request,current_user_email):
         user.delete()
         messages.add_message(request,messages.SUCCESS,"User has been sucessfuly deleted!")
         return director_manage_roles(request)
+
+
+def create_admin_page(request):
+    if request.method == 'POST':
+        form = CreateAdminForm(request.POST)
+        if form.is_valid():
+            admin = form.save()
+            login(request, admin)
+            return redirect('director_manage_roles')
+    else:
+        form = CreateAdminForm()
+
+    return render(request,'director_create_admin.html',{'form': form})
+
+@login_required
+def edit_user(request,current_user_email):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            student = form.save()
+            login(request, student)
+            return redirect('student_feed')
+    else:
+        form = SignUpForm()
+    return render(request, 'sign_up.html', {'form': form})
 
 
 def log_in(request):
