@@ -3,7 +3,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.models import UserAccount, Lesson, Gender, LessonType,LessonDuration,LessonStatus
-from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
+from lessons.views import make_lesson_timetable_dictionary,make_lesson_dictionary
 import datetime
 from django.utils import timezone
 # from lessons.models import UserAccount, Gender
@@ -133,7 +133,7 @@ class StudentFeedTestCase(TestCase):
     def test_dictionary_format_for_unfulfilled_lessons(self):
         self.change_lessons_status_to_unfulfilled()
 
-        unfulfilled_lessons_dict = make_unfulfilled_dictionary(self.student)
+        unfulfilled_lessons_dict = make_lesson_dictionary(self.student, "Lesson Request")
 
         self.assertEqual(len(unfulfilled_lessons_dict),5)
         #print(lesson_dict[self.lesson])

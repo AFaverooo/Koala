@@ -37,14 +37,22 @@ def get_teacher(dictionary):
 def get_lesson_request(dictionary):
     return dictionary.get("Lesson Request")
 
+@register.filter
+def get_lesson_saved(dictionary):
+    return dictionary.get("Saved")
 
-def make_unfulfilled_dictionary(student_user):
-    unfulfilled_lessons = get_unfulfilled_lessons(student_user)
 
-    unfulfilled_lessons_dict = {}
+def make_lesson_dictionary(student_user,lessonStatus):
+    lessons = []
+    if lessonStatus == 'Lesson Request':
+        lessons = get_unfulfilled_lessons(student_user)
+    else:
+        lessons = get_saved_lessons(student_user)
 
-    request_count_id = 0
-    for lesson in unfulfilled_lessons:
+    lessons_dict = {}
+
+    id_count = 0
+    for lesson in lessons:
         lesson_type_str = ''
 
         if lesson.type == LessonType.INSTRUMENT:
@@ -58,11 +66,11 @@ def make_unfulfilled_dictionary(student_user):
 
         lesson_duration_str = f'{lesson.duration} minutes'
 
-        case = {'Lesson Request': f'{request_count_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
-        unfulfilled_lessons_dict[lesson] = case
-        request_count_id += 1
+        case = {lessonStatus: f'{id_count}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
+        lessons_dict[lesson] = case
+        id_count += 1
 
-    return unfulfilled_lessons_dict
+    return lessons_dict
 
 @login_required
 def balance(request):
@@ -122,7 +130,7 @@ def pay_fo_invoice(request):
             except ValueError:
                 messages.add_message(request,messages.ERROR,"You cannot submit without enter a value!")
                 return redirect('balance')
-            
+
             student = request.user
             try:
                 temp_invoice = Invoice.objects.get(reference_number = input_invoice_reference)
@@ -297,7 +305,7 @@ def delete_lesson(request, lesson_id):
         lesson.delete()
         student = UserAccount.objects.get(id=lesson.student_id.id)
         return redirect('student_requests',student.id)
-            
+
 
 def home(request):
     return render(request, 'home.html')
@@ -316,7 +324,7 @@ def student_feed(request):
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
             return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
         elif len(unfulfilled_lessons) > 0:
-            unfulfilled_requests = make_unfulfilled_dictionary(request.user)
+            unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
             greeting_str = f'Welcome back {request.user} Below are your lesson requests'
             return render(request,'student_feed.html', {'unfulfilled_requests':unfulfilled_requests, 'greeting':greeting_str})
         else:
@@ -415,8 +423,7 @@ def new_lesson(request):
             #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
             if previously_requested_lessons or previously_booked_lessons:
                 print('already made a set of requests')
-                messages.add_message(request,messages.ERROR,"You have already made requests for this term or have booked lessons, contact admin to add extra lessons")
-                form = RequestForm()
+                messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
                 return redirect('requests_page')
 
             #if current_student.role.is_student():
@@ -428,22 +435,16 @@ def new_lesson(request):
                 type = request_form.cleaned_data.get('type')
                 teacher_id = request_form.cleaned_data.get('teachers')
 
-                try:#if check_duplicate(timezone.now, lesson_date, current_student) is False:
+                try:
                     Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 except IntegrityError:
-                    messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
+                    messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
-                    #print('attempted to duplicate lesson')
+
                 return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
-
-
-                #savedLessons = Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = current_student)
-                #return render(request,'requests_page.html', {'form': form, 'lessons' : savedLessons})
-                #return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                savedLessons = get_saved_lessons(current_student)
-                return render(request,'requests_page.html', {'form': request_form, 'lessons' : savedLessons})
+                return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(current_student)})
         else:
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
@@ -453,7 +454,7 @@ def new_lesson(request):
 
 
 def save_lessons(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
         if request.method == 'POST':
             all_unsaved_lessons = get_saved_lessons(current_student)
@@ -464,20 +465,17 @@ def save_lessons(request):
                 return render(request,'requests_page.html', {'form': form})
 
             for eachLesson in all_unsaved_lessons:
-                #print(eachLesson.lesson_status)
                 eachLesson.lesson_status = LessonStatus.UNFULFILLED
                 eachLesson.save()
 
-            messages.add_message(request,messages.SUCCESS, "Lesson requests are now unfulfilled for validation by admin")
+            messages.add_message(request,messages.SUCCESS, "Lesson requests are now pending for validation by admin")
             return redirect('student_feed')
         else:
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
-        #print('user should be logged in')
         return redirect('log_in')
-        #form = RequestForm()
-        #return render(rquest,'requests_page.html', {'form':form})
+
 
 def render_edit_request(request,lesson_id):
     try:
@@ -492,7 +490,6 @@ def render_edit_request(request,lesson_id):
             'teachers': to_edit_lesson.teacher_id}
 
     form = RequestForm(data)
-    #print('render')
     return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
 
 
