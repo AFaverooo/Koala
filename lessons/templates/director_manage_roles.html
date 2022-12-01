@@ -27,7 +27,7 @@
         </thead>
         <tbody>
           {% for user in directors %}
-          {% include 'partials/director_table/table_rows.html' with user=user %}
+          {% include 'partials/director_table/table_rows_director.html' with user=user %}
           {% endfor %}
         </tbody>
         </table>
@@ -51,51 +51,7 @@
         </thead>
         <tbody>
           {% for user in admins %}
-          {% include 'partials/director_table/table_rows.html' with user=user %}
-          {% endfor %}
-        </tbody>
-        </table>
-
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-12">
-      <h1>Teachers</h1>
-
-        {% include 'partials/director_table/table_styles.html' %}
-
-        <table class="table">
-        <thead>
-          <tr>
-            {% include 'partials/director_table/table_head.html' %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in teachers %}
-          {% include 'partials/director_table/table_rows.html' with user=user %}
-          {% endfor %}
-        </tbody>
-        </table>
-
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-12">
-      <h1>Students</h1>
-
-        {% include 'partials/director_table/table_styles.html' %}
-
-        <table class="table">
-        <thead>
-          <tr>
-            {% include 'partials/director_table/table_head.html' %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in students %}
-          {% include 'partials/director_table/table_rows.html' with user=user %}
+          {% include 'partials/director_table/table_rows_admin.html' with user=user %}
           {% endfor %}
         </tbody>
         </table>

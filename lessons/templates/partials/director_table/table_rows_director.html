@@ -7,10 +7,7 @@
     <td>{{ user.is_active|yesno:"✔,✘" }}</td>
 
     <td>
-        <a href = '{% url 'promote_director' user.email %}'>Make director</a>
         <a href = '{% url 'promote_admin' user.email %}'>Make admin</a>
-        <a href = '{% url 'promote_teacher' user.email %}'>Make teacher</a>
-        <a href = '{% url 'promote_student' user.email %}'>Make student</a>
     </td>
     <td>
       <a href = '{% url 'update_user' user.id %}'>Edit user</a>
