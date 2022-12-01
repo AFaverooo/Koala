@@ -263,41 +263,57 @@ def student_requests(request,student_id):
     student = UserAccount.objects.get(id=student_id)
     return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
 
-def admin_update_request_page(request, id):
-    lesson = Lesson.objects.get(lesson_id=id)
-    data = {
-        'type' : lesson.type,
-        'duration': lesson.duration,
-        'lesson_date_time': lesson.lesson_date_time,
-        'teachers' : lesson.teacher_id
-           }
-    form = RequestForm(data)
-    return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+def admin_update_request_page(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(lesson_id=lesson_id)
+        data = {
+            'type' : lesson.type,
+            'duration': lesson.duration,
+            'lesson_date_time': lesson.lesson_date_time,
+            'teachers' : lesson.teacher_id
+            }
+        form = RequestForm(data)
+        return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+        return redirect('admin_feed')
 
 def admin_update_request(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(lesson_id=lesson_id)
+        form = RequestForm(request.POST)
 
-    lesson = Lesson.objects.get(lesson_id=lesson_id)
-    request_form = RequestForm(request.POST)
+        if form.is_valid():
+            type = form.cleaned_data.get('type')
+            duration = form.cleaned_data.get('duration')
+            lesson_date_time = form.cleaned_data.get('lesson_date_time')
+            teacher_id = form.cleaned_data.get('teachers')
 
-    if request_form.is_valid():
-        type = request_form.cleaned_data.get('type')
-        duration = request_form.cleaned_data.get('duration')
-        lesson_date_time = request_form.cleaned_data.get('lesson_date_time')
-        teacher_id = request_form.cleaned_data.get('teachers')
+        if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
+            messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
+            return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+        else:
+            lesson.type = type
+            lesson.duration = duration
+            lesson.lesson_date_time = lesson_date_time
+            lesson.teacher_id = teacher_id
+            lesson.save()
+            messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
-    lesson.type = type
-    lesson.duration = duration
-    lesson.lesson_date_time = lesson_date_time
-    lesson.teacher_id = teacher_id
-    lesson.save()
+            student = UserAccount.objects.get(id=lesson.student_id.id)
+            return redirect('student_requests',student.id)
 
-    student = UserAccount.objects.get(id=lesson.student_id.id)
-    return redirect('student_requests',student.id)
+    except ObjectDoesNotExist:
+        return redirect('admin_feed')
 
 def admin_confirm_booking(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
-    lesson.lesson_status = 'BK'
-    lesson.save()
+    if(lesson.lesson_status == 'BK'):
+        messages.add_message(request, messages.INFO, 'Already booked!')
+    else:
+        lesson.lesson_status = 'BK'
+        lesson.save()
+        messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
     student = UserAccount.objects.get(id=lesson.student_id.id)
     return redirect('student_requests',student.id)
 
@@ -305,6 +321,7 @@ def delete_lesson(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
     if lesson is not None:
         lesson.delete()
+        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
         student = UserAccount.objects.get(id=lesson.student_id.id)
         return redirect('student_requests',student.id)
 
