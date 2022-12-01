@@ -289,8 +289,6 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(response_form.cleaned_data.get("lesson_date_time"),self.lesson.lesson_date_time)
 
 
-
-
     def test_edit_lesson_without_valid_form_type_data(self):
         self.create_forms()
         self.form_input['type'] = 'Incorrect type input'

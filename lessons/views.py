@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, TransactionTypes, InvoiceStatus
 from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.http import HttpResponseForbidden
 from django.db import IntegrityError
 from django.utils import timezone
 import datetime
@@ -31,7 +31,6 @@ def get_lesson_date(dictionary):
 @register.filter
 def get_teacher(dictionary):
     return dictionary.get("Teacher")
-
 
 @register.filter
 def get_lesson_request(dictionary):
@@ -257,6 +256,8 @@ def get_unfulfilled_lessons(student):
 def get_fullfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
+def get_admin_email():
+    return UserAccount.objects.filter(role = UserRole.ADMIN).first()
 
 def student_requests(request,student_id):
     saved_lessons = Lesson.objects.filter(student_id = student_id)
@@ -333,15 +334,21 @@ def student_feed(request):
             unfulfilled_lessons = get_unfulfilled_lessons(request.user)
             fullfilled_lessons = get_fullfilled_lessons(request.user)
 
-            fullfilled_label_str = f'Below is a timetable for booked lessons'
-            unfullfilled_label_str = f'Below is a view for requested lessons'
-
             greeting_str = f'Welcome back {request.user}'
 
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
-                #return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
             unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
-            return render(request,'student_feed.html', {'fulfilledLabel':fullfilled_label_str, 'unfulfilledLabel':unfullfilled_label_str, 'unfulfilled_requests':unfulfilled_requests, 'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
+
+            admin = get_admin_email()
+
+            admin_email_str = ''
+
+            if admin:
+                admin_email_str = f'To Further Edit Bookings Contact {admin.email}'
+            else:
+                admin_email_str = f'No Admins Available To Contact'
+
+            return render(request,'student_feed.html', {'admin_email': admin_email_str,'unfulfilled_requests':unfulfilled_requests, 'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
         else:
             return HttpResponseForbidden()
     else:
@@ -359,8 +366,6 @@ def requests_page(request):
         else:
             return HttpResponseForbidden()
     else:
-        #add message that the user should be logged in
-        #return redirect('log_in')
         return redirect('home')
 
 @login_required
@@ -385,37 +390,37 @@ def director_feed(request):
 
 @login_prohibited
 def home(request):
-     if request.method == 'POST':
-         form = LogInForm(request.POST)
-         print(f"Is form valid: {form.is_valid()}")
-         email = request.POST.get("email")
-         print(email)
-         password = request.POST.get("password")
-         print(password)
-         if  form.is_valid():
-             email = form.cleaned_data.get('email')
-             password = form.cleaned_data.get('password')
-             role = form.cleaned_data.get('role')
-             user = authenticate(email=email, password=password)
-             if user is not None:
-                 login(request,user)
+    if request.method == 'POST':
+        form = LogInForm(request.POST)
+        print(f"Is form valid: {form.is_valid()}")
+        email = request.POST.get("email")
+        print(email)
+        password = request.POST.get("password")
+        print(password)
+        if  form.is_valid():
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password')
+            role = form.cleaned_data.get('role')
+            user = authenticate(email=email, password=password)
+            if user is not None:
+                login(request,user)
 
                  # redirects the user based on his role
-                 if (user.role == UserRole.ADMIN.value):
+                if (user.role == UserRole.ADMIN.value):
                      #redirect_url = request.POST.get('next') or 'admin_feed'
-                     return redirect('admin_feed')
-                 elif (user.role == UserRole.DIRECTOR.value):
-                     redirect_url = request.POST.get('next') or 'director_feed'
-                     return redirect(redirect_url)
-                 else:
-                     redirect_url = request.POST.get('next') or 'student_feed'
-                     return redirect(redirect_url)
+                    return redirect('admin_feed')
+                elif (user.role == UserRole.DIRECTOR.value):
+                    redirect_url = request.POST.get('next') or 'director_feed'
+                    return redirect(redirect_url)
+                else:
+                    redirect_url = request.POST.get('next') or 'student_feed'
+                    return redirect(redirect_url)
 
-         messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
-     form = LogInForm()
-     next = request.GET.get('next') or ''
-     #return render(request,'log_in.html', {'form' : form, 'next' : next})
-     return render(request,'home.html', {'form' : form, 'next' : next})
+        messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
+    form = LogInForm()
+    next = request.GET.get('next') or ''
+    #return render(request,'log_in.html', {'form' : form, 'next' : next})
+    return render(request,'home.html', {'form' : form, 'next' : next})
 
 
 def log_out(request):
@@ -464,7 +469,8 @@ def new_lesson(request):
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
 
-                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
+                form = RequestForm()
+                return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
                 return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(current_student)})
@@ -517,7 +523,7 @@ def render_edit_request(request,lesson_id):
 
 
 def edit_lesson(request,lesson_id):
-    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
 
         try:
@@ -526,7 +532,7 @@ def edit_lesson(request,lesson_id):
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
             return redirect('student_feed')
 
-        if check_correct_student_accessing_lesson(current_student,lesson_id) is False:
+        if check_correct_student_accessing_lesson(current_student,to_edit_lesson) is False:
             messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 
@@ -563,10 +569,10 @@ def edit_lesson(request,lesson_id):
         # return redirect('log_in')
         return redirect('home')
 
-def check_correct_student_accessing_lesson(student_id, lesson_id):
+def check_correct_student_accessing_lesson(student_id, lesson):
     all_student_lessons = Lesson.objects.filter(student_id = student_id)
     for lesson in all_student_lessons:
-        if lesson.lesson_id == int(lesson_id):
+        if lesson.is_equal(lesson):
             return True
 
     return False
@@ -582,7 +588,7 @@ def delete_pending(request,lesson_id):
                     messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
                     return redirect('student_feed')
 
-                if check_correct_student_accessing_lesson(current_student,lesson_id) is False:
+                if check_correct_student_accessing_lesson(current_student,lesson_to_delete) is False:
                     messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
                     return redirect('student_feed')
 
