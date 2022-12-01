@@ -41,6 +41,72 @@ def get_lesson_request(dictionary):
 def get_lesson_saved(dictionary):
     return dictionary.get("Saved")
 
+def make_lesson_timetable_dictionary(student_user):
+    fullfilled_lessons = get_fullfilled_lessons(student_user)
+
+    fullfilled_lessons_dict = {}
+
+    if len(fullfilled_lessons) == 0:
+        return fullfilled_lessons_dict
+
+    for lesson in fullfilled_lessons:
+        lesson_type_str = ''
+
+        if lesson.type == LessonType.INSTRUMENT:
+            lesson_type_str = LessonType.INSTRUMENT.label
+        elif lesson.type == LessonType.THEORY:
+            lesson_type_str = LessonType.THEORY.label
+        elif lesson.type == LessonType.PRACTICE:
+            lesson_type_str = LessonType.PRACTICE.label
+        elif lesson.type == LessonType.PERFORMANCE:
+            lesson_type_str = LessonType.PERFORMANCE.label
+
+
+        new_time = lesson.lesson_date_time + datetime.timedelta(minutes=int(lesson.duration))
+
+        new_lesson_hr_str = ''
+        lesson_date_hr_str = ''
+
+        new_time_minute_str = ''
+        lesson_date_minute_str = ''
+
+        #format minutes using :00 notation
+        if new_time.minute < 10:
+            new_time_minute_str = f'0{new_time.minute}'
+        else:
+            new_time_minute_str = f'{new_time.minute}'
+
+        if lesson.lesson_date_time.minute < 10:
+            lesson_date_minute_str = f'0{lesson.lesson_date_time.minute}'
+        else:
+            lesson_date_minute_str = f'{lesson.lesson_date_time.minute}'
+
+        #format hours using 00: notation
+        if new_time.hour < 10:
+            new_lesson_hr_str = f'0{new_time.hour}'
+        else:
+            new_lesson_hr_str = f'{new_time.hour}'
+
+        if lesson.lesson_date_time.hour < 10:
+            lesson_date_hr_str = f'0{lesson.lesson_date_time.hour}'
+        else:
+            lesson_date_hr_str = f'{lesson.lesson_date_time.hour}'
+
+        teacher_str = ''
+
+        if lesson.teacher_id.gender == Gender.FEMALE:
+            teacher_str = f'Miss {lesson.teacher_id}'
+        elif lesson.teacher_id.gender == Gender.MALE:
+            teacher_str = f'Mr {lesson.teacher_id}'
+        else:
+            teacher_str = f'{lesson.teacher_id}'
+
+        duration_str = f'{lesson_date_hr_str}:{lesson_date_minute_str} - {new_lesson_hr_str}:{new_time_minute_str}'
+
+        case = {'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
+        fullfilled_lessons_dict[lesson] = case
+
+    return fullfilled_lessons_dict
 
 def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
@@ -171,7 +237,7 @@ def pay_fo_invoice(request):
 
 def get_all_transactions(request):
     all_transactions = Transaction.objects.all()
-    total = 0 
+    total = 0
     for each_transaction in all_transactions:
         if(each_transaction.transaction_type == TransactionTypes.OUT):
             total-= each_transaction.transaction_amount
@@ -180,72 +246,6 @@ def get_all_transactions(request):
 
     return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
 
-def make_lesson_timetable_dictionary(student_user):
-    fullfilled_lessons = get_fullfilled_lessons(student_user)
-
-    fullfilled_lessons_dict = {}
-
-    if len(fullfilled_lessons) == 0:
-        return fullfilled_lessons_dict
-
-    for lesson in fullfilled_lessons:
-        lesson_type_str = ''
-
-        if lesson.type == LessonType.INSTRUMENT:
-            lesson_type_str = LessonType.INSTRUMENT.label
-        elif lesson.type == LessonType.THEORY:
-            lesson_type_str = LessonType.THEORY.label
-        elif lesson.type == LessonType.PRACTICE:
-            lesson_type_str = LessonType.PRACTICE.label
-        elif lesson.type == LessonType.PERFORMANCE:
-            lesson_type_str = LessonType.PERFORMANCE.label
-
-
-        new_time = lesson.lesson_date_time + datetime.timedelta(minutes=int(lesson.duration))
-
-        new_lesson_hr_str = ''
-        lesson_date_hr_str = ''
-
-        new_time_minute_str = ''
-        lesson_date_minute_str = ''
-
-        #format minutes using :00 notation
-        if new_time.minute < 10:
-            new_time_minute_str = f'0{new_time.minute}'
-        else:
-            new_time_minute_str = f'{new_time.minute}'
-
-        if lesson.lesson_date_time.minute < 10:
-            lesson_date_minute_str = f'0{lesson.lesson_date_time.minute}'
-        else:
-            lesson_date_minute_str = f'{lesson.lesson_date_time.minute}'
-
-        #format hours using 00: notation
-        if new_time.hour < 10:
-            new_lesson_hr_str = f'0{new_time.hour}'
-        else:
-            new_lesson_hr_str = f'{new_time.hour}'
-
-        if lesson.lesson_date_time.hour < 10:
-            lesson_date_hr_str = f'0{lesson.lesson_date_time.hour}'
-        else:
-            lesson_date_hr_str = f'{lesson.lesson_date_time.hour}'
-
-        teacher_str = ''
-
-        if lesson.teacher_id.gender == Gender.FEMALE:
-            teacher_str = f'Miss {lesson.teacher_id}'
-        elif lesson.teacher_id.gender == Gender.MALE:
-            teacher_str = f'Mr {lesson.teacher_id}'
-        else:
-            teacher_str = f'{lesson.teacher_id}'
-
-        duration_str = f'{lesson_date_hr_str}:{lesson_date_minute_str} - {new_lesson_hr_str}:{new_time_minute_str}'
-
-        case = {'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
-        fullfilled_lessons_dict[lesson] = case
-
-    return fullfilled_lessons_dict
 
 
 def get_saved_lessons(student):
@@ -328,26 +328,23 @@ def delete_lesson(request, lesson_id):
 
 @login_required
 def student_feed(request):
-    #print("redirected")
-
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        unfulfilled_lessons = get_unfulfilled_lessons(request.user)
-        fullfilled_lessons = get_fullfilled_lessons(request.user)
+        if request.method == 'GET':
+            unfulfilled_lessons = get_unfulfilled_lessons(request.user)
+            fullfilled_lessons = get_fullfilled_lessons(request.user)
 
-        if len(fullfilled_lessons) > 0:
-            greeting_str = f'Welcome back {request.user} Below is your timetable for this term'
-            fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
-            return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
-        elif len(unfulfilled_lessons) > 0:
-            unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
-            greeting_str = f'Welcome back {request.user} Below are your lesson requests'
-            return render(request,'student_feed.html', {'unfulfilled_requests':unfulfilled_requests, 'greeting':greeting_str})
-        else:
+            fullfilled_label_str = f'Below is a timetable for booked lessons'
+            unfullfilled_label_str = f'Below is a view for requested lessons'
+    
             greeting_str = f'Welcome back {request.user}'
-            return render(request,'student_feed.html', {'greeting':greeting_str})
 
+            fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
+                #return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
+            unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
+            return render(request,'student_feed.html', {'fulfilledLabel':fullfilled_label_str, 'unfulfilledLabel':unfullfilled_label_str, 'unfulfilled_requests':unfulfilled_requests, 'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
+        else:
+            return HttpResponseForbidden()
     else:
-        print('not authorised')
         # return redirect('log_in')
         return redirect('home')
 
@@ -359,6 +356,8 @@ def requests_page(request):
             savedLessons = get_saved_lessons(student)
             form = RequestForm()
             return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
+        else:
+            return redirect("home")
     else:
         #add message that the user should be logged in
         #return redirect('log_in')
@@ -382,7 +381,6 @@ def director_feed(request):
     else:
         # return redirect('log_in')
         return redirect('home')
-
 
 
 @login_prohibited
@@ -441,15 +439,15 @@ def new_lesson(request):
         current_student = request.user
         if request.method == 'POST':
             #test case, already unfulfilled lessons upon request
-            previously_requested_lessons = get_unfulfilled_lessons(current_student)
-            previously_booked_lessons = get_fullfilled_lessons(current_student)
+            #previously_requested_lessons = get_unfulfilled_lessons(current_student)
+            #previously_booked_lessons = get_fullfilled_lessons(current_student)
 
             #import widget tweaks
             #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            if previously_requested_lessons or previously_booked_lessons:
-                print('already made a set of requests')
-                messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
-                return redirect('requests_page')
+            #if previously_requested_lessons or previously_booked_lessons:
+            #    print('already made a set of requests')
+            #    messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
+            #    return redirect('requests_page')
 
             #if current_student.role.is_student():
             request_form = RequestForm(request.POST)
@@ -506,7 +504,7 @@ def save_lessons(request):
 
 def render_edit_request(request,lesson_id):
     try:
-        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id) #used to be lesson_lesson_edit_id from get method
+        to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id)) #used to be lesson_lesson_edit_id from get method
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
         return redirect('student_feed')
@@ -525,7 +523,7 @@ def edit_lesson(request,lesson_id):
         current_student = request.user
 
         try:
-            to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+            to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id))
         except ObjectDoesNotExist:
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
             return redirect('student_feed')
@@ -566,7 +564,7 @@ def edit_lesson(request,lesson_id):
 def check_correct_student_lesson_deletion(student_id, lesson_id):
     all_student_lessons = Lesson.objects.filter(student_id = student_id)
     for lesson in all_student_lessons:
-        if lesson.lesson_id == lesson_id:
+        if lesson.lesson_id == int(lesson_id):
             return True
 
     return False
@@ -579,7 +577,7 @@ def delete_pending(request,lesson_id):
             if request.method == 'POST':
                     try:
                         #print(int(request.POST.get['lesson_delete_id']))
-                        Lesson.objects.get(lesson_id = lesson_id).delete()
+                        Lesson.objects.get(lesson_id = int(lesson_id)).delete()
                         #print('delete' + request.POST.get('lesson_delete_id'))
                     except ObjectDoesNotExist:
                         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
