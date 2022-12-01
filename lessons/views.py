@@ -146,7 +146,7 @@ def balance(request):
             student = request.user
             student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
             student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
-            update_balance(request)
+            update_balance(student)
             student_balance = get_student_balance(student)
             return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
     else:
@@ -162,9 +162,8 @@ def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
 # this function update the student balance 
-@login_required
-def update_balance(request):
-    student = request.user
+def update_balance(student):
+    # student = request.user
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
     current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
     invoice_fee_total = 0
@@ -209,7 +208,7 @@ def pay_fo_invoice(request):
                 elif(temp_invoice.amounts_need_to_pay > input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PARTIALLY_PAID
                     temp_invoice.amounts_need_to_pay -= input_amounts_pay_int
-                update_balance(request)
+                update_balance(student)
                 student.save()
                 temp_invoice.save()
 
@@ -224,11 +223,30 @@ def pay_fo_invoice(request):
 
 def create_new_invoice(student_id, lesson):
     student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
+    student = UserAccount.objects.get(id=student_id)
     reference_number_temp = Invoice.generate_new_invoice_reference_number(str(student_id), len(student_number_of_invoice_pre_exist))
     lesson_duration = lesson.duration
     fees = Invoice.calculate_fees_amount(lesson_duration)
     fees = int(fees)
     Invoice.objects.create(reference_number =  reference_number_temp, student_ID = student_id, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
+    update_balance(student)
+
+def update_invoice(lesson):
+    invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+    student = UserAccount.objects.get(id=invoice.student_ID)
+
+    fees = Invoice.calculate_fees_amount(lesson.duration)
+    fees = int(fees)
+    difference_between_invoice = fees - invoice.fees_amount
+    invoice.fees_amount = fees
+    invoice.amounts_need_to_pay += difference_between_invoice
+    invoice.save()
+    student = UserAccount.objects.get(id=invoice.student_ID)
+    
+    update_balance(student)
+
+# def update_invoice_when_delete(lesson):
+
 
 
 def get_all_transactions(request):
@@ -291,6 +309,9 @@ def admin_update_request(request, lesson_id):
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
             lesson.save()
+
+            update_invoice(lesson)
+
             messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
             student = UserAccount.objects.get(id=lesson.student_id.id)
@@ -315,6 +336,7 @@ def delete_lesson(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
     if lesson is not None:
         lesson.delete()
+
         messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
         student = UserAccount.objects.get(id=lesson.student_id.id)
         return redirect('student_requests',student.id)

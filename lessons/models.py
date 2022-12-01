@@ -16,6 +16,7 @@ class InvoiceStatus(models.TextChoices):
     PAID = 'PAID', _('This invoices has been paid')
     UNPAID = 'UNPAID', _('This invoice has not been paid')
     PARTIALLY_PAID = 'PARTIALLY_PAID', _('This invoice has been partially paid')
+    DELETED = 'DELETED', _('This invoice has been deleted')
 
 class LessonStatus(models.TextChoices):
     SAVED = 'SA', _('The lesson has been saved')
@@ -270,6 +271,7 @@ class Invoice(models.Model):
     )
 
     lesson_ID = models.CharField(
+        unique = True,
         max_length = 30,
         blank=True,
         validators=[RegexValidator(

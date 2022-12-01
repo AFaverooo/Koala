@@ -42,4 +42,6 @@ def is_valid_Invoice_status(Invoice):
     return Invoice.invoice_status in {
         InvoiceStatus.PAID,
         InvoiceStatus.UNPAID,
+        InvoiceStatus.PARTIALLY_PAID,
+        InvoiceStatus.DELETED,
     }

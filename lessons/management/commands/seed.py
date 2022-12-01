@@ -100,6 +100,7 @@ class Command(BaseCommand):
 
 
         # seed the invoices base on existing user and bookings
+        seed_lesson_id = 100000 #seed lesson id number is big, in case to be same as existing lesson id
         for i in range(len(students)):   
             student_Id = students[i].id
             students_id_string = str(student_Id)
@@ -108,38 +109,27 @@ class Command(BaseCommand):
             for x in range(random.randint(1,5)):
                 pre_fees = random.randint(12, 78)
                 probability = random.randint(0, 12)
-                random_lesson_id = random.randint(10000,30000)
                 pre_reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, x)
                 if(probability == 3 or probability == 4):
                     # unpaid invoice
-                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = pre_fees, lesson_ID = random_lesson_id)
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = pre_fees, lesson_ID = seed_lesson_id)
                 elif(probability == 5 or probability == 6):
                     # partially paid invoice
                     amount_paid = random.randint(10, pre_fees)
                     amount_needs_to_be_pay = pre_fees - amount_paid
-                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = amount_needs_to_be_pay,lesson_ID = random_lesson_id)
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = amount_needs_to_be_pay,lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
                 elif(probability == 7):
                     # overpaid invoice
                     amount_paid = random.randint(pre_fees+100, pre_fees + 200)
-                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = 0, lesson_ID = random_lesson_id)
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
                 else:
-                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0, lesson_ID = random_lesson_id)
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = pre_fees)
+                seed_lesson_id+=1
 
-            # this generate an invoice based on existing booked lesson
-            # lessons_with_30 = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED, duration = LessonDuration.THIRTY)
-            # lessons_with_45 = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED, duration = LessonDuration.FOURTY_FIVE)
-            # lessons_with_1_hr = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED, duration = LessonDuration.HOUR)
-            # fees = Invoice.calculate_fees_amount(lessons_with_30, lessons_with_45, lessons_with_1_hr)
-            # fees = int(fees) # this change the fees type to int so the if loops below will work 
-
-            # student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_Id)
-            # reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice_pre_exist))
-            # if(fees != 0):
-            #     Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees)
-
+            # create a new invoice for each existing lesson
             lessons_booked = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED)
             for lesson in lessons_booked:
                 fees = Invoice.calculate_fees_amount(lesson.duration)
