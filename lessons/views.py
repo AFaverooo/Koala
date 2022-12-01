@@ -335,7 +335,7 @@ def student_feed(request):
 
             fullfilled_label_str = f'Below is a timetable for booked lessons'
             unfullfilled_label_str = f'Below is a view for requested lessons'
-    
+
             greeting_str = f'Welcome back {request.user}'
 
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
@@ -357,7 +357,7 @@ def requests_page(request):
             form = RequestForm()
             return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
         else:
-            return redirect("home")
+            return HttpResponseForbidden()
     else:
         #add message that the user should be logged in
         #return redirect('log_in')
@@ -472,8 +472,6 @@ def new_lesson(request):
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
-        #print('user should be logged in')
-        #return redirect('log_in')
         return redirect('home')
 
 def save_lessons(request):
@@ -528,6 +526,10 @@ def edit_lesson(request,lesson_id):
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
             return redirect('student_feed')
 
+        if check_correct_student_accessing_lesson(current_student,lesson_id) is False:
+            messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
+            return redirect('student_feed')
+
         if request.method == 'POST':
             request_form = RequestForm(request.POST)
 
@@ -561,7 +563,7 @@ def edit_lesson(request,lesson_id):
         # return redirect('log_in')
         return redirect('home')
 
-def check_correct_student_lesson_deletion(student_id, lesson_id):
+def check_correct_student_accessing_lesson(student_id, lesson_id):
     all_student_lessons = Lesson.objects.filter(student_id = student_id)
     for lesson in all_student_lessons:
         if lesson.lesson_id == int(lesson_id):
@@ -572,24 +574,23 @@ def check_correct_student_lesson_deletion(student_id, lesson_id):
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
-
-        if check_correct_student_lesson_deletion(current_student,lesson_id):
-            if request.method == 'POST':
-                    try:
-                        #print(int(request.POST.get['lesson_delete_id']))
-                        Lesson.objects.get(lesson_id = int(lesson_id)).delete()
-                        #print('delete' + request.POST.get('lesson_delete_id'))
-                    except ObjectDoesNotExist:
-                        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
-                        return redirect('student_feed')
-
-                    messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
+        #if check_correct_student_accessing_lesson(current_student,lesson_id):
+        if request.method == 'POST':
+                try:
+                    lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
+                except ObjectDoesNotExist:
+                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
                     return redirect('student_feed')
 
-            else:
+                if check_correct_student_accessing_lesson(current_student,lesson_id) is False:
+                    messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+                    return redirect('student_feed')
+
+                lesson_to_delete.delete()
+                messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
                 return redirect('student_feed')
+
         else:
-            messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
             return redirect('student_feed')
     else:
         # return redirect('log_in')

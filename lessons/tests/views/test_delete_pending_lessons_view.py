@@ -181,8 +181,8 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
 
         messages_list = list(response.context['messages'])
-        self.assertEqual(str(messages_list[0]), 'Attempted Deletion Not Permitted')
-        self.assertEqual(messages_list[0].level, messages.WARNING)
+        self.assertEqual(str(messages_list[0]), 'Incorrect lesson ID passed')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
         self.assertTemplateUsed(response, 'student_feed.html')
 
