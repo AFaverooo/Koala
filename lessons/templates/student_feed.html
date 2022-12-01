@@ -19,12 +19,7 @@ https://getbootstrap.com/docs/4.0/components/card/#navigation
 
 <p> <a href = '{% url 'balance' %}' class = "btn btn-lg btn-secondary"> Check balance and Transaction  </a></p>
 
-{% for message in messages %}
-<div class="alert alert-{{ message.level_tag }}" role="alert">
-  {{ message }}
-</div>
-
-{% endfor %}
+{% include 'partials/messages.html' %}
 
 <body>
 <h2>{{greeting}}</h2>

@@ -15,13 +15,7 @@
 {% bootstrap_javascript jquery='full' %}
 
 </head>
-
-{% for message in messages %}
-<div class="alert alert-{{ message.level_tag }}" role="alert">
-  {{ message }}
-</div>
-{% endfor %}
-
+{% include 'partials/messages.html' %}
   <h1> Request a lesson</h1>
 
   <body>
