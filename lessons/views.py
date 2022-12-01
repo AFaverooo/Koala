@@ -325,10 +325,8 @@ def delete_user(request,current_user_email):
 
 
 def create_admin_page(request):
-    print("ok")
     if request.method == 'POST':
         form = CreateAdminForm(request.POST)
-        print(form.is_valid)
         if form.is_valid():
             admin = form.save()
             return redirect('director_manage_roles')
@@ -338,16 +336,28 @@ def create_admin_page(request):
     return render(request,'director_create_admin.html',{'form': form})
 
 @login_required
-def edit_user(request,current_user_email):
+def update_user(request,current_user_id):
+    user = UserAccount.objects.get(id=current_user_id)
+    form = CreateAdminForm(instance=user)
+
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
+        form = CreateAdminForm(request.POST, instance = user)
         if form.is_valid():
-            student = form.save()
-            login(request, student)
-            return redirect('student_feed')
-    else:
-        form = SignUpForm()
-    return render(request, 'sign_up.html', {'form': form})
+            email = form.cleaned_data.get('email')
+            fname = form.cleaned_data.get('first_name')
+            lname = form.cleaned_data.get('last_name')
+            gender = form.cleaned_data.get('gender')
+
+            user.email = email
+            user.first_name = fname
+            user.last_name = lname
+            user.gender = gender
+
+            user.save()
+
+            return redirect('director_manage_roles')
+
+    return render(request,'director_update_user.html', {'form': form , 'user': user})
 
 
 def log_in(request):
