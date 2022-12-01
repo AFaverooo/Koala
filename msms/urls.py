@@ -34,7 +34,7 @@ urlpatterns = [
 
     path('admin_feed', views.admin_feed, name = 'admin_feed'),
 
-    path('director_manage_roles', views.director_manage_roles, name = 'director_manage_roles'),
+    path('director_manage_roles/', views.director_manage_roles, name = 'director_manage_roles'),
     path('director_feed', views.director_feed, name = 'director_feed'),
     path('promote_director/<str:current_user_email>', views.promote_director, name = 'promote_director'),
     path('promote_admin/<str:current_user_email>', views.promote_admin, name = 'promote_admin'),
@@ -42,7 +42,7 @@ urlpatterns = [
     path('disable_user/<str:current_user_email>', views.disable_user, name = 'disable_user'),
     path('delete_user/<str:current_user_email>', views.delete_user, name = 'delete_user'),
     path('create_admin_page', views.create_admin_page, name = 'create_admin_page'),
-    
+
     path('sign_up/', views.sign_up, name = 'sign_up'),
 
     path('invoice/', views.invoice, name = 'invoice'),

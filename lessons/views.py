@@ -337,7 +337,7 @@ def update_user(request,current_user_id):
             # user.set_password(str(password))
             # user.password = password
             # user.password_confirmation = password_confirmation
-            
+
             user.save()
 
 
