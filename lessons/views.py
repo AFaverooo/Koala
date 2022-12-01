@@ -232,6 +232,7 @@ def director_manage_roles(request):
     directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
     return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
 
+
 @login_required
 def promote_director(request,current_user_email):
     if (request.user.email == current_user_email):
