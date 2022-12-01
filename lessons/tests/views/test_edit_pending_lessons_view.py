@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
-from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
+from lessons.views import make_lesson_timetable_dictionary,make_lesson_dictionary
 from lessons.views import RequestForm
 from django.contrib import messages
 import datetime
@@ -169,9 +169,9 @@ class StudentFeedEditLessonTestCase(TestCase):
         response = self.client.get(self.edit_url, follow = True)
         after_count = Lesson.objects.count()
 
-        redirect_url = reverse('log_in')
+        redirect_url = reverse('home')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
 
         self.assertEqual(before_count,after_count)
 

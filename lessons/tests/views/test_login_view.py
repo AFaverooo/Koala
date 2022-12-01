@@ -11,7 +11,7 @@ class LogInTestCase(TestCase,LogInTester):
     """Tests for the login up view."""
 
     def setUp(self):
-        self.url = reverse('log_in')
+        self.url = reverse('home')
         self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
@@ -39,12 +39,13 @@ class LogInTestCase(TestCase,LogInTester):
         self.director_form_input = {'email' : 'jsmith@example.org', 'password' : 'Password123'}
 
     def test_log_in_url(self):
-        self.assertEqual(self.url,'/log_in/')
+        #should this be: self.assertEqual(self.url,'/') or  self.assertEqual(self.url,'')
+        self.assertEqual(self.url,'/')
 
     def test_get_log_in(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
         form = response.context['form']
         next = response.context['next']
         self.assertTrue(isinstance(form, LogInForm))
@@ -54,10 +55,10 @@ class LogInTestCase(TestCase,LogInTester):
 
     def test_get_log_in_with_redirect(self):
         destination_url = reverse('student_feed')
-        self.url = reverse_with_next('log_in', destination_url)
+        self.url = reverse_with_next('home', destination_url)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
         form = response.context['form']
         next = response.context['next']
         self.assertTrue(isinstance(form, LogInForm))
@@ -140,7 +141,7 @@ class LogInTestCase(TestCase,LogInTester):
         self.student_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
         response = self.client.post(self.url, self.student_form_input)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
         form = response.context['form']
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
@@ -154,7 +155,7 @@ class LogInTestCase(TestCase,LogInTester):
         self.admin_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
         response = self.client.post(self.url, self.admin_form_input)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
         form = response.context['form']
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
@@ -168,7 +169,7 @@ class LogInTestCase(TestCase,LogInTester):
         self.director_form_input = {'email' : 'WrongEmail', 'password' : 'WrongPass'}
         response = self.client.post(self.url, self.director_form_input)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
         form = response.context['form']
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(form.is_bound)
@@ -183,7 +184,7 @@ class LogInTestCase(TestCase,LogInTester):
         self.student.save()
         response = self.client.post(self.url, self.student_form_input, follow = True)
         self.assertEqual(response.status_code,200)
-        self.assertTemplateUsed(response,'log_in.html')
+        self.assertTemplateUsed(response,'home.html')
         messages_list = list(response.context['messages'])
         self.assertEqual(len(messages_list),1)
         messages_list = list(response.context['messages'])
@@ -192,10 +193,10 @@ class LogInTestCase(TestCase,LogInTester):
     #test if we can get login view with a redirect parameter
     def test_get_log_in_with_redirect_student(self):
         destination_url = reverse('student_feed')
-        self.url = reverse_with_next('log_in', destination_url)
+        self.url = reverse_with_next('home', destination_url)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code,200)
-        self.assertTemplateUsed(response,'log_in.html')
+        self.assertTemplateUsed(response,'home.html')
         form = response.context['form']
         next = response.context['next']
         self.assertTrue(isinstance(form,LogInForm))

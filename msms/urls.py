@@ -24,7 +24,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name = 'home'),
     path('jsi18n', JavaScriptCatalog.as_view(), name = 'js-catalog'),
-    path('log_in/', views.log_in, name = 'log_in'),
     path('student_feed', views.student_feed, name = 'student_feed'),
     path('requests_page', views.requests_page, name = 'requests_page'),
 
@@ -42,11 +41,12 @@ urlpatterns = [
     path('balance/', views.balance, name = 'balance'),
     path('update_balance/', views.update_balance, name = 'update_balance'),
     path('pay_for_invoice/', views.pay_fo_invoice, name = 'pay_for_invoice'),
+    path('transaction_history', views.get_all_transactions,name='transaction_history'),
 
     path('log_out/', views.log_out, name = 'log_out'),
 
     path('student_requests/<str:student_id>', views.student_requests, name='student_requests'),
-    path('admin_update_request_page/<str:id>', views.admin_update_request_page,name='admin_update_request_page'),
+    path('admin_update_request_page/<str:lesson_id>', views.admin_update_request_page,name='admin_update_request_page'),
     path('admin_confirm_booking/<str:lesson_id>', views.admin_confirm_booking,name='admin_confirm_booking'),
     path('admin_update_request/<str:lesson_id>', views.admin_update_request, name='admin_update_request'),
     path('delete_lesson/<str:lesson_id>', views.delete_lesson, name='delete_lesson'),

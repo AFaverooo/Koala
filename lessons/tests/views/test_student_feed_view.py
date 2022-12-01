@@ -3,7 +3,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.models import UserAccount, Lesson, Gender, LessonType,LessonDuration,LessonStatus
-from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
+from lessons.views import make_lesson_timetable_dictionary,make_lesson_dictionary
 import datetime
 from django.utils import timezone
 # from lessons.models import UserAccount, Gender
@@ -133,7 +133,7 @@ class StudentFeedTestCase(TestCase):
     def test_dictionary_format_for_unfulfilled_lessons(self):
         self.change_lessons_status_to_unfulfilled()
 
-        unfulfilled_lessons_dict = make_unfulfilled_dictionary(self.student)
+        unfulfilled_lessons_dict = make_lesson_dictionary(self.student, "Lesson Request")
 
         self.assertEqual(len(unfulfilled_lessons_dict),5)
         #print(lesson_dict[self.lesson])
@@ -155,16 +155,17 @@ class StudentFeedTestCase(TestCase):
         self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson4], LessonType.PRACTICE.label, "2022-12-25", "09:45 - 10:30", "Mr Amane Hill")
         self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson5], LessonType.PRACTICE.label, "2022-09-25", "09:45 - 10:30", "Jonathan Jacks")
 
-    def test_get_student_feed(self):
+    def test_get_student_feed_with_booked_lessons(self):
         self.client.login(email=self.student.email, password="Password123")
 
-        response = self.client.get(self.url)
+        response = self.client.get(self.url,follow = True)
+        unfullfilled_lessons = response.context['unfulfilled_requests']
         fullfilled_lessons = response.context['fullfilled_lessons']
         greeting_str = response.context['greeting']
 
         self.assertEqual(len(fullfilled_lessons),5)
-        self.assertEqual(greeting_str, "Welcome back John Doe Below is your timetable for this term")
-        self.assertEqual(len(fullfilled_lessons),5)
+        self.assertEqual(greeting_str, "Welcome back John Doe")
+        self.assertEqual(len(unfullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
@@ -172,23 +173,28 @@ class StudentFeedTestCase(TestCase):
         self.change_lessons_status_to_unfulfilled()
         self.client.login(email=self.student.email, password="Password123")
 
-        response = self.client.get(self.url)
-        fullfilled_lessons = response.context['unfulfilled_requests']
+        response = self.client.get(self.url, follow = True)
+
+        unfullfilled_lessons = response.context['unfulfilled_requests']
+        fullfilled_lessons = response.context['fullfilled_lessons']
+
         greeting_str = response.context['greeting']
 
-        self.assertEqual(len(fullfilled_lessons),5)
-        self.assertEqual(greeting_str, "Welcome back John Doe Below are your lesson requests")
-        self.assertEqual(len(fullfilled_lessons),5)
+        self.assertEqual(len(unfullfilled_lessons),5)
+        self.assertEqual(greeting_str, "Welcome back John Doe")
+        self.assertEqual(len(fullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
     def test_get_student_feed_redirects_when_not_logged_in(self):
-        redirect_url = reverse_with_next('log_in', self.url)
-        response = self.client.get(self.url)
+        redirect_url = reverse_with_next('home', self.url)
+        response = self.client.get(self.url,follow = True)
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'home.html')
 
-    #def test_not_student_accessing_student_feed(self):
-    #    self.client.login(email=self.admin.email, password="Password123")
-    #    redirect_url = reverse_with_next('log_in', self.url)
-    #    response = self.client.get(self.url)
-    #    self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+    def test_not_student_accessing_student_feed(self):
+        self.client.login(email=self.admin.email, password="Password123")
+        response = self.client.get(self.url, follow = True)
+        redirect_url = reverse('admin_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'admin_feed.html')

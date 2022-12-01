@@ -1,6 +1,10 @@
 <html>
   <h1> THIS IS THE ADMIN FEED PAGE</h1>
+  
 </html>
+<a href = '{% url 'transaction_history' %}' class = "btn">
+  <button type="button" class="btn button">Bank Transaction History</button>
+</a>
 
 <div class="container">
   <div class="row">
@@ -11,12 +15,14 @@
         table {
           border-collapse: collapse;
           width: 100%;
+          border: 1px solid;
         }
 
         th, td {
           padding: 8px;
           text-align: left;
           border-bottom: 1px solid #ddd;
+          border: 1px solid;
         }
         tr:hover {background-color: gray;}
 
@@ -28,6 +34,9 @@
           font-weight:bold;
           border-radius: 10px;
           border:none;
+        }
+        div {
+          padding: 0.5% 1% 0% 1%;
         }
       </style>
 
@@ -61,6 +70,63 @@
           {% endfor %}
         </tbody>
         </table>
+
+        <h1>Requests</h1>
+        <h4>UnfulFilled Requests</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">lesson_id</th>
+              <th scope="col">request_date</th>
+              <th scope="col">type</th>
+              <th scope="col">duration</th>
+              <th scope="col">lesson_date_time</th>
+              <th scope="col">teacher</th>
+              <th scope="col">is_booked</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lesson in unfulfilled_lessons %}
+              <tr>
+                <th scope="row">{{ lesson.lesson_id }}</th>
+                <td>{{ lesson.request_date }}</td>
+                <td>{{ lesson.type }}</td>
+                <td>{{ lesson.duration }}</td>
+                <td>{{ lesson.lesson_date_time }}</td>
+                <td>{{ lesson.teacher_id }}</td>
+                <td>{{ lesson.lesson_status }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+
+          <h4>Fulfilled Requests</h4>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">lesson_id</th>
+                <th scope="col">request_date</th>
+                <th scope="col">type</th>
+                <th scope="col">duration</th>
+                <th scope="col">lesson_date_time</th>
+                <th scope="col">teacher</th>
+                <th scope="col">is_booked</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lesson in fulfilled_lessons %}
+                <tr>
+                  <th scope="row">{{ lesson.lesson_id }}</th>
+                  <td>{{ lesson.request_date }}</td>
+                  <td>{{ lesson.type }}</td>
+                  <td>{{ lesson.duration }}</td>
+                  <td>{{ lesson.lesson_date_time }}</td>
+                  <td>{{ lesson.teacher_id }}</td>
+                  <td>{{ lesson.lesson_status }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            </table>
     </div>
   </div>
 </div>

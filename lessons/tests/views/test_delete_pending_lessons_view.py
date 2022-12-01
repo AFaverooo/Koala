@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
-from lessons.views import make_lesson_timetable_dictionary,make_unfulfilled_dictionary
+from lessons.views import make_lesson_timetable_dictionary,make_lesson_dictionary
 import datetime
 from django.utils import timezone
 from django.contrib import messages
@@ -155,9 +155,9 @@ class StudentFeedDeleteLessonTestCase(TestCase):
 
     def test_student_not_logged_in_deleting_lessons(self):
         response = self.client.get(self.delete_url, follow = True)
-        redirect_url = reverse('log_in')
+        redirect_url = reverse('home')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'home.html')
 
     #prev causing errors
     def test_not_student_accessing_deleting_pending_lessons(self):
@@ -181,8 +181,8 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
 
         messages_list = list(response.context['messages'])
-        self.assertEqual(str(messages_list[0]), 'Attempted Deletion Not Permitted')
-        self.assertEqual(messages_list[0].level, messages.WARNING)
+        self.assertEqual(str(messages_list[0]), 'Incorrect lesson ID passed')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
         self.assertTemplateUsed(response, 'student_feed.html')
 

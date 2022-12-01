@@ -37,127 +37,9 @@ def get_teacher(dictionary):
 def get_lesson_request(dictionary):
     return dictionary.get("Lesson Request")
 
-
-def make_unfulfilled_dictionary(student_user):
-    unfulfilled_lessons = get_unfulfilled_lessons(student_user)
-
-    unfulfilled_lessons_dict = {}
-
-    request_count_id = 0
-    for lesson in unfulfilled_lessons:
-        lesson_type_str = ''
-
-        if lesson.type == LessonType.INSTRUMENT:
-            lesson_type_str = LessonType.INSTRUMENT.name
-        elif lesson.type == LessonType.THEORY:
-            lesson_type_str = LessonType.THEORY.name
-        elif lesson.type == LessonType.PRACTICE:
-            lesson_type_str = LessonType.PRACTICE.name
-        elif lesson.type == LessonType.PERFORMANCE:
-            lesson_type_str = LessonType.PERFORMANCE.name
-
-        lesson_duration_str = f'{lesson.duration} minutes'
-
-        case = {'Lesson Request': f'{request_count_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
-        unfulfilled_lessons_dict[lesson] = case
-        request_count_id += 1
-
-    return unfulfilled_lessons_dict
-
-@login_required
-def balance(request):
-    if request.user.is_authenticated:
-        if request.method == 'GET':
-            student = request.user
-            student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
-            student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
-            student_balance = get_student_balance(student)
-            return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
-    else:
-        return redirect('log_in')
-
-def get_student_invoice(student):
-    return Invoice.objects.filter(student_ID = student.id)
-
-def get_student_transaction(student):
-    return Transaction.objects.filter( Student_ID_transaction = student.id)
-
-def get_student_balance(student):
-    return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
-
-# this function update the student balance once student transfer some money into their school balance
-@login_required
-def update_balance(request):
-    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        if(request.method == 'POST'):
-            try:
-                extra_fees = request.POST.get('inputFees')
-                extra_fees_int = int(extra_fees)
-            except ValueError:
-                messages.add_message(request,messages.ERROR,"You cannot submit without enter a value!")
-                return redirect('balance')
-
-            student = request.user
-
-            if(extra_fees_int < 1):
-                messages.add_message(request,messages.ERROR,"You cannont insert a value less than 1!")
-            elif(student.balance + extra_fees_int > 10000):
-                messages.add_message(request,messages.ERROR,"Your account balance cannot exceed £10000!")
-            else:
-                student.balance += extra_fees_int
-                student.save()
-                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.IN, transaction_amount = extra_fees_int)
-            return redirect('balance')
-    else:
-        return redirect('log_in')
-
-@login_required
-def pay_fo_invoice(request):
-    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        if(request.method == 'POST'):
-            try:
-                input_invoice_reference = request.POST.get('invocie_reference')
-                input_amounts_pay = request.POST.get('amounts_pay')
-                input_amounts_pay_int = int(input_amounts_pay)
-            except ValueError:
-                messages.add_message(request,messages.ERROR,"You cannot submit without enter a value!")
-                return redirect('balance')
-            
-            student = request.user
-            try:
-                temp_invoice = Invoice.objects.get(reference_number = input_invoice_reference)
-            except ObjectDoesNotExist:
-                messages.add_message(request,messages.ERROR,"There isn't such invoice exist!")
-                return redirect('balance')
-
-            if(int(temp_invoice.student_ID) != int(student.id)):
-                messages.add_message(request,messages.ERROR,"this invoice does not belong to you!")
-            elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
-                messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
-            elif(int(student.balance) < input_amounts_pay_int):
-                messages.add_message(request,messages.ERROR,"You dont have enough money!")
-            else:
-                if(temp_invoice.amounts_need_to_pay == input_amounts_pay_int):
-                    temp_invoice.invoice_status = InvoiceStatus.PAID
-                    temp_invoice.amounts_need_to_pay = 0
-                elif(temp_invoice.amounts_need_to_pay > input_amounts_pay_int):
-                    temp_invoice.invoice_status = InvoiceStatus.PARTIALLY_PAID
-                    temp_invoice.amounts_need_to_pay -= input_amounts_pay_int
-                elif(temp_invoice.amounts_need_to_pay < input_amounts_pay_int):
-                    messages.add_message(request,messages.ERROR,"The amount you insert has exceed the amount you have to pay!")
-                    return redirect('balance')
-                student.balance -= input_amounts_pay_int
-                student.save()
-                temp_invoice.save()
-
-                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.OUT, invoice_reference_transaction = input_invoice_reference, transaction_amount = input_amounts_pay_int)
-
-            return redirect('balance')
-
-        return redirect('balance')
-
-    else:
-        return redirect('log_in')
+@register.filter
+def get_lesson_saved(dictionary):
+    return dictionary.get("Saved")
 
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
@@ -226,6 +108,145 @@ def make_lesson_timetable_dictionary(student_user):
 
     return fullfilled_lessons_dict
 
+def make_lesson_dictionary(student_user,lessonStatus):
+    lessons = []
+    if lessonStatus == 'Lesson Request':
+        lessons = get_unfulfilled_lessons(student_user)
+    else:
+        lessons = get_saved_lessons(student_user)
+
+    lessons_dict = {}
+
+    id_count = 0
+    for lesson in lessons:
+        lesson_type_str = ''
+
+        if lesson.type == LessonType.INSTRUMENT:
+            lesson_type_str = LessonType.INSTRUMENT.name
+        elif lesson.type == LessonType.THEORY:
+            lesson_type_str = LessonType.THEORY.name
+        elif lesson.type == LessonType.PRACTICE:
+            lesson_type_str = LessonType.PRACTICE.name
+        elif lesson.type == LessonType.PERFORMANCE:
+            lesson_type_str = LessonType.PERFORMANCE.name
+
+        lesson_duration_str = f'{lesson.duration} minutes'
+
+        case = {lessonStatus: f'{id_count}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
+        lessons_dict[lesson] = case
+        id_count += 1
+
+    return lessons_dict
+
+
+@login_required
+def balance(request):
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            student = request.user
+            student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
+            student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
+            student_balance = get_student_balance(student)
+            return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
+    else:
+        return redirect('home')
+
+def get_student_invoice(student):
+    return Invoice.objects.filter(student_ID = student.id)
+
+def get_student_transaction(student):
+    return Transaction.objects.filter( Student_ID_transaction = student.id)
+
+def get_student_balance(student):
+    return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
+
+# this function update the student balance once student transfer some money into their school balance
+@login_required
+def update_balance(request):
+    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
+        if(request.method == 'POST'):
+            try:
+                extra_fees = request.POST.get('inputFees')
+                extra_fees_int = int(extra_fees)
+            except ValueError:
+                messages.add_message(request,messages.ERROR,"You cannot submit without enter a value!")
+                return redirect('balance')
+
+            student = request.user
+
+            if(extra_fees_int < 1):
+                messages.add_message(request,messages.ERROR,"You cannont insert a value less than 1!")
+            elif(student.balance + extra_fees_int > 10000):
+                messages.add_message(request,messages.ERROR,"Your account balance cannot exceed £10000!")
+            else:
+                student.balance += extra_fees_int
+                student.save()
+                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.IN, transaction_amount = extra_fees_int)
+            return redirect('balance')
+    else:
+        return redirect('log_in')
+
+@login_required
+def pay_fo_invoice(request):
+    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
+        if(request.method == 'POST'):
+            try:
+                input_invoice_reference = request.POST.get('invocie_reference')
+                input_amounts_pay = request.POST.get('amounts_pay')
+                input_amounts_pay_int = int(input_amounts_pay)
+            except ValueError:
+                messages.add_message(request,messages.ERROR,"You cannot submit without enter a value!")
+                return redirect('balance')
+
+            student = request.user
+            try:
+                temp_invoice = Invoice.objects.get(reference_number = input_invoice_reference)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,"There isn't such invoice exist!")
+                return redirect('balance')
+
+            if(int(temp_invoice.student_ID) != int(student.id)):
+                messages.add_message(request,messages.ERROR,"this invoice does not belong to you!")
+            elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
+                messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
+            elif(int(student.balance) < input_amounts_pay_int):
+                messages.add_message(request,messages.ERROR,"You dont have enough money!")
+            else:
+                if(temp_invoice.amounts_need_to_pay == input_amounts_pay_int):
+                    temp_invoice.invoice_status = InvoiceStatus.PAID
+                    temp_invoice.amounts_need_to_pay = 0
+                elif(temp_invoice.amounts_need_to_pay > input_amounts_pay_int):
+                    temp_invoice.invoice_status = InvoiceStatus.PARTIALLY_PAID
+                    temp_invoice.amounts_need_to_pay -= input_amounts_pay_int
+                elif(temp_invoice.amounts_need_to_pay < input_amounts_pay_int):
+                    messages.add_message(request,messages.ERROR,"The amount you insert has exceed the amount you have to pay!")
+                    return redirect('balance')
+                student.balance -= input_amounts_pay_int
+                student.save()
+                temp_invoice.save()
+
+                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.OUT, invoice_reference_transaction = input_invoice_reference, transaction_amount = input_amounts_pay_int)
+
+            return redirect('balance')
+
+        return redirect('balance')
+
+    else:
+        # return redirect('log_in')
+        return redirect('home')
+
+def get_all_transactions(request):
+    all_transactions = Transaction.objects.all()
+    total = 0
+    for each_transaction in all_transactions:
+        if(each_transaction.transaction_type == TransactionTypes.OUT):
+            total-= each_transaction.transaction_amount
+        elif(each_transaction.transaction_type == TransactionTypes.IN):
+            total+= each_transaction.transaction_amount
+
+    return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+
+
 
 def get_saved_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
@@ -242,41 +263,57 @@ def student_requests(request,student_id):
     student = UserAccount.objects.get(id=student_id)
     return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
 
-def admin_update_request_page(request, id):
-    lesson = Lesson.objects.get(lesson_id=id)
-    data = {
-        'type' : lesson.type,
-        'duration': lesson.duration,
-        'lesson_date_time': lesson.lesson_date_time,
-        'teachers' : lesson.teacher_id
-           }
-    form = RequestForm(data)
-    return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+def admin_update_request_page(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(lesson_id=lesson_id)
+        data = {
+            'type' : lesson.type,
+            'duration': lesson.duration,
+            'lesson_date_time': lesson.lesson_date_time,
+            'teachers' : lesson.teacher_id
+            }
+        form = RequestForm(data)
+        return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+        return redirect('admin_feed')
 
 def admin_update_request(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(lesson_id=lesson_id)
+        form = RequestForm(request.POST)
 
-    lesson = Lesson.objects.get(lesson_id=lesson_id)
-    request_form = RequestForm(request.POST)
+        if form.is_valid():
+            type = form.cleaned_data.get('type')
+            duration = form.cleaned_data.get('duration')
+            lesson_date_time = form.cleaned_data.get('lesson_date_time')
+            teacher_id = form.cleaned_data.get('teachers')
 
-    if request_form.is_valid():
-        type = request_form.cleaned_data.get('type')
-        duration = request_form.cleaned_data.get('duration')
-        lesson_date_time = request_form.cleaned_data.get('lesson_date_time')
-        teacher_id = request_form.cleaned_data.get('teachers')
+        if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
+            messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
+            return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+        else:
+            lesson.type = type
+            lesson.duration = duration
+            lesson.lesson_date_time = lesson_date_time
+            lesson.teacher_id = teacher_id
+            lesson.save()
+            messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
-    lesson.type = type
-    lesson.duration = duration
-    lesson.lesson_date_time = lesson_date_time
-    lesson.teacher_id = teacher_id
-    lesson.save()
+            student = UserAccount.objects.get(id=lesson.student_id.id)
+            return redirect('student_requests',student.id)
 
-    student = UserAccount.objects.get(id=lesson.student_id.id)
-    return redirect('student_requests',student.id)
+    except ObjectDoesNotExist:
+        return redirect('admin_feed')
 
 def admin_confirm_booking(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
-    lesson.lesson_status = 'BK'
-    lesson.save()
+    if(lesson.lesson_status == 'BK'):
+        messages.add_message(request, messages.INFO, 'Already booked!')
+    else:
+        lesson.lesson_status = 'BK'
+        lesson.save()
+        messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
     student = UserAccount.objects.get(id=lesson.student_id.id)
     return redirect('student_requests',student.id)
 
@@ -284,37 +321,32 @@ def delete_lesson(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
     if lesson is not None:
         lesson.delete()
+        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
         student = UserAccount.objects.get(id=lesson.student_id.id)
         return redirect('student_requests',student.id)
-            
-
-def home(request):
-    return render(request, 'home.html')
 
 
 @login_required
 def student_feed(request):
-    #print("redirected")
-
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        unfulfilled_lessons = get_unfulfilled_lessons(request.user)
-        fullfilled_lessons = get_fullfilled_lessons(request.user)
+        if request.method == 'GET':
+            unfulfilled_lessons = get_unfulfilled_lessons(request.user)
+            fullfilled_lessons = get_fullfilled_lessons(request.user)
 
-        if len(fullfilled_lessons) > 0:
-            greeting_str = f'Welcome back {request.user} Below is your timetable for this term'
-            fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
-            return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
-        elif len(unfulfilled_lessons) > 0:
-            unfulfilled_requests = make_unfulfilled_dictionary(request.user)
-            greeting_str = f'Welcome back {request.user} Below are your lesson requests'
-            return render(request,'student_feed.html', {'unfulfilled_requests':unfulfilled_requests, 'greeting':greeting_str})
-        else:
+            fullfilled_label_str = f'Below is a timetable for booked lessons'
+            unfullfilled_label_str = f'Below is a view for requested lessons'
+
             greeting_str = f'Welcome back {request.user}'
-            return render(request,'student_feed.html', {'greeting':greeting_str})
 
+            fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
+                #return render(request,'student_feed.html' ,{'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
+            unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
+            return render(request,'student_feed.html', {'fulfilledLabel':fullfilled_label_str, 'unfulfilledLabel':unfullfilled_label_str, 'unfulfilled_requests':unfulfilled_requests, 'fullfilled_lessons':fullfilled_lessons, 'greeting':greeting_str})
+        else:
+            return HttpResponseForbidden()
     else:
-        print('not authorised')
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 @login_required
 def requests_page(request):
@@ -324,31 +356,42 @@ def requests_page(request):
             savedLessons = get_saved_lessons(student)
             form = RequestForm()
             return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
+        else:
+            return HttpResponseForbidden()
     else:
         #add message that the user should be logged in
-        return redirect('log_in')
+        #return redirect('log_in')
+        return redirect('home')
 
 @login_required
 def admin_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
-        return render(request,'admin_feed.html',{'student':student})
+        fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
+        unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
+        return render(request,'admin_feed.html',{'student':student,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
 @login_required
 def director_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
         return render(request,'director_feed.html')
     else:
-        return redirect('log_in')
-
+        # return redirect('log_in')
+        return redirect('home')
 
 
 @login_prohibited
-def log_in(request):
+def home(request):
      if request.method == 'POST':
          form = LogInForm(request.POST)
+         print(f"Is form valid: {form.is_valid()}")
+         email = request.POST.get("email")
+         print(email)
+         password = request.POST.get("password")
+         print(password)
          if  form.is_valid():
              email = form.cleaned_data.get('email')
              password = form.cleaned_data.get('password')
@@ -371,7 +414,8 @@ def log_in(request):
          messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
      form = LogInForm()
      next = request.GET.get('next') or ''
-     return render(request,'log_in.html', {'form' : form, 'next' : next})
+     #return render(request,'log_in.html', {'form' : form, 'next' : next})
+     return render(request,'home.html', {'form' : form, 'next' : next})
 
 
 def log_out(request):
@@ -395,16 +439,15 @@ def new_lesson(request):
         current_student = request.user
         if request.method == 'POST':
             #test case, already unfulfilled lessons upon request
-            previously_requested_lessons = get_unfulfilled_lessons(current_student)
-            previously_booked_lessons = get_fullfilled_lessons(current_student)
+            #previously_requested_lessons = get_unfulfilled_lessons(current_student)
+            #previously_booked_lessons = get_fullfilled_lessons(current_student)
 
             #import widget tweaks
             #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            if previously_requested_lessons or previously_booked_lessons:
-                print('already made a set of requests')
-                messages.add_message(request,messages.ERROR,"You have already made requests for this term or have booked lessons, contact admin to add extra lessons")
-                form = RequestForm()
-                return redirect('requests_page')
+            #if previously_requested_lessons or previously_booked_lessons:
+            #    print('already made a set of requests')
+            #    messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
+            #    return redirect('requests_page')
 
             #if current_student.role.is_student():
             request_form = RequestForm(request.POST)
@@ -415,32 +458,24 @@ def new_lesson(request):
                 type = request_form.cleaned_data.get('type')
                 teacher_id = request_form.cleaned_data.get('teachers')
 
-                try:#if check_duplicate(timezone.now, lesson_date, current_student) is False:
+                try:
                     Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 except IntegrityError:
-                    messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
+                    messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
-                    #print('attempted to duplicate lesson')
+
                 return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
-
-
-                #savedLessons = Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = current_student)
-                #return render(request,'requests_page.html', {'form': form, 'lessons' : savedLessons})
-                #return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                savedLessons = get_saved_lessons(current_student)
-                return render(request,'requests_page.html', {'form': request_form, 'lessons' : savedLessons})
+                return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(current_student)})
         else:
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
-        #print('user should be logged in')
-        return redirect('log_in')
-
+        return redirect('home')
 
 def save_lessons(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
         if request.method == 'POST':
             all_unsaved_lessons = get_saved_lessons(current_student)
@@ -451,24 +486,23 @@ def save_lessons(request):
                 return render(request,'requests_page.html', {'form': form})
 
             for eachLesson in all_unsaved_lessons:
-                #print(eachLesson.lesson_status)
                 eachLesson.lesson_status = LessonStatus.UNFULFILLED
                 eachLesson.save()
 
-            messages.add_message(request,messages.SUCCESS, "Lesson requests are now unfulfilled for validation by admin")
+            messages.add_message(request,messages.SUCCESS, "Lesson requests are now pending for validation by admin")
             return redirect('student_feed')
         else:
             form = RequestForm()
             return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
     else:
         #print('user should be logged in')
-        return redirect('log_in')
+        return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 
 def render_edit_request(request,lesson_id):
     try:
-        to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id) #used to be lesson_lesson_edit_id from get method
+        to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id)) #used to be lesson_lesson_edit_id from get method
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
         return redirect('student_feed')
@@ -479,7 +513,6 @@ def render_edit_request(request,lesson_id):
             'teachers': to_edit_lesson.teacher_id}
 
     form = RequestForm(data)
-    #print('render')
     return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
 
 
@@ -488,9 +521,13 @@ def edit_lesson(request,lesson_id):
         current_student = request.user
 
         try:
-            to_edit_lesson = Lesson.objects.get(lesson_id = lesson_id)
+            to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id))
         except ObjectDoesNotExist:
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+            return redirect('student_feed')
+
+        if check_correct_student_accessing_lesson(current_student,lesson_id) is False:
+            messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 
         if request.method == 'POST':
@@ -523,12 +560,13 @@ def edit_lesson(request,lesson_id):
         else:
             return render_edit_request(request,lesson_id)
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
 
-def check_correct_student_lesson_deletion(student_id, lesson_id):
+def check_correct_student_accessing_lesson(student_id, lesson_id):
     all_student_lessons = Lesson.objects.filter(student_id = student_id)
     for lesson in all_student_lessons:
-        if lesson.lesson_id == lesson_id:
+        if lesson.lesson_id == int(lesson_id):
             return True
 
     return False
@@ -536,24 +574,24 @@ def check_correct_student_lesson_deletion(student_id, lesson_id):
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
-
-        if check_correct_student_lesson_deletion(current_student,lesson_id):
-            if request.method == 'POST':
-                    try:
-                        #print(int(request.POST.get['lesson_delete_id']))
-                        Lesson.objects.get(lesson_id = lesson_id).delete()
-                        #print('delete' + request.POST.get('lesson_delete_id'))
-                    except ObjectDoesNotExist:
-                        messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
-                        return redirect('student_feed')
-
-                    messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
+        #if check_correct_student_accessing_lesson(current_student,lesson_id):
+        if request.method == 'POST':
+                try:
+                    lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
+                except ObjectDoesNotExist:
+                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
                     return redirect('student_feed')
 
-            else:
+                if check_correct_student_accessing_lesson(current_student,lesson_id) is False:
+                    messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+                    return redirect('student_feed')
+
+                lesson_to_delete.delete()
+                messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
                 return redirect('student_feed')
+
         else:
-            messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
             return redirect('student_feed')
     else:
-        return redirect('log_in')
+        # return redirect('log_in')
+        return redirect('home')
