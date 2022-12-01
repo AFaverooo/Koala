@@ -18,8 +18,10 @@
 </div>
     
 <div>
-    {% for msg in messages %}
-    {{msg}}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.level_tag }}" role="alert">
+        {{ message }}
+      </div>
     {% endfor %}
 </div>
 

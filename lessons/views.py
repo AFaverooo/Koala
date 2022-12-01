@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, TransactionTypes, InvoiceStatus
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, LessonDuration, Gender, Invoice, Transaction, TransactionTypes, InvoiceStatus
 from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -159,6 +159,21 @@ def pay_fo_invoice(request):
     else:
         return redirect('log_in')
 
+def create_new_invoice_when_confirm_booking(lesson):
+    lessons_durations = lesson.duration
+    lesson_fee = 0
+    if (lessons_durations == LessonDuration.THIRTY):
+        lesson_fee = 15
+    elif(lessons_durations == LessonDuration.FOURTY_FIVE):
+        lesson_fee = 18
+    else:
+        lesson_fee = 20
+    student_id_string = str(lesson.student_id.id)
+    student_number_of_invoice = Invoice.objects.filter(student_ID = lesson.student_id.id)
+    invoice_reference = Invoice.generate_new_invoice_reference_number(student_id_string, len(student_number_of_invoice))
+    Invoice.objects.create(reference_number =  invoice_reference, student_ID = student_id_string, fees_amount = lesson_fee, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = lesson_fee)
+
+
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_fullfilled_lessons(student_user)
 
@@ -277,6 +292,9 @@ def admin_confirm_booking(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
     lesson.lesson_status = 'BK'
     lesson.save()
+    
+    create_new_invoice_when_confirm_booking(lesson)
+    
     student = UserAccount.objects.get(id=lesson.student_id.id)
     return redirect('student_requests',student.id)
 
@@ -286,7 +304,6 @@ def delete_lesson(request, lesson_id):
         lesson.delete()
         student = UserAccount.objects.get(id=lesson.student_id.id)
         return redirect('student_requests',student.id)
-            
 
 def home(request):
     return render(request, 'home.html')

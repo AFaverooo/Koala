@@ -183,7 +183,6 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         editable=False,
         validators=[
             MaxValueValidator(10000),
-            MinValueValidator(0),
         ]
     )
 
