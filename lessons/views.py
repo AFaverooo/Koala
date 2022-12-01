@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, LessonDuration, Gender, Invoice, Transaction, TransactionTypes, InvoiceStatus
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, LessonDuration, Gender, Invoice, Transaction, InvoiceStatus
 from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -146,6 +146,7 @@ def balance(request):
             student = request.user
             student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
             student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
+            update_balance(request)
             student_balance = get_student_balance(student)
             return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
     else:
@@ -160,31 +161,23 @@ def get_student_transaction(student):
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
-# this function update the student balance once student transfer some money into their school balance
+# this function update the student balance 
 @login_required
 def update_balance(request):
-    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        if(request.method == 'POST'):
-            try:
-                extra_fees = request.POST.get('inputFees')
-                extra_fees_int = int(extra_fees)
-            except ValueError:
-                messages.add_message(request,messages.ERROR,"You cannot submit without enter a value!")
-                return redirect('balance')
+    student = request.user
+    current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
+    current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
+    invoice_fee_total = 0
+    payment_fee_total = 0
 
-            student = request.user
+    for invoice in current_existing_invoice:
+        invoice_fee_total += invoice.fees_amount
 
-            if(extra_fees_int < 1):
-                messages.add_message(request,messages.ERROR,"You cannont insert a value less than 1!")
-            elif(student.balance + extra_fees_int > 10000):
-                messages.add_message(request,messages.ERROR,"Your account balance cannot exceed £10000!")
-            else:
-                student.balance += extra_fees_int
-                student.save()
-                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.IN, transaction_amount = extra_fees_int)
-            return redirect('balance')
-    else:
-        return redirect('log_in')
+    for transaction in current_existing_transaction:
+        payment_fee_total += transaction.transaction_amount
+
+    student.balance = payment_fee_total - invoice_fee_total
+    student.save()
 
 @login_required
 def pay_fo_invoice(request):
@@ -209,39 +202,39 @@ def pay_fo_invoice(request):
                 messages.add_message(request,messages.ERROR,"this invoice does not belong to you!")
             elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
-            elif(int(student.balance) < input_amounts_pay_int):
-                messages.add_message(request,messages.ERROR,"You dont have enough money!")
             else:
-                if(temp_invoice.amounts_need_to_pay == input_amounts_pay_int):
+                if(temp_invoice.amounts_need_to_pay <= input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PAID
                     temp_invoice.amounts_need_to_pay = 0
                 elif(temp_invoice.amounts_need_to_pay > input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PARTIALLY_PAID
                     temp_invoice.amounts_need_to_pay -= input_amounts_pay_int
-                elif(temp_invoice.amounts_need_to_pay < input_amounts_pay_int):
-                    messages.add_message(request,messages.ERROR,"The amount you insert has exceed the amount you have to pay!")
-                    return redirect('balance')
-                student.balance -= input_amounts_pay_int
+                update_balance(request)
                 student.save()
                 temp_invoice.save()
 
-                Transaction.objects.create(Student_ID_transaction = student.id, transaction_type = TransactionTypes.OUT, invoice_reference_transaction = input_invoice_reference, transaction_amount = input_amounts_pay_int)
+                Transaction.objects.create(Student_ID_transaction = student.id, invoice_reference_transaction = input_invoice_reference, transaction_amount = input_amounts_pay_int)
 
             return redirect('balance')
 
         return redirect('balance')
 
     else:
-        # return redirect('log_in')
         return redirect('home')
+
+def create_new_invoice(student_id, lesson):
+    student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
+    reference_number_temp = Invoice.generate_new_invoice_reference_number(str(student_id), len(student_number_of_invoice_pre_exist))
+    lesson_duration = lesson.duration
+    fees = Invoice.calculate_fees_amount(lesson_duration)
+    fees = int(fees)
+    Invoice.objects.create(reference_number =  reference_number_temp, student_ID = student_id, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
+
 
 def get_all_transactions(request):
     all_transactions = Transaction.objects.all()
     total = 0
     for each_transaction in all_transactions:
-        if(each_transaction.transaction_type == TransactionTypes.OUT):
-            total-= each_transaction.transaction_amount
-        elif(each_transaction.transaction_type == TransactionTypes.IN):
             total+= each_transaction.transaction_amount
 
     return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
@@ -314,6 +307,7 @@ def admin_confirm_booking(request, lesson_id):
         lesson.lesson_status = 'BK'
         lesson.save()
         messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
+        create_new_invoice(lesson.student_id.id, lesson)
     student = UserAccount.objects.get(id=lesson.student_id.id)
     return redirect('student_requests',student.id)
 

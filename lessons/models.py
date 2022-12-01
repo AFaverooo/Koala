@@ -11,10 +11,6 @@ from django.utils.translation import gettext_lazy as _
 #imports for Request
 from django.conf import settings
 
-class TransactionTypes(models.TextChoices):
-    IN = 'IN', _('Student transfer money from outside into their balance')
-    OUT = 'OUT', _('Student transfer money from balance into school account')
-
 #Shows the status of the invoices
 class InvoiceStatus(models.TextChoices):
     PAID = 'PAID', _('This invoices has been paid')
@@ -177,6 +173,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
     )
 
+    #balance shows the difference between existing transactions and invoices
     balance = models.IntegerField(
         default=0,
         blank = True,
@@ -272,6 +269,15 @@ class Invoice(models.Model):
         ]
     )
 
+    lesson_ID = models.CharField(
+        max_length = 30,
+        blank=True,
+        validators=[RegexValidator(
+            regex = r'^\d+$', 
+            message='Lesson ID must all be number'
+        )]
+    )
+
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
         #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
@@ -284,35 +290,36 @@ class Invoice(models.Model):
 
         return f'{reference_number}'
 
-    def calculate_fees_amount(lessons_with_30_mins, lessons_with_45_mins, lessons_with_1_hr):
+    def calculate_fees_amount(lesson_duration):
         #30 mins lesson cost 15, 45 mins lesson cost 18,  1 hr lesson cost 20, no matter the date and teacher
-        fees_amount = 0
-        fees_amount += len(lessons_with_30_mins)*15
-        fees_amount += len(lessons_with_45_mins)*18
-        fees_amount += len(lessons_with_1_hr)*20
+        if(lesson_duration == LessonDuration.THIRTY):
+            fees = 15
+        elif(lesson_duration == LessonDuration.FOURTY_FIVE):
+            fees = 18
+        else:
+            fees = 20
+        return f'{fees}'
 
-        return f'{fees_amount}'
+    # def get_fees_amount(self):
+    #     #return the total amount of fees
+    #     return f'{self.fees_amount}'
 
-    def get_fees_amount(self):
-        #return the total amount of fees
-        return f'{self.fees_amount}'
+    # def change_invoice_status_to_paid(self):
+    #     #this function change the invoice status from unpaid to paid
+    #     self.invoice_status = InvoiceStatus.PAID
 
-    def change_invoice_status_to_paid(self):
-        #this function change the invoice status from unpaid to paid
-        self.invoice_status = InvoiceStatus.PAID
+    # def change_invoice_status_to_unpaid(self):
+    #     #this function change the invoice status from paid to unpaid
+    #     self.invoice_status = InvoiceStatus.PAID
 
-    def change_invoice_status_to_unpaid(self):
-        #this function change the invoice status from paid to unpaid
-        self.invoice_status = InvoiceStatus.PAID
+    # # def add_lesson(self, lesson_price):
+    # #     pass
 
-    # def add_lesson(self, lesson_price):
-    #     pass
-
-    # def delete_lesson(self, lesson_name, lesson_price):
-    #     pass
+    # # def delete_lesson(self, lesson_name, lesson_price):
+    # #     pass
         
-    def get_invoice(self):
-        return (self.reference_number, self.student_ID, self.fees_amount)
+    # def get_invoice(self):
+    #     return (self.reference_number, self.student_ID, self.fees_amount)
 
 class Transaction(models.Model):
     Student_ID_transaction = models.CharField( 
@@ -322,13 +329,6 @@ class Transaction(models.Model):
             regex = r'^\d+$', 
             message='Student ID must all be number'
         )]
-    )
-
-    transaction_type = models.CharField(
-        max_length=30,
-        choices=TransactionTypes.choices,
-        default=TransactionTypes.OUT,
-        blank = False,
     )
 
     invoice_reference_transaction = models.CharField(

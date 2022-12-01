@@ -39,7 +39,6 @@ urlpatterns = [
     path('sign_up/', views.sign_up, name = 'sign_up'),
 
     path('balance/', views.balance, name = 'balance'),
-    path('update_balance/', views.update_balance, name = 'update_balance'),
     path('pay_for_invoice/', views.pay_fo_invoice, name = 'pay_for_invoice'),
     path('transaction_history', views.get_all_transactions,name='transaction_history'),
 
