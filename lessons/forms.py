@@ -77,6 +77,7 @@ class CreateAdminForm(forms.ModelForm):
     # dateOfBirth = forms.DateField(
     #     label = 'Date Of Birth',
     #     widget = DateInput())
+
     new_password = forms.CharField(
         label='Password',
         widget=forms.PasswordInput(),
@@ -88,15 +89,8 @@ class CreateAdminForm(forms.ModelForm):
     )
     password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
 
-    # def clean(self):
-    #     """Clean the data and generate messages for any errors."""
-    #
-    #     super().clean()
-    #     #gender = self.cleaned_data.get('gender')
-    #     new_password = self.cleaned_data.get('new_password')
-    #     password_confirmation = self.cleaned_data.get('password_confirmation')
-    #     if new_password != password_confirmation:
-    #         self.add_error('password_confirmation', 'Confirmation does not match password.')
+    def clean_password(self):
+        return self.initial['password']
 
     def save(self):
         """Create a new user."""
@@ -125,6 +119,7 @@ class RequestForm(forms.ModelForm):
         fields = ['type','duration']
 
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
+
 
 
     #This is the choice of teachers the student is able to pick out of

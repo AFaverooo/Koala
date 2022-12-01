@@ -262,35 +262,6 @@ def promote_admin(request,current_user_email):
         return director_manage_roles(request)
 
 @login_required
-def promote_teacher(request,current_user_email):
-    if (request.user.email == current_user_email):
-        messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
-        return director_manage_roles(request)
-    else:
-        user = UserAccount.objects.get(email=current_user_email)
-        user.role = UserRole.TEACHER
-        user.is_staff = False
-        user.is_superuser = False
-        user.save()
-        messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role teacher")
-        return director_manage_roles(request)
-
-@login_required
-def promote_student(request,current_user_email):
-    if (request.user.email == current_user_email):
-        messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
-        return director_manage_roles(request)
-    else:
-        user = UserAccount.objects.get(email=current_user_email)
-        user.role = UserRole.STUDENT
-        user.is_staff = False
-        user.is_superuser = False
-        user.save()
-        messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role student")
-        return director_manage_roles(request)
-
-
-@login_required
 def disable_user(request,current_user_email):
 
     if (request.user.email == current_user_email):
@@ -348,10 +319,17 @@ def update_user(request,current_user_id):
             lname = form.cleaned_data.get('last_name')
             gender = form.cleaned_data.get('gender')
 
+            password = form.cleaned_data.get('password')
+            password_confirmation = form.cleaned_data.get('password_confirmation')
+
             user.email = email
             user.first_name = fname
             user.last_name = lname
             user.gender = gender
+
+            # user.set_password(str(password))
+            # user.password = password
+            # user.password_confirmation = password_confirmation
 
             user.save()
 
