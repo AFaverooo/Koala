@@ -6,9 +6,8 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
-from pathlib import Path
 import os
+from pathlib import Path
 from django.contrib.messages import constants as message_constants
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,8 +36,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'lessons',
+    'widget_tweaks',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'bootstrap4',
     'bootstrap_datepicker_plus',
+
 ]
 
 MIDDLEWARE = [
@@ -114,12 +117,26 @@ USE_I18N = True
 USE_TZ = True
 
 
+
+#For django-crispy-forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+
+
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_DIR = os.path.join(BASE_DIR, 'static')
-STATIC_URL = 'static/'
-STATIC_DIRS = [STATIC_DIR,]
+# STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/'
+# STATIC_DIRS = [STATIC_DIR,]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -130,7 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'lessons.UserAccount'
 
 #Login URL to redirect users to login page frin login protected views
-LOGIN_URL = 'log_in'
+LOGIN_URL = 'home'
 
 # URL where @login_prohibited redirects to
 REDIRECT_URL_WHEN_LOGGED_IN_STUDENT = 'student_feed'

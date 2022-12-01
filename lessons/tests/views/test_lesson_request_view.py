@@ -196,8 +196,8 @@ class LessonRequestViewTestCase(TestCase):
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
 
-        response_url = reverse('log_in')
-        self.assertTemplateUsed(response, 'log_in.html')
+        response_url = reverse('home')
+        self.assertTemplateUsed(response, 'home.html')
 
     def test_unsuccesful_lesson_request_user_is_admin(self):
         self.client.login(email=self.admin.email, password="Password123")
@@ -271,8 +271,8 @@ class LessonRequestViewTestCase(TestCase):
         response = self.client.get(self.save_lessons_url, follow=True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
-        response_url = reverse('log_in')
-        self.assertTemplateUsed(response, 'log_in.html')
+        response_url = reverse('home')
+        self.assertTemplateUsed(response, 'home.html')
 
     def test_save_lessons_get(self):
         self.client.login(email=self.student.email, password="Password123")

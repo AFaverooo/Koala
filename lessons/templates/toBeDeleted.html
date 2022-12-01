@@ -1,0 +1,60 @@
+<!--
+
+
+
+Issue 1)
+  When you are already logged in and you go back to the home
+  page and press the blue Login, you can fill out any details you want 
+  and will be logged in as the previous user.
+  This doesn't happen without this UI. 
+
+  Need to show that the person is currently logged in.
+
+Issue 2)
+  Also, redirect to login if credentials are incorrect, preferrably
+  back to home page with alert
+
+
+ Should be replaced with home.html
+-->
+
+
+
+
+
+{%load crispy_forms_tags%}
+{% load widget_tweaks %}
+{%load static%}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="{% static 'custom.css'%}" rel="stylesheet">
+    <title>Music Management System</title>  
+  </head>
+
+
+<h1> Log In </h1>
+{% for message in messages %}
+<div class="alert alert-{{ message.level_tag }}" role="alert">
+  {{ message }}
+</div>
+{% endfor %}
+
+  <body>
+      <form action="{% url 'log_in' %}" method="post">
+        {{form.email|as_crispy_field}}
+       <input type="submit" value="log in" class="btn btn-primary">
+  </form>
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+</body>

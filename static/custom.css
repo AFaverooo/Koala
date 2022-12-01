@@ -1,0 +1,68 @@
+#home-background{
+    background: url('images/colourfulbackground.png') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size:cover;
+    background-size: cover;
+    -o-background-size:cover;
+}
+
+#homecardholder{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+
+#homecard{
+    max-width: 50rem;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 0px;
+    border-radius: 20px;
+}
+#signupcard{
+    max-width: 100rem;
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 0px;
+    border-radius: 30px;
+}
+
+.successbutton {
+    transition-duration: 0.4s;
+  }
+  
+  .successbutton:hover {
+    background-color: #4CAF50; 
+    color: white;
+  }
+
+#SignUpButton {
+    margin-top:15px;
+    
+  }
+
+.btn {
+
+    width: calc(50% - 10px);
+    /* padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 0px; */
+    margin: 0 auto;
+    display: block;
+
+  }
+
+
+
+
+.divider{
+    width:5px;
+    height:15px;
+    display:inline-block;
+}
