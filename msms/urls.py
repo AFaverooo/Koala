@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from lessons import views
+from django.contrib.auth import views as auth_views
 
 #Required for admin DateTimeField
 from django.views.i18n import JavaScriptCatalog
@@ -41,7 +42,7 @@ urlpatterns = [
     path('disable_user/<str:current_user_email>', views.disable_user, name = 'disable_user'),
     path('delete_user/<str:current_user_email>', views.delete_user, name = 'delete_user'),
     path('create_admin_page', views.create_admin_page, name = 'create_admin_page'),
-
+    
     path('sign_up/', views.sign_up, name = 'sign_up'),
 
     path('invoice/', views.invoice, name = 'invoice'),

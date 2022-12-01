@@ -3,6 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.views import PasswordChangeView
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -306,6 +307,12 @@ def create_admin_page(request):
 
     return render(request,'director_create_admin.html',{'form': form})
 
+
+def PasswordsChangeView(PasswordChangeView):
+    form_class = PasswordChangeView
+    success_url = reverse()
+
+
 @login_required
 def update_user(request,current_user_id):
     user = UserAccount.objects.get(id=current_user_id)
@@ -319,19 +326,21 @@ def update_user(request,current_user_id):
             lname = form.cleaned_data.get('last_name')
             gender = form.cleaned_data.get('gender')
 
-            password = form.cleaned_data.get('password')
-            password_confirmation = form.cleaned_data.get('password_confirmation')
-
             user.email = email
             user.first_name = fname
             user.last_name = lname
             user.gender = gender
 
+
+            #TO:DO  ADD ABILITY TO CHANGE Password
+
             # user.set_password(str(password))
             # user.password = password
             # user.password_confirmation = password_confirmation
-
+            
             user.save()
+
+
 
             return redirect('director_manage_roles')
 

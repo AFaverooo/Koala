@@ -74,23 +74,19 @@ class CreateAdminForm(forms.ModelForm):
         model = UserAccount
         fields = ['first_name', 'last_name','email', 'gender']
 
-    # dateOfBirth = forms.DateField(
-    #     label = 'Date Of Birth',
-    #     widget = DateInput())
 
-    new_password = forms.CharField(
-        label='Password',
-        widget=forms.PasswordInput(),
-        validators=[RegexValidator(
-            regex=r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*$',
-            message='Password must contain an uppercase character, a lowercase '
-                    'character and a number'
-            )]
-    )
-    password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
-
-    def clean_password(self):
-        return self.initial['password']
+    #TO:DO  ADD ABILITY TO CHANGE Password
+    
+    # new_password = forms.CharField(
+    #     label='Password',
+    #     widget=forms.PasswordInput(),
+    #     validators=[RegexValidator(
+    #         regex=r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*$',
+    #         message='Password must contain an uppercase character, a lowercase '
+    #                 'character and a number'
+    #         )]
+    # )
+    # password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
 
     def save(self):
         """Create a new user."""
