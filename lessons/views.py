@@ -227,6 +227,7 @@ def director_feed(request):
 
 @login_required
 def director_manage_roles(request):
+    print(request.user.is_authenticated)
     students = UserAccount.objects.filter(role = UserRole.STUDENT)
     teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
     admins = UserAccount.objects.filter(role = UserRole.ADMIN)
@@ -321,26 +322,27 @@ def update_user(request,current_user_id):
     if request.method == 'POST':
         form = CreateAdminForm(request.POST, instance = user)
         if form.is_valid():
+
             email = form.cleaned_data.get('email')
             fname = form.cleaned_data.get('first_name')
             lname = form.cleaned_data.get('last_name')
             gender = form.cleaned_data.get('gender')
+
+            new_password = form.cleaned_data.get('new_password')
 
             user.email = email
             user.first_name = fname
             user.last_name = lname
             user.gender = gender
 
+            user.set_password(new_password)
+
 
             #TO:DO  ADD ABILITY TO CHANGE Password
 
-            # user.set_password(str(password))
-            # user.password = password
             # user.password_confirmation = password_confirmation
 
             user.save()
-
-
 
             return redirect('director_manage_roles')
 
