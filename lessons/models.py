@@ -354,3 +354,26 @@ class Transaction(models.Model):
             MinValueValidator(1),
         ]
     )
+class Term(models.Model):
+    term_number =  models.IntegerField(
+        # blank = True,
+        # editable=False,
+        # unique=True,
+        validators=[
+            MaxValueValidator(6),
+            MinValueValidator(1),
+        ]
+    )
+
+    start_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        blank=True, 
+        null=True
+    )
+    end_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        blank=True, 
+        null=True
+    )

@@ -1,13 +1,15 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction, TransactionTypes,Term
 import random
 import string
 import datetime
 from django.utils import timezone
+from datetime import date
 
 
 letters = string.ascii_lowercase
+
 
 class Command(BaseCommand):
     def __init__(self):
@@ -38,6 +40,42 @@ class Command(BaseCommand):
             email= "marty.major@example.org",
             password="Password123",
             gender ="PNOT",
+        )
+
+        Term.objects.create(
+            term_number=1,
+            start_date = datetime.date(2022, 9,1),
+            end_date = datetime.date(2022, 10,21),
+        )
+
+        Term.objects.create(
+            term_number=2,
+            start_date = datetime.date(2022, 10,31),
+            end_date = datetime.date(2022, 12,16),
+        )
+
+        Term.objects.create(
+            term_number=3,
+            start_date = datetime.date(2023, 1,3),
+            end_date = datetime.date(2023, 2,10),
+        )
+
+        Term.objects.create(
+            term_number=4,
+            start_date = datetime.date(2023, 2,20),
+            end_date = datetime.date(2023, 3,31),
+        )
+
+        Term.objects.create(
+            term_number=5,
+            start_date = datetime.date(2023, 4,17),
+            end_date = datetime.date(2022, 5,26),
+        )
+
+        Term.objects.create(
+            term_number=6,
+            start_date = datetime.date(2023, 6,5),
+            end_date = datetime.date(2022, 7,21),
         )
 
         # Seed the students

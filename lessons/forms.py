@@ -1,12 +1,12 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import UserAccount, Gender, Lesson
+from .models import UserAccount, Gender, Lesson, Term
 from  django.contrib.admin.widgets import AdminSplitDateTime
 from django.shortcuts import render
 from .models import UserAccount, Gender, Lesson, UserRole
 from django.forms import DateTimeInput
 import datetime
-from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+from bootstrap_datepicker_plus.widgets import DateTimePickerInput, DatePickerInput
 
 class LogInForm(forms.Form):
     email = forms.CharField(label='email')
@@ -63,6 +63,42 @@ class SignUpForm(forms.ModelForm):
 
         return student
 
+class TermDatesForm(forms.ModelForm):
+    # def __init__ (self,*args,**kwargs):
+    #     super(TermDatesForm,self).__init__(self,*args,**kwargs)
+    #     self.fields['term_number'].disabled = True
+
+    class Meta:
+        """Form options."""
+        model = Term
+        fields = ['term_number','start_date','end_date']
+        widgets = {
+            "start_date": DatePickerInput(),
+            "end_date": DatePickerInput(),
+            } 
+        ordering = ['term_number']
+
+    # def clean(self):
+    #     """Clean the data and generate messages for any errors."""
+
+    #     super().clean()
+    #     term_number = self.cleaned_data.get('term_number')
+    #     start_date = self.cleaned_data.get('start_date')
+    #     end_date = self.cleaned_data.get('end_date')
+    #     # if new_password != password_confirmation:
+    #     #     self.add_error('password_confirmation', 'Confirmation does not match password.')
+
+    # def save(self):
+    #     """Create a new user."""
+
+    #     super().save(commit=False)
+    #     term = Term.objects.create(
+    #         # self.cleaned_data.get('username'),
+    #         term_number=self.cleaned_data.get('term_number'),
+    #         start_date=self.cleaned_data.get('start_date'),
+    #         end_date=self.cleaned_data.get('end_date'),
+    #     )
+    #     return term
 
 class RequestForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
