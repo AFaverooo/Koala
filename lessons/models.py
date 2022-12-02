@@ -350,3 +350,41 @@ class Transaction(models.Model):
             MinValueValidator(1),
         ]
     )
+class Term(models.Model):
+    term_number =  models.IntegerField(
+        # blank = True,
+        # editable=False,
+        unique=False,
+        validators=[
+            MaxValueValidator(6),
+            MinValueValidator(1),
+        ]
+    )
+
+    start_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        blank=True, 
+        null=True
+    )
+    end_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        blank=True, 
+        null=True
+    )
+
+    # def create_term(self, term_number, start_date, end_date):
+    #     '''Create and save a term with a given term_number, start_date and end_date'''
+    #     if not term_number:
+    #         raise ValueError('The term number must be set')
+    #     if not start_date:
+    #         raise ValueError('The start date must be set')
+    #     if not end_date:
+    #         raise ValueError('The end date must be set')
+
+    #     # term_number = self.normalize_email(email)
+    #     term = self.model(term_number=term_number,start_date=start_date,end_date=end_date)
+    #     # user.set_password(password)
+    #     term.save(using=self._db)
+    #     return term
