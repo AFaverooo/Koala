@@ -141,3 +141,7 @@ class UserAccountModelTestCase(TestCase):
     def test_student_is_student(self):
         self.assertTrue(self.student.role.is_student())
         self._assert_student_is_valid()
+
+    def test_student_not_parent(self):
+        self.assertFalse(self.student.is_parent)
+        self.assertEqual(self.student.parent_of_user,None)
