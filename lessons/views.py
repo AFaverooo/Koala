@@ -338,6 +338,9 @@ def update_user(request,current_user_id):
             user.set_password(new_password)
 
 
+            print(new_password)
+            print(user.password)
+
             #TO:DO  ADD ABILITY TO CHANGE Password
 
             # user.password_confirmation = password_confirmation

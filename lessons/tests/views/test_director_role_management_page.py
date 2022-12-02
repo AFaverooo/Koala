@@ -39,50 +39,50 @@ class DirectorRoleChangesTestCase(TestCase):
 
     # Test for behaviors of the widgets related to each user
 
-    def test_promote_admin_to_director(self):
-        pass
-
-    def test_demote_director_to_admin(self):
-        pass
-
-
-    def test_edit_director_info(self):
-        pass
-
-    def test_edit_admin_info(self):
-        pass
-
-
-    def test_disable_director_info(self):
-        pass
-
-    def test_disable_admin_info(self):
-        pass
-
-
-    def test_delete_director(self):
-        pass
-
-    def test_delete_admin(self):
-        pass
-
-
-    # Prevent/ allow actions dont on the current user
-
-    def current_user_can_edit_himself(self):
-        pass
-
-    def current_user_cant_promote_himself(self):
-        pass
-
-    def current_user_demote_promote_himself(self):
-        pass
-
-    def current_user_cant_edit_himself(self):
-        pass
-
-    def current_user_cant_delete_himself(self):
-        pass
-
-    def current_user_cant_disable_himself(self):
-        pass
+    # def test_promote_admin_to_director(self):
+    #     pass
+    #
+    # def test_demote_director_to_admin(self):
+    #     pass
+    #
+    #
+    # def test_edit_director_info(self):
+    #     pass
+    #
+    # def test_edit_admin_info(self):
+    #     pass
+    #
+    #
+    # def test_disable_director_info(self):
+    #     pass
+    #
+    # def test_disable_admin_info(self):
+    #     pass
+    #
+    #
+    # def test_delete_director(self):
+    #     pass
+    #
+    # def test_delete_admin(self):
+    #     pass
+    #
+    #
+    # # Prevent/ allow actions dont on the current user
+    #
+    # def current_user_can_edit_himself(self):
+    #     pass
+    #
+    # def current_user_cant_promote_himself(self):
+    #     pass
+    #
+    # def current_user_demote_promote_himself(self):
+    #     pass
+    #
+    # def current_user_cant_edit_himself(self):
+    #     pass
+    #
+    # def current_user_cant_delete_himself(self):
+    #     pass
+    #
+    # def current_user_cant_disable_himself(self):
+    #     pass
