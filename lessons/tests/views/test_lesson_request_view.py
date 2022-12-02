@@ -11,7 +11,6 @@ from django.utils import timezone
 from datetime import time
 import datetime
 
-
 from django.db import IntegrityError
 from django.db import transaction
 

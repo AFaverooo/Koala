@@ -246,8 +246,8 @@ def director_manage_roles(request):
 def promote_director(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         if (request.user.email == current_user_email):
-            messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
-            return director_manage_roles(request)
+            messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
+            return redirect('director_manage_roles')
         else:
             user = UserAccount.objects.get(email=current_user_email)
             user.role = UserRole.DIRECTOR
@@ -255,17 +255,18 @@ def promote_director(request,current_user_email):
             user.is_superuser = True
             user.save()
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
-            return director_manage_roles(request)
+            return redirect('director_manage_roles')
     else:
         return redirect("log_in")
 
 
 @login_required
 def promote_admin(request,current_user_email):
+
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
-            return director_manage_roles(request)
+            return redirect('director_manage_roles')
         else:
             user = UserAccount.objects.get(email=current_user_email)
             user.role = UserRole.ADMIN
@@ -273,9 +274,12 @@ def promote_admin(request,current_user_email):
             user.is_superuser = False
             user.save()
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role admin")
-            return director_manage_roles(request)
+            return redirect("director_manage_roles")
     else:
+
         return redirect("log_in")
+
+
 
 @login_required
 def disable_user(request,current_user_email):
@@ -309,7 +313,7 @@ def delete_user(request,current_user_email):
         else:
             user = UserAccount.objects.get(email=current_user_email)
             user.delete()
-            messages.add_message(request,messages.SUCCESS,"User has been sucessfuly deleted!")
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
             return director_manage_roles(request)
     else:
         return redirect("log_in")
@@ -334,6 +338,8 @@ def create_admin_page(request):
 @login_required
 def update_user(request,current_user_id):
 
+    # if user is the current user, log out
+
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
 
         user = UserAccount.objects.get(id=current_user_id)
@@ -357,6 +363,13 @@ def update_user(request,current_user_id):
 
                 user.set_password(new_password)
                 user.save()
+
+                # current user logged out if he edits himself
+                if (int(request.user.id) == int(current_user_id)):
+                    messages.add_message(request,messages.SUCCESS,f"You cant't edit yourself!")
+                    return log_out(request)
+
+                messages.add_message(request,messages.SUCCESS,f"{user.email} has been sucessfuly updated!")
 
                 return redirect('director_manage_roles')
 
