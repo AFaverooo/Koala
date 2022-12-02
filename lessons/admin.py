@@ -17,12 +17,12 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['reference_number','student_ID','fees_amount', 'invoice_status', 'amounts_need_to_pay'
+    list_display = ['reference_number','student_ID', 'lesson_ID', 'fees_amount', 'invoice_status', 'amounts_need_to_pay'
     ]
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['Student_ID_transaction', 'transaction_type', 'invoice_reference_transaction', 'transaction_amount'
+    list_display = ['Student_ID_transaction', 'invoice_reference_transaction', 'transaction_amount'
     ]
     # ordering = ('request_date',)
     # search_fields = ('lesson_id','duration')

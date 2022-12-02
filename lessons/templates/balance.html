@@ -7,20 +7,23 @@
         }
         </style>
 <head>
-    <title>This is Balance and Transaction page for student</title>
-    <h1>This is Balance and Transaction page for student</h1>
+    
+    <title>This is the Balance and Transaction page</title>
+    <h1>{{student.first_name}} {{student.last_name}}'s Balance, Invoices and Transaction page</h1>
     <br>
+
 </head>
     <body>
 
 <div>
-    <body>
       <p> <a href = '{% url 'student_feed' %}' class = "btn btn-lg btn-secondary">Return to Student Feed Page</a></p>
 </div>
     
 <div>
-    {% for msg in messages %}
-    {{msg}}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.level_tag }}" role="alert">
+        {{ message }}
+      </div>
     {% endfor %}
 </div>
 
@@ -28,18 +31,7 @@
     {% for balance in Balance %}
     <h3>here is your balance in £: {{balance}} </h3>
     {% endfor %}
-    <br>
-</div>
-
-<div>
-    <h3>Please enter amounts of money you want to transfer into your school balance below: </h3>
-    <form action="{% url 'update_balance' %}" method = 'post'>
-        {% csrf_token %}
-        <label for='inputFees'>amounts:</label>
-        <input type='number' name="inputFees" class = "form-control" />
-
-        <button type = 'submit',  class = "btn btn-secondary">submit</button>
-    </form>
+    <h4>The balance is calcualted base on the difference of the total of both invoices and payments</h4>
     <br>
 </div>
 
@@ -65,6 +57,7 @@
             <th>Reference</th>
             <th>Student ID</th>
             <th>Amount of fees</th>
+            <th>Lesson ID</th>
             <th>Invoice status</th>
             <th>Amounts left to be paid</th>
         </tr>
@@ -73,6 +66,7 @@
             <td>{{invoice.reference_number}}</td>
             <td>{{invoice.student_ID}}</td>
             <td>{{invoice.fees_amount}}</td>
+            <td>{{invoice.lesson_ID}}</td>
             <td>{{invoice.invoice_status}}</td>
             <td>{{invoice.amounts_need_to_pay}}</td>
         </tr>
@@ -81,21 +75,17 @@
 </div>
 
 <div>
-    <h1>Transactions<h1>
-    <h4>Transaction type 'IN' means that student is transfer money from outsider to their school balance</h4>
-    <h4>Transaction type 'OUT' means that student is using money in their school balance to pay for the invoice</h4>
+    <h1>Payments<h1>
 <table style="width:100%">
     <tr>
         <!-- table head of the transaction -->
         <th>Student ID</th>
-        <th>Transaction Type</th>
         <th>Invoice reference number</th>
         <th>Transaction Amount</th>
     </tr>
     {% for transaction in Transaction reversed %} <!-- this function reads all the transactions under the student and print them out in one single table -->
     <tr>
         <td>{{transaction.Student_ID_transaction }}</td>
-        <td>{{transaction.transaction_type}}</td>
         <td>{{transaction.invoice_reference_transaction }}</td>
         <td>{{transaction.transaction_amount }}</td>
     </tr>

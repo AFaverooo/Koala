@@ -5,6 +5,9 @@
 <a href = '{% url 'transaction_history' %}' class = "btn">
   <button type="button" class="btn button">Bank Transaction History</button>
 </a>
+<a href = '{% url 'invoices_history' %}' class = "btn">
+  <button type="button" class="btn button">Student Invoices History</button>
+</a>
 
 <div class="container">
   <div class="row">
@@ -39,6 +42,8 @@
           padding: 0.5% 1% 0% 1%;
         }
       </style>
+
+      <p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
 
         <table class="table">
         <thead>
