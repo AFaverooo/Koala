@@ -53,9 +53,7 @@ urlpatterns = [
 
     path('term_management', views.term_management_page, name='term_management'),
     path('add_term_page', views.add_term_page, name='add_term_page'),
-    # path('create_term_form',views.create_term_form, )
     path('create_term', views.create_term, name='create_term'),
-    # path('save_term', views.save_term, name='save_term'),
     path('edit_term_details_page/<str:term_number>',views.edit_term_details_page, name='edit_term_details_page'),
     path('update_term_details/<str:term_number>',views.update_term_details,name='update_term_details'),
     path('delete_term/<str:term_number>', views.delete_term, name='delete_term'),

@@ -64,6 +64,9 @@ class SignUpForm(forms.ModelForm):
         return student
 
 class TermDatesForm(forms.ModelForm):
+    # def __init__ (self,*args,**kwargs):
+    #     super(TermDatesForm,self).__init__(self,*args,**kwargs)
+    #     self.fields['term_number'].disabled = True
 
     class Meta:
         """Form options."""
@@ -72,7 +75,8 @@ class TermDatesForm(forms.ModelForm):
         widgets = {
             "start_date": DatePickerInput(),
             "end_date": DatePickerInput(),
-            }  
+            } 
+        ordering = ['term_number']
 
     # def clean(self):
     #     """Clean the data and generate messages for any errors."""

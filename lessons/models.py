@@ -354,12 +354,15 @@ class Term(models.Model):
     term_number =  models.IntegerField(
         # blank = True,
         # editable=False,
-        unique=False,
+        # unique=True,
         validators=[
             MaxValueValidator(6),
             MinValueValidator(1),
         ]
     )
+
+    # def get_student_balance(self):
+    #     return f'{self.balance}'
 
     start_date = models.DateField(
         auto_now=False,

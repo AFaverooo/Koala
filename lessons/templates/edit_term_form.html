@@ -19,10 +19,10 @@
 
   <h1> Add term details</h1>
 
-  <p>
-    Previous term: start date({{previous_term.start_date}}), end date:({{previous_term.end_date}})
+  <h2>
+    Previous term: start date({{previous_term.start_date}}), end date:({{previous_term.end_date}})<br>
     Next term: start date({{next_term.start_date}}), end date:({{next_term.end_date}})
-  </p>
+  </h2>
 
   <body>
       <form action="{% url 'update_term_details' term.term_number %}" method="post">
