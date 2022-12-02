@@ -148,7 +148,7 @@ def balance(request):
             student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
             update_balance(student)
             student_balance = get_student_balance(student)
-            return render(request, 'balance.html', {'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
+            return render(request, 'balance.html', {'student': student, 'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
     else:
         return redirect('home')
 
@@ -264,6 +264,19 @@ def get_all_transactions(request):
             total+= each_transaction.transaction_amount
 
     return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+
+def get_all_invocies(request):
+    all_invoices = Invoice.objects.all()
+
+    return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+
+def get_student_invoices_and_transactions(request, student_id):
+    student = UserAccount.objects.get(id=student_id)
+    all_invoices = Invoice.objects.filter(student_ID = student_id)
+    all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
+
+    return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+    
 
 
 

@@ -7,9 +7,11 @@
         }
         </style>
 <head>
-    <title>This is Balance and Transaction page for student</title>
-    <h1>This is Balance and Transaction page for student</h1>
+    
+    <title>This is the Balance and Transaction page</title>
+    <h1>{{student.first_name}} {{student.last_name}}'s Balance, Invoices and Transaction page</h1>
     <br>
+
 </head>
     <body>
 
@@ -32,18 +34,6 @@
     <h4>The balance is calcualted base on the difference of the total of both invoices and payments</h4>
     <br>
 </div>
-
-{% comment %} <div>
-    <h3>Please enter amounts of money you want to transfer into your school balance below: </h3>
-    <form action="{% url 'update_balance' %}" method = 'post'>
-        {% csrf_token %}
-        <label for='inputFees'>amounts:</label>
-        <input type='number' name="inputFees" class = "form-control" />
-
-        <button type = 'submit',  class = "btn btn-secondary">submit</button>
-    </form>
-    <br>
-</div> {% endcomment %}
 
 <div>
     <h3>Please enter the reference of the invoice you would like to pay and the amount of the money you want to pay:<h3> 

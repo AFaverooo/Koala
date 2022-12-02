@@ -3,8 +3,7 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>School Transaction History</h1><br>
-      <h2>School Total balance:  £ {{total}} </h2>
+      <h1>Student Invoices History</h1><br>
 
       <style>
         table {
@@ -41,17 +40,23 @@
         <table class="table">
           <thead>
             <tr>
+              <th scope="col">Reference</th>
               <th scope="col">Student ID</th>
-              <th scope="col">Invoice Reference</th>
-              <th scope="col">Transaction amount</th>
+              <th scope="col">Amount of fees</th>
+              <th scope="col">Lesson ID</th>
+              <th scope="col">Invoice status</th>
+              <th scope="col">Amounts left to pay</th>
             </tr>
           </thead>
           <tbody>
-            {% for transaction in all_transactions %}
+            {% for invoice in all_invoices %}
                 <tr>
-                    <th scope="row">{{ transaction.Student_ID_transaction }} {{student}}</th>
-                    <td>{{ transaction.invoice_reference_transaction }}</td>
-                    <td>{{ transaction.transaction_amount }}</td>
+                    <td>{{ invoice.reference_number }}</td>
+                    <td>{{ invoice.student_ID }}</td>
+                    <td>{{ invoice.fees_amount }}</td>
+                    <td>{{ invoice.lesson_ID }}</td>
+                    <td>{{ invoice.invoice_status }}</td>
+                    <td>{{ invoice.amounts_need_to_pay }}</td>
                 </tr>
             {% endfor %}
           </tbody>
