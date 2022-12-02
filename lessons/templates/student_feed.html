@@ -30,7 +30,7 @@ https://getbootstrap.com/docs/4.0/components/card/#navigation
 <h2>{{greeting}}</h2>
 
 {%  if unfulfilled_requests|length > 0 %}
-<h3>{{unfulfilledLabel}}</h3>
+<h3>Below is a view for requested lessons</h3>
 <table class="table table-striped table-dark">
   <tr>
     <th>Request Number</th>
@@ -63,7 +63,7 @@ https://getbootstrap.com/docs/4.0/components/card/#navigation
 {% endif %}
 
 {% if fullfilled_lessons|length > 0 %}
-<h3>{{fulfilledLabel}}</h3>
+<h3>Below is a timetable for booked lessons</h3>
 <table class="table table-striped table-dark">
   <tr>
     <th>Lesson</th>
@@ -80,6 +80,7 @@ https://getbootstrap.com/docs/4.0/components/card/#navigation
     </tr>
   {% endfor %}
 </table>
+<p>{{admin_email}}</p>
 {% endif %}
 
 {% if unfulfilled_requests|length == 0 and fullfilled_lessons|length == 0 %}

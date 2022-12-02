@@ -15,13 +15,6 @@ class StudentFeedTestCase(TestCase):
     def setUp(self):
 
         self.url = reverse('student_feed')
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
 
         self.teacher = UserAccount.objects.create_teacher(
             first_name='Barbare',
@@ -105,6 +98,21 @@ class StudentFeedTestCase(TestCase):
             lesson_status = LessonStatus.FULLFILLED,
         )
 
+    def initialise_admin(self):
+        self.admin = UserAccount.objects.create_admin(
+            first_name='Bob',
+            last_name='Jacobs',
+            email='bobby@example.org',
+            password='Password123',
+            gender = Gender.MALE,
+        )
+
+    def change_some_lessons_to_unfulfilled(self):
+        self.lesson.lesson_status = LessonStatus.UNFULFILLED
+        self.lesson.save()
+        self.lesson2.lesson_status = LessonStatus.UNFULFILLED
+        self.lesson2.save()
+
     def change_lessons_status_to_unfulfilled(self):
         self.lesson.lesson_status = LessonStatus.UNFULFILLED
         self.lesson.save()
@@ -116,6 +124,21 @@ class StudentFeedTestCase(TestCase):
         self.lesson4.save()
         self.lesson5.lesson_status = LessonStatus.UNFULFILLED
         self.lesson5.save()
+
+    def check_lesson_in_returned_dictionary(self,lesson_dictionary,expected_lesson):
+        for lesson in lesson_dictionary:
+            if lesson == expected_lesson and lesson.lesson_id == expected_lesson.lesson_id:
+                return True
+
+        return False
+
+    def check_all_lessons(self,dictionary):
+        self.assertTrue(self.check_lesson_in_returned_dictionary(dictionary,self.lesson))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(dictionary,self.lesson2))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(dictionary,self.lesson3))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(dictionary,self.lesson4))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(dictionary,self.lesson5))
+
 
     def check_unfulfilled_dictionary_equality(self,dictionary, request_number, lesson_date_without_time_string, type_string, lesson_duration_string, teacher_name):
         self.assertEqual(dictionary['Lesson Request'] , request_number)
@@ -156,20 +179,25 @@ class StudentFeedTestCase(TestCase):
         self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson5], LessonType.PRACTICE.label, "2022-09-25", "09:45 - 10:30", "Jonathan Jacks")
 
     def test_get_student_feed_with_booked_lessons(self):
+        self.initialise_admin()
         self.client.login(email=self.student.email, password="Password123")
 
         response = self.client.get(self.url,follow = True)
         unfullfilled_lessons = response.context['unfulfilled_requests']
         fullfilled_lessons = response.context['fullfilled_lessons']
         greeting_str = response.context['greeting']
+        admin_email = response.context['admin_email']
 
+        self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
         self.assertEqual(len(fullfilled_lessons),5)
+        self.check_all_lessons(fullfilled_lessons)
         self.assertEqual(greeting_str, "Welcome back John Doe")
         self.assertEqual(len(unfullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
     def test_get_student_feed_with_pending_lessons(self):
+        self.initialise_admin()
         self.change_lessons_status_to_unfulfilled()
         self.client.login(email=self.student.email, password="Password123")
 
@@ -179,12 +207,63 @@ class StudentFeedTestCase(TestCase):
         fullfilled_lessons = response.context['fullfilled_lessons']
 
         greeting_str = response.context['greeting']
+        admin_email = response.context['admin_email']
 
+        self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
         self.assertEqual(len(unfullfilled_lessons),5)
-        self.assertEqual(greeting_str, "Welcome back John Doe")
+        self.check_all_lessons(unfullfilled_lessons)
+        self.assertEqual(greeting_str, f'Welcome back {self.student}')
         self.assertEqual(len(fullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
+
+    def test_get_student_feed_with_booked_and_requested_lessons(self):
+        self.initialise_admin()
+        self.change_some_lessons_to_unfulfilled()
+        self.client.login(email=self.student.email, password="Password123")
+
+        response = self.client.get(self.url,follow = True)
+        unfullfilled_lessons = response.context['unfulfilled_requests']
+        fullfilled_lessons = response.context['fullfilled_lessons']
+        greeting_str = response.context['greeting']
+        admin_email = response.context['admin_email']
+
+        self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
+        self.assertEqual(len(fullfilled_lessons),3)
+        self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson3))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson4))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson5))
+        self.assertEqual(greeting_str, "Welcome back John Doe")
+        self.assertEqual(len(unfullfilled_lessons),2)
+        self.assertTrue(self.check_lesson_in_returned_dictionary(unfullfilled_lessons,self.lesson))
+        self.assertTrue(self.check_lesson_in_returned_dictionary(unfullfilled_lessons,self.lesson2))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+    def test_get_student_feed_with_pending_lessons_without_an_admin(self):
+        self.change_lessons_status_to_unfulfilled()
+        self.client.login(email=self.student.email, password="Password123")
+
+        response = self.client.get(self.url, follow = True)
+
+        unfullfilled_lessons = response.context['unfulfilled_requests']
+        fullfilled_lessons = response.context['fullfilled_lessons']
+
+        greeting_str = response.context['greeting']
+        admin_email = response.context['admin_email']
+
+        self.assertEqual(admin_email, 'No Admins Available To Contact')
+        self.assertEqual(len(unfullfilled_lessons),5)
+        self.check_all_lessons(unfullfilled_lessons)
+        self.assertEqual(greeting_str, f'Welcome back {self.student}')
+        self.assertEqual(len(fullfilled_lessons),0)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+    def test_post_student_feed_forbidden(self):
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.post(self.url, follow = True)
+        self.assertEqual(response.status_code, 403)
 
     def test_get_student_feed_redirects_when_not_logged_in(self):
         redirect_url = reverse_with_next('home', self.url)
@@ -193,6 +272,7 @@ class StudentFeedTestCase(TestCase):
         self.assertTemplateUsed(response, 'home.html')
 
     def test_not_student_accessing_student_feed(self):
+        self.initialise_admin()
         self.client.login(email=self.admin.email, password="Password123")
         response = self.client.get(self.url, follow = True)
         redirect_url = reverse('admin_feed')

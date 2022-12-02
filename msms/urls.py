@@ -25,7 +25,7 @@ urlpatterns = [
     path('', views.home, name = 'home'),
     path('jsi18n', JavaScriptCatalog.as_view(), name = 'js-catalog'),
     path('student_feed', views.student_feed, name = 'student_feed'),
-    path('requests_page', views.requests_page, name = 'requests_page'),
+    path('requests_page/', views.requests_page, name = 'requests_page'),
 
     path('new_lesson/', views.new_lesson, name = 'new_lesson'), #adds the single lesson to the database
     path('save_lessons/', views.save_lessons, name = 'save_lessons'),

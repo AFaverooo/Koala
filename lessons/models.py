@@ -223,6 +223,9 @@ class Lesson(models.Model):
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
 
+    def is_equal(self,other_lesson):
+        return ((self.lesson_id == other_lesson.lesson_id) and (self.request_date == other_lesson.request_date) and (self.lesson_date_time == other_lesson.lesson_date_time) and (self.student_id == other_lesson.student_id))
+
 #Invoice refers to the invoices of the lessons student booked
 class Invoice(models.Model):
     reference_number = models.CharField(
@@ -230,17 +233,17 @@ class Invoice(models.Model):
         unique=True,
         blank=False,
         validators=[RegexValidator(
-            regex = r'^\d*\d-\d\d\d\d*$', 
+            regex = r'^\d*\d-\d\d\d\d*$',
             message='Reference number must all be number and consist of - in between followed by at least three numbers'
         )]
     )
 
     # student number store the student
-    student_ID = models.CharField( 
+    student_ID = models.CharField(
         max_length = 30,
         blank=False,
         validators=[RegexValidator(
-            regex = r'^\d+$', 
+            regex = r'^\d+$',
             message='Student ID must all be number'
         )]
     )
@@ -316,7 +319,7 @@ class Invoice(models.Model):
 
     # # def add_lesson(self, lesson_price):
     # #     pass
-
+    
     # # def delete_lesson(self, lesson_name, lesson_price):
     # #     pass
         
@@ -324,11 +327,11 @@ class Invoice(models.Model):
     #     return (self.reference_number, self.student_ID, self.fees_amount)
 
 class Transaction(models.Model):
-    Student_ID_transaction = models.CharField( 
+    Student_ID_transaction = models.CharField(
         max_length = 30,
         blank=False,
         validators=[RegexValidator(
-            regex = r'^\d+$', 
+            regex = r'^\d+$',
             message='Student ID must all be number'
         )]
     )
@@ -338,7 +341,7 @@ class Transaction(models.Model):
         unique=False,
         blank=True,
         validators=[RegexValidator(
-            regex = r'^\d*\d-\d\d\d\d*$', 
+            regex = r'^\d*\d-\d\d\d\d*$',
             message='Reference number must all be number and consist of - in between followed by at least three numbers'
         )]
     )
