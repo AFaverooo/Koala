@@ -1,6 +1,8 @@
 #home-background{
     /* background: url('images/colourfulbackground.png') no-repeat center center fixed; */
-    background-color: #e5e5e5;
+    /* background-color: #e5e5e5; */
+    /* background-color:#00b4d8; */
+    background-color: #0077b6;
     -webkit-background-size: cover;
     -moz-background-size:cover;
     background-size: cover;
@@ -35,9 +37,19 @@
     padding-bottom: 0px;
     border-radius: 30px;
 }
+#bcNavbar{
+  font-family: "JetBrains Mono", monospace;
+  font-size: medium;
+  font-weight: normal;
 
-
-
+  font-display: block;
+  border-radius: 0%;
+}
+#navbarFont{
+  font-family: "JetBrains Mono", monospace;
+  font-size: large;
+  /* margin-top: 15px; */
+}
 .successbutton {
     transition-duration: 0.4s;
   }
