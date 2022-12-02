@@ -271,7 +271,7 @@ class Invoice(models.Model):
     )
 
     lesson_ID = models.CharField(
-        unique = True,
+        unique = False,
         max_length = 30,
         blank=True,
         validators=[RegexValidator(

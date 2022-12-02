@@ -201,6 +201,8 @@ def pay_fo_invoice(request):
                 messages.add_message(request,messages.ERROR,"this invoice does not belong to you!")
             elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
+            elif(temp_invoice.invoice_status == InvoiceStatus.DELETED):
+                messages.add_message(request,messages.ERROR,"This invoice has already been deleted!")
             else:
                 if(temp_invoice.amounts_need_to_pay <= input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PAID
@@ -245,7 +247,13 @@ def update_invoice(lesson):
     
     update_balance(student)
 
-# def update_invoice_when_delete(lesson):
+def update_invoice_when_delete(lesson):
+    invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+    invoice.invoice_status = InvoiceStatus.DELETED
+    invoice.amounts_need_to_pay = 0
+    invoice.fees_amount = 0
+    invoice.lesson_ID = ''
+    invoice.save()
 
 
 
@@ -335,6 +343,7 @@ def admin_confirm_booking(request, lesson_id):
 def delete_lesson(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
     if lesson is not None:
+        update_invoice_when_delete(lesson)
         lesson.delete()
 
         messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
