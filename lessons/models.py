@@ -93,8 +93,11 @@ class UserAccountManager(BaseUserManager):
         #        raise ValueError('parent user account provided does not exist')
         parent = extra_fields['parent_of_user']
 
-        if hasattr(parent,email) is False:
+        if hasattr(parent,'email') is False:
             raise AttributeError('Provided parent field is not of type UserAccount')
+
+        if parent.role != UserRole.STUDENT:
+            raise AttributeError('Provided user is not a student')
 
         parent.is_parent = True
         parent.save()
