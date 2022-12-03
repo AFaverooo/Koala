@@ -105,9 +105,10 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(after_count, before_count)
 
     def test_get_new_lesson_without_lessons_saved(self):
+        redirect_url = reverse('requests_page')
         self.client.login(email=self.student.email, password="Password123")
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.url, follow = True)
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'requests_page.html')
         form = response.context['form']
 
@@ -116,10 +117,11 @@ class RequestNewLessonTest(TestCase):
         self.assertFalse(form.is_bound)
 
     def test_get_new_lesson_with_lessons_saved(self):
+        redirect_url = reverse('requests_page')
         self.create_saved_lessons()
         self.client.login(email=self.student.email, password="Password123")
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.url, follow = True)
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'requests_page.html')
         form = response.context['form']
         self.assertEqual(len(response.context['lessons']),3)

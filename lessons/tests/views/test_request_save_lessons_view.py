@@ -100,9 +100,10 @@ class RequestSaveLessonsTest(TestCase):
 
 
     def test_get_save_lessons_without_lessons_saved(self):
+        redirect_url = reverse('requests_page')
         self.client.login(email=self.student.email, password="Password123")
-        response = self.client.get(self.save_lessons_url)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.save_lessons_url,follow = True)
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'requests_page.html')
         form = response.context['form']
 
@@ -111,16 +112,33 @@ class RequestSaveLessonsTest(TestCase):
         self.assertFalse(form.is_bound)
 
     def test_get_save_lessons_with_lessons_saved(self):
+        redirect_url = reverse('requests_page')
         self.create_saved_lessons()
         self.client.login(email=self.student.email, password="Password123")
-        response = self.client.get(self.save_lessons_url)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.save_lessons_url,follow = True)
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'requests_page.html')
         form = response.context['form']
         self.assertEqual(len(response.context['lessons']),3)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertFalse(form.is_bound)
         self.delete_saved_lessons()
+
+    def test_succesfull_save_lessons_post_without_saved_lessons(self):
+        #self.create_saved_lessons()
+        self.client.login(email = self.student.email, password = 'Password123')
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.save_lessons_url, follow = True)
+        after_count = Lesson.objects.count()
+
+        self.assertEqual(before_count,after_count)
+
+        redirect_url = reverse('requests_page')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'Lessons should be requested before attempting to save')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
     def test_succesfull_save_lessons_post(self):
         self.create_saved_lessons()

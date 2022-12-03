@@ -123,9 +123,9 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.assertEqual(self.delete_url, f'/delete_pending/{self.lesson.lesson_id}')
 
     def test_get_delete_pending_lessons_url(self):
+        redirect_url = reverse('student_feed')
         self.client.login(email=self.student.email, password="Password123")
         response = self.client.get(self.delete_url, follow = True)
-        redirect_url = reverse('student_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student_feed.html')
 

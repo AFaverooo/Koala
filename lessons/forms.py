@@ -88,7 +88,6 @@ class RequestForm(forms.ModelForm):
         widgets = {
             "lesson_date_time": DateTimePickerInput(),}
 
-
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
 
     # def clean(self, request):

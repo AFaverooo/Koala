@@ -505,14 +505,16 @@ def new_lesson(request):
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
 
-                form = RequestForm()
-                return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
+                #form = RequestForm()
+                #return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
+                return redirect('requests_page')
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
                 return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(current_student)})
         else:
-            form = RequestForm()
-            return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            #form = RequestForm()
+            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            return redirect('requests_page')
     else:
         return redirect('home')
 
@@ -524,8 +526,7 @@ def save_lessons(request):
 
             if len(all_unsaved_lessons) == 0:
                 messages.add_message(request,messages.ERROR,"Lessons should be requested before attempting to save")
-                form = RequestForm()
-                return render(request,'requests_page.html', {'form': form})
+                return redirect('requests_page')
 
             for eachLesson in all_unsaved_lessons:
                 eachLesson.lesson_status = LessonStatus.UNFULFILLED
@@ -534,8 +535,9 @@ def save_lessons(request):
             messages.add_message(request,messages.SUCCESS, "Lesson requests are now pending for validation by admin")
             return redirect('student_feed')
         else:
-            form = RequestForm()
-            return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            #form = RequestForm()
+            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            return redirect('requests_page')
     else:
         #print('user should be logged in')
         return redirect('home')
@@ -576,20 +578,8 @@ def edit_lesson(request,lesson_id):
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():
-                #request_date = timezone.now
-                #duration = request_form.cleaned_data.get('duration')
-                #lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                #type = request_form.cleaned_data.get('type')
-                #teacher_id = request_form.cleaned_data.get('teachers')
-
                 try:
-                    #to_edit_lesson.duration = duration
-                    #to_edit_lesson.lesson_date_time = lesson_date
-                    #to_edit_lesson.type = type
-                    #to_edit_lesson.teacher_id = teacher_id
-                    #to_edit_lesson.save()
                     request_form.update_lesson(to_edit_lesson)
-
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
                     return render_edit_request(request,lesson_id)

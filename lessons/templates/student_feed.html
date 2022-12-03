@@ -13,18 +13,19 @@ https://getbootstrap.com/docs/4.0/components/card/#navigation
 {% bootstrap_javascript jquery='full' %}
 </head>
 
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
+    {% endfor %}
+</ul>
+{% endif %}
+
 <h1> THIS IS THE STUDENT FEED PAGE</h1>
 
 <p> <a href = '{% url 'requests_page' %}' class = "btn btn-lg btn-secondary"> Book lessons  </a></p>
 
 <p> <a href = '{% url 'balance' %}' class = "btn btn-lg btn-secondary"> Check balance and Transaction  </a></p>
-
-{% for message in messages %}
-<div class="alert alert-{{ message.level_tag }}" role="alert">
-  {{ message }}
-</div>
-
-{% endfor %}
 
 <body>
 <h2>{{greeting}}</h2>
