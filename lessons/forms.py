@@ -176,7 +176,6 @@ class RequestForm(forms.ModelForm):
 
 
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
-
     # def clean(self, request):
     #     """Clean the data and generate messages for any errors."""
 
