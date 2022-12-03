@@ -584,6 +584,13 @@ def save_lessons(request):
         return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
+def check_correct_student_accessing_lesson(student_id, other_lesson):
+    all_student_lessons = Lesson.objects.filter(student_id = student_id, lesson_status = LessonStatus.UNFULFILLED)
+    for lesson in all_student_lessons:
+        if lesson.is_equal(other_lesson):
+            return True
+
+    return False
 
 def render_edit_request(request,lesson_id):
     try:
@@ -636,15 +643,6 @@ def edit_lesson(request,lesson_id):
     else:
         # return redirect('log_in')
         return redirect('home')
-
-def check_correct_student_accessing_lesson(student_id, other_lesson):
-    all_student_lessons = Lesson.objects.filter(student_id = student_id)
-    for lesson in all_student_lessons:
-        if lesson.is_equal(other_lesson):
-            print(lesson)
-            return True
-
-    return False
 
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
