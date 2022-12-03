@@ -46,7 +46,7 @@ body{
   font-family: "JetBrains Mono", monospace;
   font-size: medium;
   font-weight: normal;
-
+  background-image:linear-gradient(-90deg,#00b4d8, #023e8a) ;
   font-display: block;
   border-radius: 0%;
 }
@@ -85,6 +85,7 @@ body{
     background-color:#caf0f8;
     margin-left:auto;
     margin-right:auto;
+    font-family: "JetBrains Mono", monospace;
   }
   body{
     background-color: #edede9;
