@@ -160,7 +160,7 @@ def get_student_transaction(student):
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
-# this function update the student balance 
+# this function update the student balance
 def update_balance(student):
     # student = request.user
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
@@ -243,7 +243,7 @@ def update_invoice(lesson):
     invoice.amounts_need_to_pay += difference_between_invoice
     invoice.save()
     student = UserAccount.objects.get(id=invoice.student_ID)
-    
+
     update_balance(student)
 
 def update_invoice_when_delete(lesson):
@@ -275,7 +275,7 @@ def get_student_invoices_and_transactions(request, student_id):
     all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
 
     return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
-    
+
 
 
 
@@ -430,11 +430,11 @@ def director_feed(request):
 def home(request):
     if request.method == 'POST':
         form = LogInForm(request.POST)
-        print(f"Is form valid: {form.is_valid()}")
+        #print(f"Is form valid: {form.is_valid()}")
         email = request.POST.get("email")
-        print(email)
+        #print(email)
         password = request.POST.get("password")
-        print(password)
+        #print(password)
         if  form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
@@ -465,6 +465,19 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
+def sign_up_child(request):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        if request.method == 'POST':
+            form = SignUpForm(request.POST)
+            if form.is_valid():
+                student = form.save_child(request.user)
+                return redirect('student_feed')
+        else:
+            form = SignUpForm()
+        return render(request, 'sign_up_child.html', {'form': form})
+    else:
+        return redirect('home')
+
 @login_prohibited
 def sign_up(request):
     if request.method == 'POST':
@@ -492,7 +505,6 @@ def new_lesson(request):
             #    messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
             #    return redirect('requests_page')
 
-            #if current_student.role.is_student():
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():

@@ -63,6 +63,19 @@ class SignUpForm(forms.ModelForm):
 
         return student
 
+    def save_child(self,parent):
+        super().save(commit = False)
+        child_student = UserAccount.objects.create_child_student(
+            first_name=self.cleaned_data.get('first_name'),
+            last_name=self.cleaned_data.get('last_name'),
+            email=self.cleaned_data.get('email'),
+            password=self.cleaned_data.get('new_password'),
+            gender=self.cleaned_data.get('gender'),
+            parent_of_user = parent,
+        )
+
+        return child_student
+
 
 class RequestForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
@@ -73,9 +86,9 @@ class RequestForm(forms.ModelForm):
         model = Lesson
         fields = ['type','duration','lesson_date_time']
         widgets = {
-            "lesson_date_time": DateTimePickerInput(),}        
-    
-        
+            "lesson_date_time": DateTimePickerInput(),}
+
+
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
 
     # def clean(self, request):

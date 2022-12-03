@@ -30,11 +30,11 @@
           <div class="divider"></div>
 
 
-          <!-- 
+          <!--
       div for the form
     -->
           <div id="collapseExample" class="collapse">
-            
+
             <form action="{% url 'home' %}" method="post">
               {% csrf_token %}
               {% include 'partials/bootstrap_form.html' with form=form %}
@@ -45,7 +45,7 @@
             <!-- </div>   -->
 
 
-            
+
 
           </div>
         </div>
