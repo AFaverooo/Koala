@@ -286,7 +286,7 @@ def disable_user(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
-            return director_manage_roles(request)
+            return redirect(director_manage_roles)
         else:
             user = UserAccount.objects.get(email=current_user_email)
             if (user.is_active == True):
@@ -298,7 +298,7 @@ def disable_user(request,current_user_email):
                 user.save()
                 messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly enabled!")
 
-            return director_manage_roles(request)
+            return redirect(director_manage_roles)
     else:
         return redirect("log_in")
 
@@ -309,19 +309,21 @@ def delete_user(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
-            return director_manage_roles(request)
+            return redirect(director_manage_roles)
         else:
             user = UserAccount.objects.get(email=current_user_email)
             user.delete()
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
-            return director_manage_roles(request)
+            return redirect(director_manage_roles)
     else:
         return redirect("log_in")
 
 
 
 def create_admin_page(request):
+
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if request.method == 'POST':
             form = CreateAdminForm(request.POST)
             if form.is_valid():
@@ -338,17 +340,13 @@ def create_admin_page(request):
 @login_required
 def update_user(request,current_user_id):
 
-    # if user is the current user, log out
-
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-
         user = UserAccount.objects.get(id=current_user_id)
         form = CreateAdminForm(instance=user)
 
         if request.method == 'POST':
             form = CreateAdminForm(request.POST, instance = user)
             if form.is_valid():
-
                 email = form.cleaned_data.get('email')
                 fname = form.cleaned_data.get('first_name')
                 lname = form.cleaned_data.get('last_name')
@@ -370,7 +368,6 @@ def update_user(request,current_user_id):
                     return log_out(request)
 
                 messages.add_message(request,messages.SUCCESS,f"{user.email} has been sucessfuly updated!")
-
                 return redirect('director_manage_roles')
 
         return render(request,'director_update_user.html', {'form': form , 'user': user})

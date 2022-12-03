@@ -100,62 +100,76 @@ class DirectorRoleChangesTestCase(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
 
+    # test actions that can be done on every User
+
+    def test_disable_user(self):
+
+        self.client.login(email=self.current.email, password="Password123")
+
+        active_user_count_before = UserAccount.objects.filter(is_active = True).count()
+        self.disable_user_url = reverse('disable_user', args=[self.admin.email])
+        response = self.client.get(self.disable_user_url, follow = True)
+        active_user_count_after = UserAccount.objects.filter(is_active = True).count()
+        self.assertEqual(active_user_count_before-1,active_user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.SUCCESS)
+
+
+    def test_cant_disable_current_user(self):
+
+        self.client.login(email=self.current.email, password="Password123")
+
+        active_user_count_before = UserAccount.objects.filter(is_active = True).count()
+        self.disable_user_url = reverse('disable_user', args=[self.current.email])
+        response = self.client.get(self.disable_user_url, follow = True)
+        active_user_count_after = UserAccount.objects.filter(is_active = True).count()
+        self.assertEqual(active_user_count_before,active_user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
 
 
-        # before_count = UserAccount.objects.count()
-        # response = self.client.get(self.promote_admin_url, follow = True)
-        # after_count = UserAccount.objects.count()
-        # redirect_url = reverse('director_manage_roles')
-        # self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        # self.assertTemplateUsed(response, 'director_manage_roles.html')
-        # self.assertEqual(before_count,after_count)
+    def test_delete_user(self):
 
-        # messages_list = list(response.context['messages'])
-        # self.assertEqual(str(messages_list[0]), 'Incorrect lesson ID passed')
-        # self.assertEqual(messages_list[0].level, messages.ERROR)
+        self.client.login(email=self.current.email, password="Password123")
 
-    # def test_demote_director_to_admin(self):
-    #     pass
-    #
-    #
-    # def test_edit_director_info(self):
-    #     pass
-    #
-    # def test_edit_admin_info(self):
-    #     pass
-    #
-    #
-    # def test_disable_director_info(self):
-    #     pass
-    #
-    # def test_disable_admin_info(self):
-    #     pass
-    #
-    #
-    # def test_delete_director(self):
-    #     pass
-    #
-    # def test_delete_admin(self):
-    #     pass
-    #
-    #
-    # # Prevent/ allow actions dont on the current user
-    #
-    # def current_user_can_edit_himself(self):
-    #     pass
-    #
-    # def current_user_cant_promote_himself(self):
-    #     pass
-    #
-    # def current_user_demote_promote_himself(self):
-    #     pass
-    #
-    # def current_user_cant_edit_himself(self):
-    #     pass
-    #
-    # def current_user_cant_delete_himself(self):
-    #     pass
-    #
-    # def current_user_cant_disable_himself(self):
-    #     pass
+        user_count_before = UserAccount.objects.count()
+        self.delete_user_url = reverse('delete_user', args=[self.admin.email])
+        response = self.client.get(self.delete_user_url, follow = True)
+        user_count_after = UserAccount.objects.count()
+        self.assertEqual(user_count_before-1,user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.SUCCESS)
+
+
+    def test_cant_delete_current_user(self):
+
+        self.client.login(email=self.current.email, password="Password123")
+
+        user_count_before = UserAccount.objects.count()
+        self.delete_user_url = reverse('delete_user', args=[self.current.email])
+        response = self.client.get(self.delete_user_url, follow = True)
+        user_count_after = UserAccount.objects.count()
+        self.assertEqual(user_count_before,user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.ERROR)
