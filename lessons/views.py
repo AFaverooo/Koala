@@ -481,18 +481,6 @@ def new_lesson(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
         if request.method == 'POST':
-            #test case, already unfulfilled lessons upon request
-            #previously_requested_lessons = get_unfulfilled_lessons(current_student)
-            #previously_booked_lessons = get_fullfilled_lessons(current_student)
-
-            #import widget tweaks
-            #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            #if previously_requested_lessons or previously_booked_lessons:
-            #    print('already made a set of requests')
-            #    messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
-            #    return redirect('requests_page')
-
-            #if current_student.role.is_student():
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():
@@ -511,10 +499,10 @@ def new_lesson(request):
                 return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(current_student)})
+                return render(request,'requests_page.html', {'form':request_form, 'lessons' : get_saved_lessons(current_student)})
         else:
             form = RequestForm()
-            return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            return render(request,'requests_page.html', {'form' : form,'lessons': get_saved_lessons(current_student)})
     else:
         return redirect('home')
 

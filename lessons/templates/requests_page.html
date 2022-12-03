@@ -1,47 +1,56 @@
-{% load static %}
-{{ form.media }}
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+{%extends 'base_content.html'%}
 
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <script src = "{% url 'js-catalog' %}"></script>
-    <script src="{% static '/admin/js/core.js' %}"></script> -->
-    <!-- <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}"> -->
 
-{% load bootstrap4 %}
-{% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
+{%block content%}
 
-</head>
+{% load crispy_forms_tags %}
 
-{% for message in messages %}
-<div class="alert alert-{{ message.level_tag }}" role="alert">
-  {{ message }}
-</div>
-{% endfor %}
+<body style="background-color: #edede9">
 
-  <h1> Request a lesson</h1>
+<div class="row">
+  <div class="col-6">
+      <div class="container vh-100" id="homecardholder">
+             <div class="row h-100">
+               <div class="col-12 my-auto">
+                 <div class="card mx-auto" id="signupcard">
 
-  <body>
+                  <h1> Request A Lesson</h1>
+                  <div class="divider"></div>
+
+<!-- 
+  Do not replace with partial as date time uses custom widget that cannot be rendered using
+crispyforms-->
       <form action="{% url 'new_lesson' %}" method="post">
         {% csrf_token %}
+        {% include 'partials/messages.html' with form=form %}
+        {{ form.type|as_crispy_field }}
 
-        {{ form.media }}
+        {{ form.duration|as_crispy_field }}
 
-        <div class="alert alert-{{ message.level_tag }}" role="alert">
-          {{ message }}
-        </div>
+           {{ form.media }}
 
-           {{ form.as_p }}
-       <input type="submit" value="request lesson" class="btn btn-primary">
+            <div class="fieldWrapper">
+            <label for="{{ form.lesson_date_time.id_for_label }}">Lesson Date and Time:</label>
+            {{ form.lesson_date_time }}
+           </div>
+
+           <div class="divider"></div>
+        {{ form.teachers|as_crispy_field }}
+
+        <input type="submit" value="Save Lesson" class="btn successbutton">
+        <div class="divider"></div>
   </form>
+</div>
+</div>
+</div>
+</div>   
+</div>
 
+<div class="col-6" id="secondColumn">
+  <div class="container vh-100">
   <form action = "{% url 'save_lessons' %}" method="post">
     {% csrf_token %}
-  <h1>Saved Lessons</h1>
-  <table class="table table-striped table-dark" >
+  <table class="table w-auto" style =" border-radius: 20px; background-color:#caf0f8;margin-left:auto;margin-right:auto;">
     <tr>
       <th>Lesson Date and Time</th>
       <th>Lesson Type</th>
@@ -58,7 +67,11 @@
     {% endfor %}
   </table>
 
-<input type="submit" value="save lessons" class="btn btn-primary">
+<input type="submit" value="Confirm and Request Lessons" class="btn successbutton">
 </form>
+  </div>
+</div>
+</div>
 </body>
-</html>
+
+{%endblock%}

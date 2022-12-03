@@ -17,6 +17,7 @@
     align-items: center;
     white-space: nowrap;
     overflow: hidden;
+    font-family: "JetBrains Mono";
 }
 
 #homecard{
@@ -52,13 +53,28 @@
 }
 .successbutton {
     transition-duration: 0.4s;
+    font-family: "JetBrains Mono", monospace;
   }
   
   .successbutton:hover {
     background-color: #4CAF50; 
     color: white;
   }
-
+  .column {
+    float: left;
+    width: 50%;
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  
+  #secondColumn{
+    transform: translateY(25%);
+  }
   
   /* 
   CSS from https://getcssscan.com/css-buttons-examples
