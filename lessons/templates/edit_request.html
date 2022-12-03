@@ -2,47 +2,46 @@
 
 
 {%block content%}
-
 {% load crispy_forms_tags %}
 
-<body style="background-color: #edede9">
+  
+<body>
 
-<div class="row">
-  <div class="col-6">
-      <div class="container vh-100" id="homecardholder">
-             <div class="row h-100">
-               <div class="col-12 my-auto">
-                 <div class="card mx-auto" id="signupcard">
+  
 
-                  <h1> Request A Lesson</h1>
-                  <div class="divider"></div>
+        <div class="container vh-100" id="homecardholder">
+               <div class="row h-100">
+                 <div class="col-12 my-auto">
+                   <div class="card mx-auto" id="signupcard">
 
-<!-- 
-  Do not replace with partial as date time uses custom widget that cannot be rendered using
-crispyforms-->
-      <form action="{% url 'new_lesson' %}" method="post">
-        {% csrf_token %}
-        {% include 'partials/messages.html' with form=form %}
-        {{ form.type|as_crispy_field }}
+                    <h1> Edit a lesson</h1>
 
-        {{ form.duration|as_crispy_field }}
+                    <div class="divider"></div>
 
-           {{ form.media }}
+  <form action='{% url 'edit_lesson' lesson_id %}' method="post">
+    {% csrf_token %}
+    {% include 'partials/messages.html' with form=form %}
+    {{ form.type|as_crispy_field }}
 
-            <div class="fieldWrapper">
-            <label for="{{ form.lesson_date_time.id_for_label }}">Lesson Date and Time:</label>
-            {{ form.lesson_date_time }}
-           </div>
+    {{ form.duration|as_crispy_field }}
 
-           <div class="divider"></div>
-        {{ form.teachers|as_crispy_field }}
+       {{ form.media }}
 
-        <input type="submit" value="Save Lesson" class="btn successbutton">
-        <div class="divider"></div>
-  </form>
-</div>
-</div>
-</div>
-</div>   
-</div>
-{%endblock%}
+        <div class="fieldWrapper">
+        <label for="{{ form.lesson_date_time.id_for_label }}">Lesson Date and Time:</label>
+        {{ form.lesson_date_time }}
+       </div>
+
+       <div class="divider"></div>
+    {{ form.teachers|as_crispy_field }}
+
+   <button type="submit" value="Edit Lesson" class="btn successbutton">Edit Lesson</button>
+      </form>
+
+    </div>
+  </div>
+  </div>
+
+
+</body>
+{% endblock %}

@@ -12,7 +12,11 @@
 
 <div class="divider"></div>
 {%  if unfulfilled_requests|length > 0 %}
+
+<div class="padding">
 <h5>Currently Requested Lessons:</h5>
+</div>
+
 <div class="divider"></div>
 <div class="divider"></div>
 <table class="table">
@@ -38,13 +42,13 @@
       <form method = "post" action='{% url 'delete_pending' key.lesson_id %}'>
           {% csrf_token %}
         <button type="submit" class="btn btn-danger">
-          <i class="bi-trash3-fill">Delete</i>
+          <i class="bi-trash3-fill"></i>
         </button>
       </form>
 
       <form method = "get" action='{% url 'edit_lesson' key.lesson_id %}'>
         <button type="submit" class="btn btn-primary">
-          <i class="bi bi-pencil-square">Edit</i>
+          <i class="bi bi-pencil-square"></i>
         </button>
       </form>
     </td>
@@ -55,7 +59,11 @@
 {% endif %}
 
 {% if fullfilled_lessons|length > 0 %}
-<h3>Below is a timetable for booked lessons</h3>
+
+<div class="padding">
+<h5>Timetable for booked lessons: </h5>
+</div>
+
 <table class="table">
   <thead style="background-color: #023e8a;">
   <tr style="color: white; ">
@@ -77,11 +85,15 @@
     </tr>
   {% endfor %}
 </table>
-<p>{{admin_email}}</p>
+
+<div class="padding">{{admin_email}}</div>
 {% endif %}
 
+
 {% if unfulfilled_requests|length == 0 and fullfilled_lessons|length == 0 %}
-<h2>There are currently no items here</h2>
+<div class="padding" style="text-align: center;">
+<h5>There are currently no items here</h5>
+</div>
 {%  endif %}
 
 

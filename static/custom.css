@@ -79,8 +79,21 @@ body{
   #secondColumn{
     transform: translateY(25%);
   }
-  
-
+  th, td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    border: 1px solid;
+  }
+  .padding {
+    /**
+    top right bottom left
+    **/
+    padding: 0.5% 1% 0% 1%;
+  }
+  /* tr:hover {
+    background-color: gray;
+  } */
   table{
     background-color:#caf0f8;
     margin-left:auto;
