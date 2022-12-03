@@ -224,7 +224,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
 
-    request_date = models.DateField('Request Date And Time', default=timezone.now)
+    request_date = models.DateField('Request Date', default=timezone.now)
 
     type = models.CharField(
         max_length=30,

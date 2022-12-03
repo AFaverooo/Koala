@@ -43,7 +43,7 @@ def get_lesson_saved(dictionary):
     return dictionary.get("Saved")
 
 def make_lesson_timetable_dictionary(student_user):
-    fullfilled_lessons = get_fullfilled_lessons(student_user)
+    fullfilled_lessons = get_student_and_child_lessons(student_user,LessonStatus.FULLFILLED)
 
     fullfilled_lessons_dict = {}
 
@@ -112,7 +112,7 @@ def make_lesson_timetable_dictionary(student_user):
 def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
     if lessonStatus == 'Lesson Request':
-        lessons = get_unfulfilled_lessons(student_user)
+        lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
     else:
         lessons = get_saved_lessons(student_user)
 
@@ -290,20 +290,23 @@ def get_student_and_child_objects(student):
 
     return list_of_students
 
-def get_saved_lessons(student):
-    student_queryset = Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
+def get_student_and_child_lessons(student, statusType):
+    student_queryset = Lesson.objects.filter(lesson_status = statusType, student_id = student)
 
     if student.is_parent:
         child_queryset = UserAccount.objects.filter(parent_of_user = student)
         result_queryset = student_queryset
 
         for eachChild in child_queryset:
-            lesson_queryset = Lesson.objects.filter(student_id = eachChild)
+            lesson_queryset = Lesson.objects.filter(student_id = eachChild , lesson_status = statusType)
             result_queryset = chain(result_queryset, lesson_queryset)
 
         return list(result_queryset)
 
     return list(student_queryset)
+
+def get_saved_lessons(student):
+    return get_student_and_child_lessons(student,LessonStatus.SAVED)
 
 def get_unfulfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
@@ -526,7 +529,8 @@ def new_lesson(request):
                     actual_student = UserAccount.objects.get(email = request.POST['selectedStudent'])
                 except ObjectDoesNotExist:
                     messages.add_message(request,messages.ERROR,"Selected user account does not exist")
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user)})
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
                 #duration = request_form.cleaned_data.get('duration')
                 #lesson_date = request_form.cleaned_data.get('lesson_date_time')
                 #type = request_form.cleaned_data.get('type')
@@ -536,7 +540,8 @@ def new_lesson(request):
                     request_form.save(actual_student)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user)})
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
                 #form = RequestForm()
                 #return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
@@ -544,7 +549,8 @@ def new_lesson(request):
                 return redirect('requests_page')
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(request.user)})
+                students_option = get_student_and_child_objects(request.user)
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
         else:
             #form = RequestForm()
             #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})

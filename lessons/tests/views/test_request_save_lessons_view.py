@@ -5,7 +5,7 @@ from lessons.forms import RequestForm
 from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus
 
 from lessons.forms import RequestForm
-from lessons.views import get_saved_lessons,get_unfulfilled_lessons
+from lessons.views import get_saved_lessons,get_student_and_child_lessons
 from django.contrib import messages
 from django.utils import timezone
 from datetime import time
@@ -45,6 +45,36 @@ class RequestSaveLessonsTest(TestCase):
         self.save_lessons_url = reverse('save_lessons')
 
 
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Bobby',
+            last_name = 'Lee',
+            email = 'bobbylee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
+
+    def create_child_lessons(self):
+        self.saved_child_lesson = Lesson.objects.create(
+            type = LessonType.PRACTICE,
+            duration = LessonDuration.HOUR,
+            lesson_date_time = datetime.datetime(2022, 11, 22, 20, 8, 7, tzinfo=timezone.utc),
+            teacher_id = self.teacher,
+            student_id = self.child,
+            request_date = datetime.date(2022, 10, 15),
+            lesson_status = LessonStatus.SAVED
+        )
+
+        self.saved_child_lesson2 = Lesson.objects.create(
+            type = LessonType.THEORY,
+            duration = LessonDuration.FOURTY_FIVE,
+            lesson_date_time = datetime.datetime(2022, 7, 25, 20, 8, 7, tzinfo=timezone.utc),
+            teacher_id = self.teacher,
+            student_id = self.child,
+            request_date = datetime.date(2022, 10, 15),
+            lesson_status = LessonStatus.SAVED
+        )
+
     def create_saved_lessons(self):
         self.saved_lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
@@ -76,10 +106,6 @@ class RequestSaveLessonsTest(TestCase):
             lesson_status = LessonStatus.SAVED
         )
 
-    def delete_saved_lessons(self):
-        self.saved_lesson.delete()
-        self.saved_lesson2.delete()
-        self.saved_lesson3.delete()
 
     def test_get_saved_lessons(self):
         self.create_saved_lessons()
@@ -122,7 +148,6 @@ class RequestSaveLessonsTest(TestCase):
         self.assertEqual(len(response.context['lessons']),3)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertFalse(form.is_bound)
-        self.delete_saved_lessons()
 
     def test_succesfull_save_lessons_post_without_saved_lessons(self):
         #self.create_saved_lessons()
@@ -160,6 +185,33 @@ class RequestSaveLessonsTest(TestCase):
         for lesson in all_student_lessons:
             self.assertEqual(lesson.lesson_status, LessonStatus.UNFULFILLED)
             self.assertEqual(lesson.student_id, self.student)
+
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'Lesson requests are now pending for validation by admin')
+        self.assertEqual(messages_list[0].level, messages.SUCCESS)
+
+    def test_succesfull_save_lessons_post_with_child_lessons(self):
+        self.create_child_lessons()
+        self.create_saved_lessons()
+        self.client.login(email = self.student.email, password = 'Password123')
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.save_lessons_url, follow = True)
+        after_count = Lesson.objects.count()
+
+        self.assertEqual(before_count,after_count)
+
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+
+        all_lessons = get_student_and_child_lessons(self.student,LessonStatus.UNFULFILLED)
+
+        self.assertEqual(len(all_lessons),5)
+
+        for lesson in all_lessons:
+            self.assertEqual(lesson.lesson_status, LessonStatus.UNFULFILLED)
+            self.assertTrue(lesson.student_id == self.student or lesson.student_id == self.child)
 
         self.assertTemplateUsed(response, 'student_feed.html')
 
