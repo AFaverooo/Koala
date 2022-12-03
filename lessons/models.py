@@ -275,12 +275,12 @@ class Invoice(models.Model):
         max_length = 30,
         blank=True,
         validators=[RegexValidator(
-            regex = r'^\d+$', 
+            regex = r'^\d+$',
             message='Lesson ID must all be number'
         )]
     )
 
-    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
+    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):
         #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
         if(number_of_exist_invoice < 10):
@@ -344,12 +344,12 @@ class Term(models.Model):
     start_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
-        blank=True, 
+        blank=True,
         null=True
     )
     end_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
-        blank=True, 
+        blank=True,
         null=True
     )

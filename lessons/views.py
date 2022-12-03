@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from django.contrib import messages
-from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm
+
+from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
 from .helper import login_prohibited
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
@@ -576,6 +578,7 @@ def requests_page(request):
 
 @login_required
 def admin_feed(request):
+
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
@@ -592,6 +595,150 @@ def director_feed(request):
     else:
         # return redirect('log_in')
         return redirect('home')
+
+
+@login_required
+def director_manage_roles(request):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        students = UserAccount.objects.filter(role = UserRole.STUDENT)
+        teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
+        admins = UserAccount.objects.filter(role = UserRole.ADMIN)
+        directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
+        return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
+    else:
+        return redirect("log_in")
+
+
+
+@login_required
+def promote_director(request,current_user_email):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
+            return redirect('director_manage_roles')
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            user.role = UserRole.DIRECTOR
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
+            return redirect('director_manage_roles')
+    else:
+        return redirect("log_in")
+
+
+@login_required
+def promote_admin(request,current_user_email):
+
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
+            return redirect('director_manage_roles')
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            user.role = UserRole.ADMIN
+            user.is_staff = True
+            user.is_superuser = False
+            user.save()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role admin")
+            return redirect("director_manage_roles")
+    else:
+
+        return redirect("log_in")
+
+
+
+@login_required
+def disable_user(request,current_user_email):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
+            return redirect(director_manage_roles)
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            if (user.is_active == True):
+                user.is_active = False
+                user.save()
+                messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly disabled!")
+            else:
+                user.is_active = True
+                user.save()
+                messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly enabled!")
+
+            return redirect(director_manage_roles)
+    else:
+        return redirect("log_in")
+
+
+
+@login_required
+def delete_user(request,current_user_email):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
+            return redirect(director_manage_roles)
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            user.delete()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
+            return redirect(director_manage_roles)
+    else:
+        return redirect("log_in")
+
+
+
+def create_admin_page(request):
+
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
+        if request.method == 'POST':
+            form = CreateAdminForm(request.POST)
+            if form.is_valid():
+                admin = form.save()
+                return redirect('director_manage_roles')
+        else:
+            form = CreateAdminForm()
+
+        return render(request,'director_create_admin.html',{'form': form})
+    else:
+        return redirect("log_in")
+
+
+@login_required
+def update_user(request,current_user_id):
+
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        user = UserAccount.objects.get(id=current_user_id)
+        form = CreateAdminForm(instance=user)
+
+        if request.method == 'POST':
+            form = CreateAdminForm(request.POST, instance = user)
+            if form.is_valid():
+                email = form.cleaned_data.get('email')
+                fname = form.cleaned_data.get('first_name')
+                lname = form.cleaned_data.get('last_name')
+                gender = form.cleaned_data.get('gender')
+
+                new_password = form.cleaned_data.get('new_password')
+
+                user.email = email
+                user.first_name = fname
+                user.last_name = lname
+                user.gender = gender
+
+                user.set_password(new_password)
+                user.save()
+
+                # current user logged out if he edits himself
+                if (int(request.user.id) == int(current_user_id)):
+                    messages.add_message(request,messages.SUCCESS,f"You cant't edit yourself!")
+                    return log_out(request)
+
+                messages.add_message(request,messages.SUCCESS,f"{user.email} has been sucessfuly updated!")
+                return redirect('director_manage_roles')
+
+        return render(request,'director_update_user.html', {'form': form , 'user': user})
 
 
 @login_prohibited
