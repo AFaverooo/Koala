@@ -277,8 +277,6 @@ def get_student_invoices_and_transactions(request, student_id):
     return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
 
 
-
-
 def get_saved_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
 
@@ -494,27 +492,15 @@ def new_lesson(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
         if request.method == 'POST':
-            #test case, already unfulfilled lessons upon request
-            #previously_requested_lessons = get_unfulfilled_lessons(current_student)
-            #previously_booked_lessons = get_fullfilled_lessons(current_student)
-
-            #import widget tweaks
-            #in the case the student already has requests that are unfulfilled, extend for the given term when terms are introduced
-            #if previously_requested_lessons or previously_booked_lessons:
-            #    print('already made a set of requests')
-            #    messages.add_message(request,messages.ERROR,"Lesson requests have already been made for the term")
-            #    return redirect('requests_page')
-
             request_form = RequestForm(request.POST)
-
             if request_form.is_valid():
-                duration = request_form.cleaned_data.get('duration')
-                lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                type = request_form.cleaned_data.get('type')
-                teacher_id = request_form.cleaned_data.get('teachers')
+                #duration = request_form.cleaned_data.get('duration')
+                #lesson_date = request_form.cleaned_data.get('lesson_date_time')
+                #type = request_form.cleaned_data.get('type')
+                #teacher_id = request_form.cleaned_data.get('teachers')
 
                 try:
-                    Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
+                    request_form.save(request.user)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
@@ -591,17 +577,18 @@ def edit_lesson(request,lesson_id):
 
             if request_form.is_valid():
                 #request_date = timezone.now
-                duration = request_form.cleaned_data.get('duration')
-                lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                type = request_form.cleaned_data.get('type')
-                teacher_id = request_form.cleaned_data.get('teachers')
+                #duration = request_form.cleaned_data.get('duration')
+                #lesson_date = request_form.cleaned_data.get('lesson_date_time')
+                #type = request_form.cleaned_data.get('type')
+                #teacher_id = request_form.cleaned_data.get('teachers')
 
                 try:
-                    to_edit_lesson.duration = duration
-                    to_edit_lesson.lesson_date_time = lesson_date
-                    to_edit_lesson.type = type
-                    to_edit_lesson.teacher_id = teacher_id
-                    to_edit_lesson.save()
+                    #to_edit_lesson.duration = duration
+                    #to_edit_lesson.lesson_date_time = lesson_date
+                    #to_edit_lesson.type = type
+                    #to_edit_lesson.teacher_id = teacher_id
+                    #to_edit_lesson.save()
+                    request_form.update_lesson(to_edit_lesson)
 
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")

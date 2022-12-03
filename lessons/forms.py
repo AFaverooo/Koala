@@ -101,16 +101,30 @@ class RequestForm(forms.ModelForm):
     #     self.data['teacher_id'] = self.data['teachers']
 
 
-    # def save(self, request):
-    #     """Create a new user."""
+    def save(self,student_id):
+         """Create a new Lesson."""
 
-    #     super().save(commit=False)
-    #     lesson = Lesson.objects.create(
-    #         type=self.cleaned_data.get('type'),
-    #         duration=self.cleaned_data.get('duration'),
-    #         lesson_date_time=self.cleaned_data.get('lesson_date_time'),
-    #         student_id=self.cleaned_data.get('student_id'),
-    #         teacher_id=self.cleaned_data.get('teacher_id'),
-    #     )
+         super().save(commit=False)
+         lesson = Lesson.objects.create(
+             type=self.cleaned_data.get('type'),
+             duration=self.cleaned_data.get('duration'),
+             lesson_date_time=self.cleaned_data.get('lesson_date_time'),
+             student_id=student_id,
+             teacher_id=self.cleaned_data.get('teachers'),
+         )
 
-    #     return lesson
+         return lesson
+
+    def update_lesson(self, to_edit_lesson):
+        duration = self.cleaned_data.get('duration')
+        lesson_date = self.cleaned_data.get('lesson_date_time')
+        type = self.cleaned_data.get('type')
+        teacher_id = self.cleaned_data.get('teachers')
+
+        to_edit_lesson.duration = duration
+        to_edit_lesson.lesson_date_time = lesson_date
+        to_edit_lesson.type = type
+        to_edit_lesson.teacher_id = teacher_id
+        to_edit_lesson.save()
+
+        return to_edit_lesson

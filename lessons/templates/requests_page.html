@@ -22,7 +22,7 @@
 </div>
 {% endfor %}
 
-  <h1> Request a lesson</h1>
+  <h1>Request Lessons</h1>
 
   <body>
       <form action="{% url 'new_lesson' %}" method="post">
@@ -35,7 +35,7 @@
         </div>
 
            {{ form.as_p }}
-       <input type="submit" value="request lesson" class="btn btn-primary">
+       <input type="submit" value="Create A Lesson" class="btn btn-primary">
   </form>
 
   <form action = "{% url 'save_lessons' %}" method="post">
@@ -58,7 +58,7 @@
     {% endfor %}
   </table>
 
-<input type="submit" value="save lessons" class="btn btn-primary">
+<input type="submit" value="Request Lessons" class="btn btn-primary">
 </form>
 </body>
 </html>
