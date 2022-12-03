@@ -229,15 +229,15 @@ class InvoiceModelTestCase(TestCase):
 
     
     def test_fees_amount_calculator_gives_correct_return_Thirty(self):
-        temp_fees = Invoice.calculate_fees_amount(LessonDuration.THIRTY) #in this case '1' use to modify objects with len(1)
+        temp_fees = Invoice.calculate_fees_amount(LessonDuration.THIRTY) 
         self.assertEqual(temp_fees, '15')
 
     def test_fees_amount_calculator_gives_correct_return_Fourty_Five(self):
-        temp_fees = Invoice.calculate_fees_amount(LessonDuration.FOURTY_FIVE) #in this case '1' use to modify objects with len(1)
+        temp_fees = Invoice.calculate_fees_amount(LessonDuration.FOURTY_FIVE) 
         self.assertEqual(temp_fees, '18')
 
     def test_fees_amount_calculator_gives_correct_return_1_hour(self):
-        temp_fees = Invoice.calculate_fees_amount(LessonDuration.HOUR) #in this case '1' use to modify objects with len(1)
+        temp_fees = Invoice.calculate_fees_amount(LessonDuration.HOUR)
         self.assertEqual(temp_fees, '20')
 
 

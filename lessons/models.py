@@ -179,9 +179,6 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         default=0,
         blank = True,
         editable=False,
-        validators=[
-            MaxValueValidator(10000),
-        ]
     )
 
     def get_student_balance(self):
