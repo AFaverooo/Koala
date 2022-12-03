@@ -1,7 +1,7 @@
 """Unit tests for the Invoice model"""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import Invoice, InvoiceStatus
+from lessons.models import Invoice, InvoiceStatus, LessonDuration
 
 class InvoiceModelTestCase(TestCase):
 
@@ -19,6 +19,7 @@ class InvoiceModelTestCase(TestCase):
             reference_number = '222-012',
             student_ID = '222',
             fees_amount = '85',
+            lesson_ID = '4567',
             invoice_status = InvoiceStatus.PAID,
             
         )
@@ -99,11 +100,19 @@ class InvoiceModelTestCase(TestCase):
         self.invoice.fees_amount = ''
         self._assert_invoice_is_invalid()
 
-    def test_fees_amount_cannot_ber_larger_than_10000(self):
+    def test_fees_amount_cannot_be_larger_than_10000(self):
         self.invoice.fees_amount = 10001
         self._assert_invoice_is_invalid()
 
-    def test_fees_amount_cannot_ber_smaller_than_1(self):
+    def test_fees_amount_can_be_10000(self):
+        self.invoice.fees_amount = 10000
+        self._assert_invoice_is_valid()
+    
+    def test_fees_amount_can_be_1(self):
+        self.invoice.fees_amount = 1
+        self._assert_invoice_is_valid()
+
+    def test_fees_amount_cannot_be_smaller_than_1(self):
         self.invoice.fees_amount = -1
         self._assert_invoice_is_invalid()
 
@@ -122,12 +131,24 @@ class InvoiceModelTestCase(TestCase):
         self._assert_invoice_is_invalid()
 
     def test_invoice_status_value_can_only_be_one_of_the_choices_PAID(self):
-        self.invoice.invoice_status = 'UNPAID'
+        self.invoice.invoice_status = 'PAID'
         self._assert_invoice_is_valid()
     
-    def test_invoice_status_value_can_only_be_one_of_the_choices_UNPAI(self):
+    def test_invoice_status_value_can_only_be_one_of_the_choices_UNPAID(self):
         self.invoice.invoice_status = 'UNPAID'
         self._assert_invoice_is_valid()
+
+    def test_invoice_status_value_can_only_be_one_of_the_choices_PARTIALLY_PAID(self):
+        self.invoice.invoice_status = 'PARTIALLY_PAID'
+        self._assert_invoice_is_valid()
+
+    def test_invoice_status_value_can_only_be_one_of_the_choices_PARTIALLY_PAID(self):
+        self.invoice.invoice_status = 'DELETED'
+        self._assert_invoice_is_valid()
+
+    def test_invoice_status_value_can_only_be_one_of_the_choices_wrong_choice(self):
+        self.invoice.invoice_status = 'DAWD'
+        self._assert_invoice_is_invalid()
 
     def test_invoice_status_must_not_be_unique(self):
         second_invoice = self._create_paid_invoice()
@@ -136,6 +157,61 @@ class InvoiceModelTestCase(TestCase):
 
     def test_fees_amount_cannot_be_any_other_values_outside_choices(self):
         self.invoice.invoice_status = '45s'
+        self._assert_invoice_is_invalid()
+
+
+    def test_amounts_need_to_pay_cannot_be_blank(self):
+        self.invoice.amounts_need_to_pay = ''
+        self._assert_invoice_is_invalid()
+
+    def test_default_value_of_amounts_need_to_pay_is_0(self):
+        self.assertEqual(self.invoice.amounts_need_to_pay, 0)
+
+    def test_value_of_amounts_need_to_pay_can_be_10000(self):
+        self.invoice.amounts_need_to_pay = 10000
+        self._assert_invoice_is_valid()
+
+    def test_value_of_amounts_need_to_pay_can_be_0(self):
+        self.invoice.amounts_need_to_pay = 0
+        self._assert_invoice_is_valid()
+
+    def test_value_of_amounts_need_to_pay_cannot_be_larger_than_10000(self):
+        self.invoice.amounts_need_to_pay = 10001
+        self._assert_invoice_is_invalid()
+
+    def test_value_of_amounts_need_to_pay_cannot_be_smaller_than_0(self):
+        self.invoice.amounts_need_to_pay = -1
+        self._assert_invoice_is_invalid()
+
+    def test_value_of_amounts_need_to_pay_must_not_be_unique(self):
+        second_invoice = self._create_paid_invoice()
+        self.invoice.amounts_need_to_pay = second_invoice.amounts_need_to_pay
+        self._assert_invoice_is_valid()
+
+    def test_value_of_amounts_need_to_pay_must_only_contain_number(self):
+        self.invoice.amounts_need_to_pay = '45s'
+        self._assert_invoice_is_invalid()
+
+
+    def test_lesson_ID_can_be_blank(self):
+        self.invoice.lesson_ID = ''
+        self._assert_invoice_is_valid()
+
+    def test_lesson_ID_can_be_30_characters_long(self):
+        self.invoice.lesson_ID = '4' * 30 
+        self._assert_invoice_is_valid()
+
+    def test_lesson_ID_cannot_be_over_30_characters_long(self):
+        self.invoice.lesson_ID = '4' * 31
+        self._assert_invoice_is_invalid()
+
+    def test_lesson_ID_must_not_be_unique(self):
+        second_invoice = self._create_paid_invoice()
+        self.invoice.lesson_ID = second_invoice.lesson_ID
+        self._assert_invoice_is_valid()
+
+    def test_lesson_ID_must_only_contain_number(self):
+        self.invoice.lesson_ID = '45s'
         self._assert_invoice_is_invalid()
 
 
@@ -152,9 +228,17 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(temp_refer, '111-100')
 
     
-    # def test_fees_amount_calculator_gives_correct_return(self):
-    #     temp_fees = Invoice.calculate_fees_amount('1','1','1') #in this case '1' use to modify objects with len(1)
-    #     self.assertEqual(temp_fees, '53')
+    def test_fees_amount_calculator_gives_correct_return_Thirty(self):
+        temp_fees = Invoice.calculate_fees_amount(LessonDuration.THIRTY) #in this case '1' use to modify objects with len(1)
+        self.assertEqual(temp_fees, '15')
+
+    def test_fees_amount_calculator_gives_correct_return_Fourty_Five(self):
+        temp_fees = Invoice.calculate_fees_amount(LessonDuration.FOURTY_FIVE) #in this case '1' use to modify objects with len(1)
+        self.assertEqual(temp_fees, '18')
+
+    def test_fees_amount_calculator_gives_correct_return_1_hour(self):
+        temp_fees = Invoice.calculate_fees_amount(LessonDuration.HOUR) #in this case '1' use to modify objects with len(1)
+        self.assertEqual(temp_fees, '20')
 
 
 
