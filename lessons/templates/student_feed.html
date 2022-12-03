@@ -3,9 +3,8 @@
 {% block content %}
 <body style="background-color: #edede9">
 
-  
-<div class="divider"></div>
 
+<div class="divider"></div>
 <div class="alert alert-success" role="alert">
   {{greeting}}
 </div>
@@ -75,7 +74,7 @@
 
   </tr>
   </thead>
-  
+
   {% for key,value in fullfilled_lessons.items %}
     <tr>
       <td>{{value|get_lesson}}</td>
@@ -96,8 +95,8 @@
 </div>
 {%  endif %}
 
-
-
+<p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
+<p> <a href = '{% url 'sign_up_child'%}' class = "btn btn-lg btn-secondary">Sign Up My Child</a></p>
 
 </body>
 

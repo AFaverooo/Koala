@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction, TransactionTypes,Term
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction,Term
 import random
 import string
 import datetime
@@ -105,7 +105,7 @@ class Command(BaseCommand):
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
-            
+
             self.student = UserAccount.objects.create_teacher(
                 first_name=fname,
                 last_name=lname,
@@ -139,7 +139,7 @@ class Command(BaseCommand):
 
         # seed the invoices base on existing user and bookings
         seed_lesson_id = 100000 #seed lesson id number is big, in case to be same as existing lesson id
-        for i in range(len(students)):   
+        for i in range(len(students)):
             student_Id = students[i].id
             students_id_string = str(student_Id)
 

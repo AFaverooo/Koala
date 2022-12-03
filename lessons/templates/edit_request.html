@@ -1,3 +1,4 @@
+
 {%extends 'base_content.html'%}
 
 
@@ -14,7 +15,14 @@
                  <div class="col-12 my-auto">
                    <div class="card mx-auto" id="signupcard">
 
-                    <h1> Edit a lesson</h1>
+<!--
+  Do not replace with partial as date time uses custom widget that cannot be rendered using
+crispyforms-->
+      <form action="{% url 'new_lesson' %}" method="post">
+        {% csrf_token %}
+        {% include 'partials/messages.html' with form=form %}
+        {{ form.type|as_crispy_field }}
+
 
                     <div class="divider"></div>
 
@@ -45,3 +53,4 @@
 
 </body>
 {% endblock %}
+

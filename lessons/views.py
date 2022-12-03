@@ -1,16 +1,20 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from django.contrib import messages
-from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm
+
+from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
 from .helper import login_prohibited
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
 from django.utils import timezone
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
+from itertools import chain
+
 
 # Create your views here.
 
@@ -41,7 +45,7 @@ def get_lesson_saved(dictionary):
     return dictionary.get("Saved")
 
 def make_lesson_timetable_dictionary(student_user):
-    fullfilled_lessons = get_fullfilled_lessons(student_user)
+    fullfilled_lessons = get_student_and_child_lessons(student_user,LessonStatus.FULLFILLED)
 
     fullfilled_lessons_dict = {}
 
@@ -110,7 +114,7 @@ def make_lesson_timetable_dictionary(student_user):
 def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
     if lessonStatus == 'Lesson Request':
-        lessons = get_unfulfilled_lessons(student_user)
+        lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
     else:
         lessons = get_saved_lessons(student_user)
 
@@ -279,11 +283,35 @@ def get_student_invoices_and_transactions(request, student_id):
 
     return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
 
+def get_student_and_child_objects(student):
+    list_of_students = []
+    list_of_students.append(student)
 
+    if student.is_parent is True:
+        child_students = UserAccount.objects.filter(parent_of_user = student)
 
+        for child in child_students:
+            list_of_students.append(child)
+
+    return list_of_students
+
+def get_student_and_child_lessons(student, statusType):
+    student_queryset = Lesson.objects.filter(lesson_status = statusType, student_id = student)
+
+    if student.is_parent:
+        child_queryset = UserAccount.objects.filter(parent_of_user = student)
+        result_queryset = student_queryset
+
+        for eachChild in child_queryset:
+            lesson_queryset = Lesson.objects.filter(student_id = eachChild , lesson_status = statusType)
+            result_queryset = chain(result_queryset, lesson_queryset)
+
+        return list(result_queryset)
+
+    return list(student_queryset)
 
 def get_saved_lessons(student):
-    return Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
+    return get_student_and_child_lessons(student,LessonStatus.SAVED)
 
 def get_unfulfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
@@ -530,7 +558,6 @@ def delete_term(request, term_number):
         return term_management_page(request)
 
 
-# ---------------------------------------------
 
 
 @login_required
@@ -566,9 +593,10 @@ def requests_page(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
             student = request.user
+            students_option = get_student_and_child_objects(student)
             savedLessons = get_saved_lessons(student)
             form = RequestForm()
-            return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
+            return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons, 'students_option':students_option})
         else:
             return HttpResponseForbidden()
     else:
@@ -576,6 +604,7 @@ def requests_page(request):
 
 @login_required
 def admin_feed(request):
+
     if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
@@ -592,6 +621,150 @@ def director_feed(request):
     else:
         # return redirect('log_in')
         return redirect('home')
+
+
+@login_required
+def director_manage_roles(request):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        students = UserAccount.objects.filter(role = UserRole.STUDENT)
+        teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
+        admins = UserAccount.objects.filter(role = UserRole.ADMIN)
+        directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
+        return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
+    else:
+        return redirect("log_in")
+
+
+
+@login_required
+def promote_director(request,current_user_email):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
+            return redirect('director_manage_roles')
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            user.role = UserRole.DIRECTOR
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
+            return redirect('director_manage_roles')
+    else:
+        return redirect("log_in")
+
+
+@login_required
+def promote_admin(request,current_user_email):
+
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
+            return redirect('director_manage_roles')
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            user.role = UserRole.ADMIN
+            user.is_staff = True
+            user.is_superuser = False
+            user.save()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role admin")
+            return redirect("director_manage_roles")
+    else:
+
+        return redirect("log_in")
+
+
+
+@login_required
+def disable_user(request,current_user_email):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
+            return redirect(director_manage_roles)
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            if (user.is_active == True):
+                user.is_active = False
+                user.save()
+                messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly disabled!")
+            else:
+                user.is_active = True
+                user.save()
+                messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly enabled!")
+
+            return redirect(director_manage_roles)
+    else:
+        return redirect("log_in")
+
+
+
+@login_required
+def delete_user(request,current_user_email):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        if (request.user.email == current_user_email):
+            messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
+            return redirect(director_manage_roles)
+        else:
+            user = UserAccount.objects.get(email=current_user_email)
+            user.delete()
+            messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
+            return redirect(director_manage_roles)
+    else:
+        return redirect("log_in")
+
+
+
+def create_admin_page(request):
+
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
+        if request.method == 'POST':
+            form = CreateAdminForm(request.POST)
+            if form.is_valid():
+                admin = form.save()
+                return redirect('director_manage_roles')
+        else:
+            form = CreateAdminForm()
+
+        return render(request,'director_create_admin.html',{'form': form})
+    else:
+        return redirect("log_in")
+
+
+@login_required
+def update_user(request,current_user_id):
+
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+        user = UserAccount.objects.get(id=current_user_id)
+        form = CreateAdminForm(instance=user)
+
+        if request.method == 'POST':
+            form = CreateAdminForm(request.POST, instance = user)
+            if form.is_valid():
+                email = form.cleaned_data.get('email')
+                fname = form.cleaned_data.get('first_name')
+                lname = form.cleaned_data.get('last_name')
+                gender = form.cleaned_data.get('gender')
+
+                new_password = form.cleaned_data.get('new_password')
+
+                user.email = email
+                user.first_name = fname
+                user.last_name = lname
+                user.gender = gender
+
+                user.set_password(new_password)
+                user.save()
+
+                # current user logged out if he edits himself
+                if (int(request.user.id) == int(current_user_id)):
+                    messages.add_message(request,messages.SUCCESS,f"You cant't edit yourself!")
+                    return log_out(request)
+
+                messages.add_message(request,messages.SUCCESS,f"{user.email} has been sucessfuly updated!")
+                return redirect('director_manage_roles')
+
+        return render(request,'director_update_user.html', {'form': form , 'user': user})
 
 
 @login_prohibited
@@ -630,6 +803,19 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
+def sign_up_child(request):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        if request.method == 'POST':
+            form = SignUpForm(request.POST)
+            if form.is_valid():
+                student = form.save_child(request.user)
+                return redirect('student_feed')
+        else:
+            form = SignUpForm()
+        return render(request, 'sign_up_child.html', {'form': form})
+    else:
+        return redirect('home')
+
 @login_prohibited
 def sign_up(request):
     if request.method == 'POST':
@@ -644,33 +830,47 @@ def sign_up(request):
 
 def new_lesson(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        current_student = request.user
+        #current_student = request.user
+
         if request.method == 'POST':
             request_form = RequestForm(request.POST)
-
             if request_form.is_valid():
-                duration = request_form.cleaned_data.get('duration')
-                lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                type = request_form.cleaned_data.get('type')
-                teacher_id = request_form.cleaned_data.get('teachers')
 
                 try:
-                    Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
+                    actual_student = UserAccount.objects.get(email = request.POST['selectedStudent'])
+                except ObjectDoesNotExist:
+                    messages.add_message(request,messages.ERROR,"Selected user account does not exist")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+                #duration = request_form.cleaned_data.get('duration')
+                #lesson_date = request_form.cleaned_data.get('lesson_date_time')
+                #type = request_form.cleaned_data.get('type')
+                #teacher_id = request_form.cleaned_data.get('teachers')
+
+                try:
+                    request_form.save(actual_student)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
-                form = RequestForm()
-                return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
+                #form = RequestForm()
+                #return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
+                messages.add_message(request,messages.SUCCESS,"Lesson has been created")
+                return redirect('requests_page')
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                return render(request,'requests_page.html', {'form':request_form, 'lessons' : get_saved_lessons(current_student)})
+                students_option = get_student_and_child_objects(request.user)
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
         else:
-            form = RequestForm()
-            return render(request,'requests_page.html', {'form' : form,'lessons': get_saved_lessons(current_student)})
+            #form = RequestForm()
+            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            return redirect('requests_page')
+
     else:
         return redirect('home')
 
+#make it that all lessons for both the student and if they have a child
 def save_lessons(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
@@ -679,8 +879,7 @@ def save_lessons(request):
 
             if len(all_unsaved_lessons) == 0:
                 messages.add_message(request,messages.ERROR,"Lessons should be requested before attempting to save")
-                form = RequestForm()
-                return render(request,'requests_page.html', {'form': form})
+                return redirect('requests_page')
 
             for eachLesson in all_unsaved_lessons:
                 eachLesson.lesson_status = LessonStatus.UNFULFILLED
@@ -689,13 +888,21 @@ def save_lessons(request):
             messages.add_message(request,messages.SUCCESS, "Lesson requests are now pending for validation by admin")
             return redirect('student_feed')
         else:
-            form = RequestForm()
-            return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            #form = RequestForm()
+            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
+            return redirect('requests_page')
     else:
         #print('user should be logged in')
         return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
+def check_correct_student_accessing_lesson(student_id, other_lesson):
+    all_student_lessons = Lesson.objects.filter(student_id = student_id, lesson_status = LessonStatus.UNFULFILLED)
+    for lesson in all_student_lessons:
+        if lesson.is_equal(other_lesson):
+            return True
+
+    return False
 
 def render_edit_request(request,lesson_id):
     try:
@@ -731,19 +938,8 @@ def edit_lesson(request,lesson_id):
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():
-                #request_date = timezone.now
-                duration = request_form.cleaned_data.get('duration')
-                lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                type = request_form.cleaned_data.get('type')
-                teacher_id = request_form.cleaned_data.get('teachers')
-
                 try:
-                    to_edit_lesson.duration = duration
-                    to_edit_lesson.lesson_date_time = lesson_date
-                    to_edit_lesson.type = type
-                    to_edit_lesson.teacher_id = teacher_id
-                    to_edit_lesson.save()
-
+                    request_form.update_lesson(to_edit_lesson)
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
                     return render_edit_request(request,lesson_id)
@@ -759,14 +955,6 @@ def edit_lesson(request,lesson_id):
     else:
         # return redirect('log_in')
         return redirect('home')
-
-def check_correct_student_accessing_lesson(student_id, lesson):
-    all_student_lessons = Lesson.objects.filter(student_id = student_id)
-    for lesson in all_student_lessons:
-        if lesson.is_equal(lesson):
-            return True
-
-    return False
 
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:

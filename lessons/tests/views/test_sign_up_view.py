@@ -9,6 +9,7 @@ class SignUpViewTestCase(TestCase):
 
     def setUp(self):
         self.url = reverse('sign_up')
+
         self.form_input = {
             'first_name': 'Jane',
             'last_name': 'Doe',
@@ -43,7 +44,7 @@ class SignUpViewTestCase(TestCase):
         #After we have LogInTester defined, uncomment
         #self.assertFalse(self._is_logged_in())
 
-        
+
     def test_succesful_sign_up(self):
         before_count = UserAccount.objects.count()
         response = self.client.post(self.url, self.form_input, follow=True)

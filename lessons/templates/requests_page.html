@@ -5,6 +5,18 @@
 
 {% load crispy_forms_tags %}
 
+<<<<<<< HEAD
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
+    {% endfor %}
+</ul>
+{% endif %}
+
+  <h1>Request Lessons</h1>
+  <body>
+=======
 <body style="background-color: #edede9">
 
 <div class="row">
@@ -17,17 +29,26 @@
                   <h1> Request A Lesson</h1>
                   <div class="divider"></div>
 
-<!-- 
+<!--
   Do not replace with partial as date time uses custom widget that cannot be rendered using
 crispyforms-->
       <form action="{% url 'new_lesson' %}" method="post">
         {% csrf_token %}
         {% include 'partials/messages.html' with form=form %}
+
+        <label>Select The User To Request Lessons For:</label>
+
+        <select name="selectedStudent" class="player-dropdown">
+          {% for student in students_option %}
+          <option value="{{ student.email }}">{{ student.first_name }} {{ student.last_name }}</option>
+          {% endfor %}
+        </select>
+
         {{ form.type|as_crispy_field }}
 
         {{ form.duration|as_crispy_field }}
 
-           {{ form.media }}
+        {{ form.media }}
 
             <div class="fieldWrapper">
             <label for="{{ form.lesson_date_time.id_for_label }}">Lesson Date and Time:</label>
@@ -43,13 +64,17 @@ crispyforms-->
 </div>
 </div>
 </div>
-</div>   
+</div>
 </div>
 
 <div class="col-6" id="secondColumn">
   <div class="container vh-100">
   <form action = "{% url 'save_lessons' %}" method="post">
     {% csrf_token %}
+  <h1>Saved Lessons</h1>
+  <table class="table table-striped table-dark" >
+    <tr>
+      <th>Student</th>
   <table class="table w-auto">
     <thead style="background-color: #023e8a">
     <tr style="color: white;">
@@ -60,8 +85,9 @@ crispyforms-->
     </tr>
     </thead>
     {% for lesson in lessons %}
-    
+
       <tr>
+        <td>{{lesson.student_id}}</td>
         <td>{{lesson.lesson_date_time}}</td>
         <td>{{lesson.type}}</td>
         <td>{{lesson.duration}}</td>
@@ -71,12 +97,9 @@ crispyforms-->
           <button type="submit" class="btn-danger" style="border-radius:5px">Delete</button>
         </form>
         </td>
-      
-      
     {% endfor %}
     </tr>
   </table>
-
 <input type="submit" value="Confirm and Request Lessons" class="btn successbutton">
 </form>
   </div>
