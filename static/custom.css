@@ -1,5 +1,5 @@
 #home-background{
-    /* background: url('images/colourfulbackground.png') no-repeat center center fixed; */
+    background: url('images/colourfulbackground.png') no-repeat center center fixed;
     /* background-color: #e5e5e5; */
     /* background-color:#00b4d8; */
     background-color: #0077b6;
@@ -18,6 +18,10 @@
     white-space: nowrap;
     overflow: hidden;
     font-family: "JetBrains Mono";
+}
+
+body{
+  font-family: "JetBrains Mono";
 }
 
 #homecard{
@@ -76,6 +80,16 @@
     transform: translateY(25%);
   }
   
+
+  table{
+    background-color:#caf0f8;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  body{
+    background-color: #edede9;
+  }
+
   /* 
   CSS from https://getcssscan.com/css-buttons-examples
   and Algolia
@@ -100,7 +114,7 @@
     padding-left: 16px;
     padding-right: 16px;
     position: relative;
-    text-align: left;
+    text-align: center;
     text-decoration: none;
     transition: box-shadow .15s,transform .15s;
     user-select: none;

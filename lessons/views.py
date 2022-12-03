@@ -372,7 +372,7 @@ def student_feed(request):
             unfulfilled_lessons = get_unfulfilled_lessons(request.user)
             fullfilled_lessons = get_fullfilled_lessons(request.user)
 
-            greeting_str = f'Welcome back {request.user}'
+            greeting_str = f'Welcome back {request.user}, this is your feed!'
 
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
             unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
@@ -430,11 +430,8 @@ def director_feed(request):
 def home(request):
     if request.method == 'POST':
         form = LogInForm(request.POST)
-        print(f"Is form valid: {form.is_valid()}")
         email = request.POST.get("email")
-        print(email)
         password = request.POST.get("password")
-        print(password)
         if  form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')

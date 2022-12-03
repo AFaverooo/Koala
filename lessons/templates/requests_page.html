@@ -50,21 +50,31 @@ crispyforms-->
   <div class="container vh-100">
   <form action = "{% url 'save_lessons' %}" method="post">
     {% csrf_token %}
-  <table class="table w-auto" style =" border-radius: 20px; background-color:#caf0f8;margin-left:auto;margin-right:auto;">
-    <tr>
+  <table class="table w-auto">
+    <thead style="background-color: #023e8a">
+    <tr style="color: white;">
       <th>Lesson Date and Time</th>
       <th>Lesson Type</th>
       <th>Lesson Duration</th>
       <th>Teacher Name</th>
     </tr>
+    </thead>
     {% for lesson in lessons %}
+    
       <tr>
         <td>{{lesson.lesson_date_time}}</td>
         <td>{{lesson.type}}</td>
         <td>{{lesson.duration}}</td>
-        <td>{{lesson.teacher_id}}</td>
-      </tr>
+        <td>{{lesson.teacher_id}}
+          <form method = "post" action='#'>
+            {% csrf_token %}
+          <button type="submit" class="btn-danger" style="border-radius:5px">Delete</button>
+        </form>
+        </td>
+      
+      
     {% endfor %}
+    </tr>
   </table>
 
 <input type="submit" value="Confirm and Request Lessons" class="btn successbutton">
