@@ -637,10 +637,11 @@ def edit_lesson(request,lesson_id):
         # return redirect('log_in')
         return redirect('home')
 
-def check_correct_student_accessing_lesson(student_id, lesson):
+def check_correct_student_accessing_lesson(student_id, other_lesson):
     all_student_lessons = Lesson.objects.filter(student_id = student_id)
     for lesson in all_student_lessons:
-        if lesson.is_equal(lesson):
+        if lesson.is_equal(other_lesson):
+            print(lesson)
             return True
 
     return False
