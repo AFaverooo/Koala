@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm
 from django.contrib.auth import authenticate,login,logout
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, TransactionTypes, InvoiceStatus,Term
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
 from .helper import login_prohibited
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
@@ -160,7 +160,7 @@ def get_student_transaction(student):
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
-# this function update the student balance 
+# this function update the student balance
 def update_balance(student):
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
     current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
@@ -246,7 +246,7 @@ def update_invoice(lesson):
     invoice.amounts_need_to_pay += difference_between_invoice
     invoice.save()
     student = UserAccount.objects.get(id=invoice.student_ID)
-    
+
     update_balance(student)
 
 def update_invoice_when_delete(lesson):
@@ -278,7 +278,7 @@ def get_student_invoices_and_transactions(request, student_id):
     all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
 
     return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
-    
+
 
 
 
@@ -464,10 +464,10 @@ def update_term_details(request,term_number):
         except ObjectDoesNotExist:#For when editing a lesson with term number 1
             previous_term = None
 
-        try:    
+        try:
             next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
         except ObjectDoesNotExist:#For when editing a lesson with a term number with no next term in database
-            next_term = None 
+            next_term = None
 
         doesTermNumberAlredyExist = None
         doesTermNumberAlredyExist = Term.objects.filter(term_number=term_number_in)
@@ -598,11 +598,8 @@ def director_feed(request):
 def home(request):
     if request.method == 'POST':
         form = LogInForm(request.POST)
-        print(f"Is form valid: {form.is_valid()}")
         email = request.POST.get("email")
-        print(email)
         password = request.POST.get("password")
-        print(password)
         if  form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
