@@ -155,3 +155,31 @@ class UserAccountModelTestCase(TestCase):
         self.assertEqual(second_student.parent_of_user,None)
         self.assertFalse(third_student.is_parent)
         self.assertEqual(third_student.parent_of_user,None)
+
+    def test_balance_can_be_blank(self):
+        self.student.balance = ''
+        self._assert_student_is_valid()
+
+    def test_balance_default_value_is_0(self):
+        self.assertEqual(self.student.balance, 0)
+
+    def test_balance_can_be_larger_than_0(self):
+        self.student.balance = 10000
+        self._assert_student_is_valid()
+
+    def test_balance_can_be_0(self):
+        self.student.balance = 0
+        self._assert_student_is_valid()
+
+    def test_balance_can_be_smaller_than_0(self):
+        self.student.balance = -1
+        self._assert_student_is_valid()
+
+    def test_balance_must_not_be_unique(self):
+        second_student = self._create_second_student()
+        self.student.balance = second_student.balance
+        self._assert_student_is_valid()
+
+    def test_balance_must_only_contain_number(self):
+        self.student.balance = '45s'
+        self._assert_student_is_invalid()

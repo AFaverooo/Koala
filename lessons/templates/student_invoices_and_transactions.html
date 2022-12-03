@@ -1,52 +1,22 @@
-<html>
+
+<body style="background-color: #edede9">
+
 
 <div class="container">
   <div class="row">
     <div class="col-12">
       <h1>{{student.first_name}} {{student.last_name}}'s Invoices and Transactions History</h1><br>
-
-      <style>
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          border: 1px solid;
-        }
-
-        th,td {
-          padding: 8px;
-          text-align: left;
-          border-bottom: 1px solid #ddd;
-          border: 1px solid;
-        }
-
-        tr:hover {
-          background-color: gray;
-        }
-
-        button {
-          padding: 10px 10px;
-          font-size: 12px;
-          color: white;
-          font-weight: bold;
-          border-radius: 8px;
-          border: none;
-        }
-
-        div {
-          padding: 0.5% 1% 0% 1%;
-        }
-      </style>
       <div>
         <h2> Student Invoices table </h2>
         <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">Reference</th>
-              <th scope="col">Student ID</th>
-              <th scope="col">Amount of fees</th>
-              <th scope="col">Lesson ID</th>
-              <th scope="col">Invoice status</th>
-              <th scope="col">Amounts left to pay</th>
+          <thead style="background-color: #023e8a;">
+            <tr style="color: white; ">
+              <th>Reference</th>
+              <th>Student ID</th>
+              <th>Amount of fees</th>
+              <th>Lesson ID</th>
+              <th>Invoice status</th>
+              <th>Amounts left to pay</th>
             </tr>
           </thead>
           <tbody>
@@ -93,5 +63,6 @@
       </div>
 
     </div>
-
-</html>
+    </div>
+    </div>
+  </body>

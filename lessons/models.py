@@ -207,9 +207,6 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         default=0,
         blank = True,
         editable=False,
-        validators=[
-            MaxValueValidator(10000),
-        ]
     )
 
     def get_student_balance(self):
@@ -333,27 +330,6 @@ class Invoice(models.Model):
             fees = 20
         return f'{fees}'
 
-    # def get_fees_amount(self):
-    #     #return the total amount of fees
-    #     return f'{self.fees_amount}'
-
-    # def change_invoice_status_to_paid(self):
-    #     #this function change the invoice status from unpaid to paid
-    #     self.invoice_status = InvoiceStatus.PAID
-
-    # def change_invoice_status_to_unpaid(self):
-    #     #this function change the invoice status from paid to unpaid
-    #     self.invoice_status = InvoiceStatus.PAID
-
-    # # def add_lesson(self, lesson_price):
-    # #     pass
-
-    # # def delete_lesson(self, lesson_name, lesson_price):
-    # #     pass
-
-    # def get_invoice(self):
-    #     return (self.reference_number, self.student_ID, self.fees_amount)
-
 class Transaction(models.Model):
     Student_ID_transaction = models.CharField(
         max_length = 30,
@@ -381,4 +357,27 @@ class Transaction(models.Model):
             MaxValueValidator(10000),
             MinValueValidator(1),
         ]
+    )
+class Term(models.Model):
+    term_number =  models.IntegerField(
+        # blank = True,
+        # editable=False,
+        # unique=True,
+        validators=[
+            MaxValueValidator(6),
+            MinValueValidator(1),
+        ]
+    )
+
+    start_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        blank=True,
+        null=True
+    )
+    end_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        blank=True,
+        null=True
     )

@@ -1,13 +1,15 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction,Term
 import random
 import string
 import datetime
 from django.utils import timezone
+from datetime import date
 
 
 letters = string.ascii_lowercase
+
 
 class Command(BaseCommand):
     def __init__(self):
@@ -40,6 +42,42 @@ class Command(BaseCommand):
             gender ="PNOT",
         )
 
+        Term.objects.create(
+            term_number=1,
+            start_date = datetime.date(2022, 9,1),
+            end_date = datetime.date(2022, 10,21),
+        )
+
+        Term.objects.create(
+            term_number=2,
+            start_date = datetime.date(2022, 10,31),
+            end_date = datetime.date(2022, 12,16),
+        )
+
+        Term.objects.create(
+            term_number=3,
+            start_date = datetime.date(2023, 1,3),
+            end_date = datetime.date(2023, 2,10),
+        )
+
+        Term.objects.create(
+            term_number=4,
+            start_date = datetime.date(2023, 2,20),
+            end_date = datetime.date(2023, 3,31),
+        )
+
+        Term.objects.create(
+            term_number=5,
+            start_date = datetime.date(2023, 4,17),
+            end_date = datetime.date(2022, 5,26),
+        )
+
+        Term.objects.create(
+            term_number=6,
+            start_date = datetime.date(2023, 6,5),
+            end_date = datetime.date(2022, 7,21),
+        )
+
         # Seed the students
         for i in range(99):
 
@@ -67,7 +105,7 @@ class Command(BaseCommand):
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
-            
+
             self.student = UserAccount.objects.create_teacher(
                 first_name=fname,
                 last_name=lname,
@@ -101,7 +139,7 @@ class Command(BaseCommand):
 
         # seed the invoices base on existing user and bookings
         seed_lesson_id = 100000 #seed lesson id number is big, in case to be same as existing lesson id
-        for i in range(len(students)):   
+        for i in range(len(students)):
             student_Id = students[i].id
             students_id_string = str(student_Id)
 

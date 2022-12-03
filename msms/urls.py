@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from lessons import views
+from django.contrib.auth import views as auth_views
 
 #Required for admin DateTimeField
 from django.views.i18n import JavaScriptCatalog
@@ -35,7 +36,18 @@ urlpatterns = [
     path('edit_lesson/<int:lesson_id>', views.edit_lesson, name = 'edit_lesson'),
 
     path('admin_feed', views.admin_feed, name = 'admin_feed'),
+
+    path('director_manage_roles/', views.director_manage_roles, name = 'director_manage_roles'),
     path('director_feed', views.director_feed, name = 'director_feed'),
+    path('promote_director/<str:current_user_email>', views.promote_director, name = 'promote_director'),
+    path('promote_admin/<str:current_user_email>', views.promote_admin, name = 'promote_admin'),
+
+    path('disable_user/<str:current_user_email>', views.disable_user, name = 'disable_user'),
+    path('delete_user/<str:current_user_email>', views.delete_user, name = 'delete_user'),
+    path('update_user/<str:current_user_id>', views.update_user, name = 'update_user'),
+    path('create_admin_page', views.create_admin_page, name = 'create_admin_page'),
+
+
     path('sign_up/', views.sign_up, name = 'sign_up'),
     path('sign_up_child/', views.sign_up_child, name = 'sign_up_child'),
 
@@ -52,4 +64,11 @@ urlpatterns = [
     path('admin_confirm_booking/<str:lesson_id>', views.admin_confirm_booking,name='admin_confirm_booking'),
     path('admin_update_request/<str:lesson_id>', views.admin_update_request, name='admin_update_request'),
     path('delete_lesson/<str:lesson_id>', views.delete_lesson, name='delete_lesson'),
+
+    path('term_management', views.term_management_page, name='term_management'),
+    path('add_term_page', views.add_term_page, name='add_term_page'),
+    path('create_term', views.create_term, name='create_term'),
+    path('edit_term_details_page/<str:term_number>',views.edit_term_details_page, name='edit_term_details_page'),
+    path('update_term_details/<str:term_number>',views.update_term_details,name='update_term_details'),
+    path('delete_term/<str:term_number>', views.delete_term, name='delete_term'),
 ]
