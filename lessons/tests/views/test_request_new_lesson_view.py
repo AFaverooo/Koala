@@ -48,7 +48,18 @@ class RequestNewLessonTest(TestCase):
             'duration': LessonDuration.THIRTY,
             'lesson_date_time' : datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
             'teachers': self.teacher.id,
+            'selectedStudent': self.student.email,
         }
+
+    def create_child_student(self):
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Bobby',
+            last_name = 'Lee',
+            email = 'bobbylee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
 
     def create_saved_lessons(self):
         self.saved_lesson = Lesson.objects.create(
@@ -132,7 +143,7 @@ class RequestNewLessonTest(TestCase):
     def test_unsuccesful_new_lesson_user_is_admin(self):
         self.client.login(email=self.admin.email, password="Password123")
         before_count = Lesson.objects.count()
-        response = self.client.get(self.url, follow=True)
+        response = self.client.get(self.url,follow=True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
 
@@ -146,7 +157,7 @@ class RequestNewLessonTest(TestCase):
         self.form_input['type'] = 'BAD CHOICE'
 
         before_count = UserAccount.objects.count()
-        response = self.client.post(self.url, self.form_input)
+        response = self.client.post(self.url, self.form_input, follow=True)
         after_count = UserAccount.objects.count()
         self.assertEqual(after_count, before_count)
         self.assertEqual(response.status_code, 200)
@@ -165,7 +176,7 @@ class RequestNewLessonTest(TestCase):
         self.form_input['duration'] = 'BAD DURATION CHOICE'
 
         before_count = UserAccount.objects.count()
-        response = self.client.post(self.url, self.form_input)
+        response = self.client.post(self.url, self.form_input, follow = True)
         after_count = UserAccount.objects.count()
         self.assertEqual(after_count, before_count)
         self.assertEqual(response.status_code, 200)
@@ -181,7 +192,34 @@ class RequestNewLessonTest(TestCase):
     def test_succesful_request(self):
         self.client.login(email=self.student.email, password="Password123")
         before_count = Lesson.objects.count()
-        response = self.client.post(self.url, self.form_input, follow=True)
+        response = self.client.post(self.url, self.form_input, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count+1)
+        form = response.context['form']
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+
+        lessons = response.context['lessons']
+        self.assertEqual(len(lessons),1)
+        #check lessons size is now 4 for the user
+        self.assertEqual(lessons[0].student_id.email, self.student.email)
+        self.assertEqual(lessons[0].type,LessonType.INSTRUMENT)
+        self.assertEqual(lessons[0].duration, LessonDuration.THIRTY)
+        self.assertEqual(lessons[0].lesson_date_time, datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc))
+        self.assertEqual(lessons[0].teacher_id, self.teacher)
+
+        self.assertTemplateUsed(response, 'requests_page.html')
+
+    def test_multiple_lesson_creation(self):
+        self.fail()
+
+    def test_succesful_child_request(self):
+        self.create_child_student()
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        #change the forms
+        self.form_input['selectedStudent'] = self.child.email
+        response = self.client.post(self.url, self.form_input, follow = True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count+1)
         form = response.context['form']
@@ -191,6 +229,7 @@ class RequestNewLessonTest(TestCase):
         lessons = response.context['lessons']
         self.assertEqual(len(lessons),1)
 
+        self.assertEqual(lessons[0].student_id.email, self.child.email)
         self.assertEqual(lessons[0].type,LessonType.INSTRUMENT)
         self.assertEqual(lessons[0].duration, LessonDuration.THIRTY)
         self.assertEqual(lessons[0].lesson_date_time, datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc))

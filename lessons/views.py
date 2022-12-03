@@ -11,6 +11,8 @@ from django.db import IntegrityError
 from django.utils import timezone
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
+from itertools import chain
+
 
 # Create your views here.
 
@@ -289,7 +291,19 @@ def get_student_and_child_objects(student):
     return list_of_students
 
 def get_saved_lessons(student):
-    return Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
+    student_queryset = Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
+
+    if student.is_parent:
+        child_queryset = UserAccount.objects.filter(parent_of_user = student)
+        result_queryset = student_queryset
+
+        for eachChild in child_queryset:
+            lesson_queryset = Lesson.objects.filter(student_id = eachChild)
+            result_queryset = chain(result_queryset, lesson_queryset)
+
+        return list(result_queryset)
+
+    return list(student_queryset)
 
 def get_unfulfilled_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
@@ -502,27 +516,35 @@ def sign_up(request):
 
 def new_lesson(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        current_student = request.user
+        #current_student = request.user
+
         if request.method == 'POST':
             request_form = RequestForm(request.POST)
             if request_form.is_valid():
+
+                try:
+                    actual_student = UserAccount.objects.get(email = request.POST['selectedStudent'])
+                except ObjectDoesNotExist:
+                    messages.add_message(request,messages.ERROR,"Selected user account does not exist")
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user)})
                 #duration = request_form.cleaned_data.get('duration')
                 #lesson_date = request_form.cleaned_data.get('lesson_date_time')
                 #type = request_form.cleaned_data.get('type')
                 #teacher_id = request_form.cleaned_data.get('teachers')
 
                 try:
-                    request_form.save(request.user)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
+                    request_form.save(actual_student)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(current_student)})
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user)})
 
                 #form = RequestForm()
                 #return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
+                messages.add_message(request,messages.SUCCESS,"Lesson has been created")
                 return redirect('requests_page')
             else:
                 messages.add_message(request,messages.ERROR,"The lesson information provided is invalid!")
-                return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(current_student)})
+                return render(request,'requests_page.html', {'form': request_form, 'lessons' : get_saved_lessons(request.user)})
         else:
             #form = RequestForm()
             #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
@@ -530,6 +552,7 @@ def new_lesson(request):
     else:
         return redirect('home')
 
+#make it that all lessons for both the student and if they have a child
 def save_lessons(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user

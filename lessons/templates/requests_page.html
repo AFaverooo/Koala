@@ -25,17 +25,18 @@
 {% endif %}
 
   <h1>Request Lessons</h1>
-
-  <label>Select The User To Request Lessons For:</label>
-  <select id="selectedStudent" class="player-dropdown">
-    {% for student in students_option %}
-    <option value="{{ student }}">{{ student.first_name }} {{ student.last_name }}</option>
-    {% endfor %}
-  </select>
-
   <body>
       <form action="{% url 'new_lesson' %}" method="post">
         {% csrf_token %}
+
+        <label>Select The User To Request Lessons For:</label>
+
+        <select name="selectedStudent" class="player-dropdown">
+          {% for student in students_option %}
+          <option value="{{ student.email }}">{{ student.first_name }} {{ student.last_name }}</option>
+          {% endfor %}
+        </select>
+
         {{ form.media }}
         {{ form.as_p }}
        <input type="submit" value="Create A Lesson" class="btn btn-primary">

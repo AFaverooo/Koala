@@ -203,7 +203,7 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.assertEqual(str(messages_list[0]), 'Lesson request deleted')
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
-    def test_succesful_multiple_deletion_of_lesson(self):
+    def test_succesful_multiple_deletion_of_lessons(self):
         self.change_lessons_status_to_unfulfilled()
         before_count = Lesson.objects.count()
 
