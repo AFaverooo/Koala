@@ -162,7 +162,6 @@ def get_student_balance(student):
 
 # this function update the student balance 
 def update_balance(student):
-    # student = request.user
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
     current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
     invoice_fee_total = 0
@@ -202,6 +201,10 @@ def pay_fo_invoice(request):
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
             elif(temp_invoice.invoice_status == InvoiceStatus.DELETED):
                 messages.add_message(request,messages.ERROR,"This invoice has already been deleted!")
+            elif(input_amounts_pay_int < 1):
+                messages.add_message(request,messages.ERROR,"Transaction amount cannot be less than 1!")
+            elif(input_amounts_pay_int > 10000):
+                messages.add_message(request,messages.ERROR,"Transaction amount cannot be larger than 10000!")
             else:
                 if(temp_invoice.amounts_need_to_pay <= input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PAID
