@@ -632,7 +632,7 @@ def director_manage_roles(request):
         directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
         return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
     else:
-        return redirect("log_in")
+        return redirect("home")
 
 
 
@@ -651,7 +651,7 @@ def promote_director(request,current_user_email):
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
             return redirect('director_manage_roles')
     else:
-        return redirect("log_in")
+        return redirect("home")
 
 
 @login_required
@@ -671,7 +671,7 @@ def promote_admin(request,current_user_email):
             return redirect("director_manage_roles")
     else:
 
-        return redirect("log_in")
+        return redirect("home")
 
 
 
@@ -694,7 +694,7 @@ def disable_user(request,current_user_email):
 
             return redirect(director_manage_roles)
     else:
-        return redirect("log_in")
+        return redirect("home")
 
 
 
@@ -710,7 +710,7 @@ def delete_user(request,current_user_email):
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
             return redirect(director_manage_roles)
     else:
-        return redirect("log_in")
+        return redirect("home")
 
 
 
@@ -728,7 +728,7 @@ def create_admin_page(request):
 
         return render(request,'director_create_admin.html',{'form': form})
     else:
-        return redirect("log_in")
+        return redirect("home")
 
 
 @login_required
