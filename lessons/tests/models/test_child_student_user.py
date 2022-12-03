@@ -154,6 +154,17 @@ class TestChildStudentUser(TestCase):
         self.assertTrue(parent_of_child.is_parent)
         self.assertEqual(self.student.parent_of_user,None)
 
+    def test_parent_must_be_a_useraccountobject(self):
+        with self.assertRaises(AttributeError):
+            self.newChild = UserAccount.objects.create_child_student(
+                first_name = 'Bobby',
+                last_name = 'Lee',
+                email = 'bobbylee@example.org',
+                password = 'Password123',
+                gender = Gender.MALE,
+                parent_of_user = 'PARENT',
+                )
+
     def test_parent_must_be_a_student(self):
         with self.assertRaises(AttributeError):
             self.newChild = UserAccount.objects.create_child_student(

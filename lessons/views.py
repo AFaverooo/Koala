@@ -276,6 +276,17 @@ def get_student_invoices_and_transactions(request, student_id):
 
     return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
 
+def get_student_and_child_objects(student):
+    list_of_students = []
+    list_of_students.append(student)
+
+    if student.is_parent is True:
+        child_students = UserAccount.objects.filter(parent_of_user = student)
+
+        for child in child_students:
+            list_of_students.append(child)
+
+    return list_of_students
 
 def get_saved_lessons(student):
     return Lesson.objects.filter(lesson_status = LessonStatus.SAVED, student_id = student)
@@ -396,9 +407,10 @@ def requests_page(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
             student = request.user
+            students_option = get_student_and_child_objects(student)
             savedLessons = get_saved_lessons(student)
             form = RequestForm()
-            return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons})
+            return render(request,'requests_page.html', {'form': form , 'lessons': savedLessons, 'students_option':students_option})
         else:
             return HttpResponseForbidden()
     else:
