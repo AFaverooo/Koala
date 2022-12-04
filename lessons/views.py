@@ -144,7 +144,7 @@ def make_lesson_dictionary(student_user,lessonStatus):
 
 @login_required
 def balance(request):
-    if request.user.is_authenticated:
+    if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
             student = request.user
             student_invoice = get_student_invoice(student) #this function filter out the invocie with the same student id as the current user
@@ -181,7 +181,7 @@ def update_balance(student):
     student.save()
 
 @login_required
-def pay_fo_invoice(request):
+def pay_for_invoice(request):
     if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if(request.method == 'POST'):
             try:
@@ -260,8 +260,6 @@ def update_invoice_when_delete(lesson):
     invoice.fees_amount = 0
     invoice.lesson_ID = ''
     invoice.save()
-
-
 
 def get_all_transactions(request):
     all_transactions = Transaction.objects.all()
