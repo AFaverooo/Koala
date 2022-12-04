@@ -153,14 +153,14 @@ class Command(BaseCommand):
                     Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = pre_fees, lesson_ID = seed_lesson_id)
                 elif(probability == 5 or probability == 6):
                     # partially paid invoice
-                    amount_paid = random.randint(10, pre_fees)
+                    amount_paid = random.randint(10, pre_fees - 1)
                     amount_needs_to_be_pay = pre_fees - amount_paid
                     Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = amount_needs_to_be_pay,lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
                 elif(probability == 7):
                     # overpaid invoice
                     amount_paid = random.randint(pre_fees+100, pre_fees + 200)
-                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
                 else:
                     Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)

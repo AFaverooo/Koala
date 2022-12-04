@@ -52,7 +52,7 @@ urlpatterns = [
     path('sign_up_child/', views.sign_up_child, name = 'sign_up_child'),
 
     path('balance/', views.balance, name = 'balance'),
-    path('pay_for_invoice/', views.pay_fo_invoice, name = 'pay_for_invoice'),
+    path('pay_for_invoice/', views.pay_for_invoice, name = 'pay_for_invoice'),
     path('transaction_history/', views.get_all_transactions,name='transaction_history'),
     path('invoices_history/', views.get_all_invocies, name = 'invoices_history'),
     path('student_invoices_and_transactions/<str:student_id>', views.get_student_invoices_and_transactions, name = 'student_invoices_and_transactions'),
