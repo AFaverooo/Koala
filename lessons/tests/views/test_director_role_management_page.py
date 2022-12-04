@@ -41,7 +41,9 @@ class DirectorRoleChangesTestCase(TestCase):
         self.assertEqual(self.url,'/director_manage_roles/')
 
 
+
     # tests assigning and unsigning super-admin privileges to a regular admin account
+
     def test_promote_admin_to_director(self):
         #Log into  a director account
         self.client.login(email=self.current.email, password="Password123")
@@ -59,6 +61,24 @@ class DirectorRoleChangesTestCase(TestCase):
 
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
+
+
+    def test_cant_promote_non_existant_user_to_director(self):
+
+        self.client.login(email=self.current.email, password="Password123")
+
+        user_count_before = UserAccount.objects.count()
+        self.promote_director_url = reverse('promote_director', args=["unknownemail@example.org"])
+        response = self.client.get(self.promote_director_url, follow = True)
+        user_count_after = UserAccount.objects.count()
+        self.assertEqual(user_count_before,user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
 
     def test_demote_director_to_admin(self):
@@ -80,8 +100,7 @@ class DirectorRoleChangesTestCase(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
 
-
-    def test_demote_current_director_to_admin(self):
+    def test_cant_demote_current_director_to_admin(self):
         #Log into a current director account
         self.client.login(email=self.current.email, password="Password123")
 
@@ -100,8 +119,25 @@ class DirectorRoleChangesTestCase(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
 
-    # test actions that can be done on every User
+    def test_cant_demote_non_existant_user_to_admin(self):
 
+        self.client.login(email=self.current.email, password="Password123")
+
+        user_count_before = UserAccount.objects.count()
+        self.promote_admin_url = reverse('promote_admin', args=["unknownemail@example.org"])
+        response = self.client.get(self.promote_admin_url, follow = True)
+        user_count_after = UserAccount.objects.count()
+        self.assertEqual(user_count_before,user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.ERROR)
+
+
+    # test actions that can be done on every User
     def test_disable_user(self):
 
         self.client.login(email=self.current.email, password="Password123")
@@ -137,6 +173,22 @@ class DirectorRoleChangesTestCase(TestCase):
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
+    def test_cant_disable_non_existant_user(self):
+
+        self.client.login(email=self.current.email, password="Password123")
+
+        user_count_before = UserAccount.objects.count()
+        self.disable_user_url = reverse('disable_user', args=["unknownemail@example.org"])
+        response = self.client.get(self.disable_user_url, follow = True)
+        user_count_after = UserAccount.objects.count()
+        self.assertEqual(user_count_before,user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.ERROR)
 
 
     def test_delete_user(self):
@@ -163,6 +215,23 @@ class DirectorRoleChangesTestCase(TestCase):
 
         user_count_before = UserAccount.objects.count()
         self.delete_user_url = reverse('delete_user', args=[self.current.email])
+        response = self.client.get(self.delete_user_url, follow = True)
+        user_count_after = UserAccount.objects.count()
+        self.assertEqual(user_count_before,user_count_after)
+
+        redirect_url = reverse('director_manage_roles')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'director_manage_roles.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(messages_list[0].level, messages.ERROR)
+
+    def test_cant_delete_non_existant_user(self):
+
+        self.client.login(email=self.current.email, password="Password123")
+
+        user_count_before = UserAccount.objects.count()
+        self.delete_user_url = reverse('delete_user', args=["unknownemail@example.org"])
         response = self.client.get(self.delete_user_url, follow = True)
         user_count_after = UserAccount.objects.count()
         self.assertEqual(user_count_before,user_count_after)

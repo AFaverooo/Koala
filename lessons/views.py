@@ -657,7 +657,13 @@ def promote_director(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
             return redirect('director_manage_roles')
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:#For when editing a lesson with term number 1
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user.role = UserRole.DIRECTOR
             user.is_staff = True
             user.is_superuser = True
@@ -676,6 +682,13 @@ def promote_admin(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
             return redirect('director_manage_roles')
         else:
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user = UserAccount.objects.get(email=current_user_email)
             user.role = UserRole.ADMIN
             user.is_staff = True
@@ -696,7 +709,13 @@ def disable_user(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
             return redirect(director_manage_roles)
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             if (user.is_active == True):
                 user.is_active = False
                 user.save()
@@ -719,7 +738,13 @@ def delete_user(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
             return redirect(director_manage_roles)
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user.delete()
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
             return redirect(director_manage_roles)
@@ -749,7 +774,14 @@ def create_admin_page(request):
 def update_user(request,current_user_id):
 
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-        user = UserAccount.objects.get(id=current_user_id)
+
+        try:
+            user = UserAccount.objects.get(id=current_user_id)
+        except ObjectDoesNotExist:
+            messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+            return redirect("director_manage_roles")
+
+
         form = CreateAdminForm(instance=user)
 
         if request.method == 'POST':
