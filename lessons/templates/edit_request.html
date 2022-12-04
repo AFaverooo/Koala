@@ -5,11 +5,8 @@
 {%block content%}
 {% load crispy_forms_tags %}
 
-  
+
 <body>
-
-  
-
         <div class="container vh-100" id="homecardholder">
                <div class="row h-100">
                  <div class="col-12 my-auto">
@@ -18,12 +15,6 @@
 <!--
   Do not replace with partial as date time uses custom widget that cannot be rendered using
 crispyforms-->
-      <form action="{% url 'new_lesson' %}" method="post">
-        {% csrf_token %}
-        {% include 'partials/messages.html' with form=form %}
-        {{ form.type|as_crispy_field }}
-
-
                     <div class="divider"></div>
 
   <form action='{% url 'edit_lesson' lesson_id %}' method="post">
@@ -53,4 +44,3 @@ crispyforms-->
 
 </body>
 {% endblock %}
-
