@@ -151,7 +151,8 @@ def balance(request):
             student_transaction = get_student_transaction(student) #this function filter out the transaction with the same student id as the current user
             update_balance(student)
             student_balance = get_student_balance(student)
-            return render(request, 'balance.html', {'student': student, 'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance})
+            child_invoices =  get_child_invoice(student)
+            return render(request, 'balance.html', {'student': student, 'Invoice': student_invoice, 'Transaction': student_transaction, 'Balance': student_balance, 'child_invoices': child_invoices})
     else:
         return redirect('home')
 
@@ -164,15 +165,31 @@ def get_student_transaction(student):
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
+def get_child_invoice(student):
+    list_of_child_invoice = []
+
+    children = UserAccount.objects.filter(parent_of_user = student)
+    for child in children:
+        child_invoice = Invoice.objects.filter(student_ID = child.id)
+        for invoice in child_invoice:
+            list_of_child_invoice.append(invoice)
+    
+    return list_of_child_invoice
+
+
 # this function update the student balance
 def update_balance(student):
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
     current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
+    child_invoices = get_child_invoice(student)
     invoice_fee_total = 0
     payment_fee_total = 0
 
     for invoice in current_existing_invoice:
         invoice_fee_total += invoice.fees_amount
+
+    for child_invoice in child_invoices:
+        invoice_fee_total += child_invoice.fees_amount
 
     for transaction in current_existing_transaction:
         payment_fee_total += transaction.transaction_amount
@@ -199,8 +216,8 @@ def pay_for_invoice(request):
                 messages.add_message(request,messages.ERROR,"There isn't such invoice exist!")
                 return redirect('balance')
 
-            if(int(temp_invoice.student_ID) != int(student.id)):
-                messages.add_message(request,messages.ERROR,"this invoice does not belong to you!")
+            if(int(temp_invoice.student_ID) != int(student.id) and check_invoice_belong_to_child(temp_invoice, student) == False):
+                messages.add_message(request,messages.ERROR,"this invoice does not belong to you or your children!")
             elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
             elif(temp_invoice.invoice_status == InvoiceStatus.DELETED):
@@ -228,6 +245,14 @@ def pay_for_invoice(request):
 
     else:
         return redirect('home')
+
+def check_invoice_belong_to_child(temp_invoice, student):
+    children = UserAccount.objects.filter(parent_of_user = student)
+    for child in children:
+        if int(temp_invoice.student_ID) == int(child.id):
+            return True
+    return False
+
 
 def create_new_invoice(student_id, lesson):
     student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
