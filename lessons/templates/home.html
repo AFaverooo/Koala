@@ -16,11 +16,11 @@
           <!--
       Login and Sign up buttons
     -->
-          <a href="{% url 'sign_up' %}" class="btn btn-primary" id="SignUpButton">Sign up</a>
+          <a href="{% url 'sign_up' %}"  class="EntryButton">Sign up</a>
 
           <div class="divider"></div>
 
-          <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample"
+          <button  type="button" class="EntryButton" data-bs-toggle="collapse" data-bs-target="#collapseExample" id="OpenLoginButton"
             aria-expanded="false" aria-controls="collapseExample">
             Login
           </button>
@@ -30,22 +30,22 @@
           <div class="divider"></div>
 
 
-          <!-- 
+          <!--
       div for the form
     -->
           <div id="collapseExample" class="collapse">
-            
+
             <form action="{% url 'home' %}" method="post">
               {% csrf_token %}
-              {% include 'partials/bootstrap_form.html' with form=form %}
               {% include 'partials/messages.html' with form=form %}
+              {% include 'partials/bootstrap_form.html' with form=form %}
               <input type="submit" value="Log in" class="btn successbutton">
             </form>
             <div class="divider"></div>
             <!-- </div>   -->
 
 
-            
+
 
           </div>
         </div>

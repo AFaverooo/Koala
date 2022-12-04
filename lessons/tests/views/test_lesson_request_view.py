@@ -5,7 +5,7 @@ from lessons.forms import RequestForm
 from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus
 
 from lessons.forms import RequestForm
-from lessons.views import get_saved_lessons,get_unfulfilled_lessons
+from lessons.views import get_student_and_child_objects
 from django import forms
 from django.utils import timezone
 from datetime import time
@@ -64,6 +64,16 @@ class LessonRequestViewTestCase(TestCase):
             lesson_status = LessonStatus.SAVED
         )
 
+    def create_child_student(self):
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Bobby',
+            last_name = 'Lee',
+            email = 'bobbylee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
+
     def change_lessons_status_to_unfulfilled(self):
         self.saved_lesson.lesson_status = LessonStatus.UNFULFILLED
         self.saved_lesson.save()
@@ -85,6 +95,34 @@ class LessonRequestViewTestCase(TestCase):
         redirect_url = reverse('admin_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'admin_feed.html')
+
+    def test_drop_down_of_users_is_populated_with_student_and_child(self):
+        self.create_child_student()
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.url, follow = True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+
+        student_options = response.context['students_option']
+
+        self.assertEqual(len(student_options),2)
+
+    def test_function_to_get_student_and_children(self):
+        #self.fail()
+        self.create_child_student()
+        options = get_student_and_child_objects(self.student)
+
+        self.assertEqual(len(options),2)
+
+        self.assertEqual(options[0].email,self.student.email)
+        self.assertEqual(options[1].email,self.child.email)
+
+        self.assertTrue(options[0].is_parent)
+        self.assertEqual(options[0].parent_of_user,None)
+        self.assertEqual(options[1].parent_of_user.email,self.student.email)
+
+        self.assertEqual(options[0].role,UserRole.STUDENT)
+        self.assertEqual(options[1].role,UserRole.STUDENT)
 
     def test_get_request_page_with_saved_lessons(self):
         self.client.login(email=self.student.email, password="Password123")

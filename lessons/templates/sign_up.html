@@ -1,7 +1,6 @@
-
 {% extends 'base.html' %}
 
-{% load crispy_forms_tags %}                                                                                                                           
+{% load crispy_forms_tags %}
 {{ form.field|as_crispy_field }}
 
 {% block body %}
@@ -16,8 +15,8 @@
 <div class="divider"></div>
  <form action="{% url 'sign_up' %}" method="post">
         {% csrf_token %}
-        {% include 'partials/bootstrap_form.html' with form=form %}
         {% include 'partials/messages.html' with form=form %}
+        {% include 'partials/bootstrap_form.html' with form=form %}
  <input type="submit" value="Sign up" class="btn successbutton">
  <div class="divider"></div>
       </form>
@@ -26,6 +25,6 @@
            </div>
          </div>
         </div>
-       </div>   
-      </div> 
+       </div>
+      </div>
 {% endblock %}

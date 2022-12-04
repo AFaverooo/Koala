@@ -81,6 +81,30 @@ class UserAccountManager(BaseUserManager):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_parent', False)
+        extra_fields.setdefault('role', UserRole.STUDENT)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_child_student(self, email, password, **extra_fields):
+
+        #try:
+        #    parent = UserAccount.objects.get(email = extra_fields('parent_id').email)
+        #except ObjectDoesNotExist:
+        #        raise ValueError('parent user account provided does not exist')
+        parent = extra_fields['parent_of_user']
+
+        if hasattr(parent,'email') is False:
+            raise AttributeError('Provided parent field is not of type UserAccount')
+
+        if parent.role != UserRole.STUDENT:
+            raise AttributeError('Provided user is not a student')
+
+        parent.is_parent = True
+        parent.save()
+
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('role', UserRole.STUDENT)
         return self._create_user(email, password, **extra_fields)
 
@@ -163,6 +187,10 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     objects = UserAccountManager()
 
+    is_parent = models.BooleanField(default = False, blank = False)
+
+    parent_of_user = models.ForeignKey('self',related_name = 'parent',on_delete=models.CASCADE, blank = True, null = True)
+
     gender = models.CharField(
         max_length=20,
         choices=Gender.choices,
@@ -193,7 +221,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
 
-    request_date = models.DateField('Request Date And Time', default=timezone.now)
+    request_date = models.DateField('Request Date', default=timezone.now)
 
     type = models.CharField(
         max_length=30,
@@ -275,12 +303,12 @@ class Invoice(models.Model):
         max_length = 30,
         blank=True,
         validators=[RegexValidator(
-            regex = r'^\d+$', 
+            regex = r'^\d+$',
             message='Lesson ID must all be number'
         )]
     )
 
-    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):   
+    def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):
         #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
         if(number_of_exist_invoice < 10):
@@ -344,12 +372,12 @@ class Term(models.Model):
     start_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
-        blank=True, 
+        blank=True,
         null=True
     )
     end_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
-        blank=True, 
+        blank=True,
         null=True
     )

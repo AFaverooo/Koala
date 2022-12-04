@@ -5,7 +5,7 @@ from .models import UserAccount,Lesson, Invoice, Transaction
 @admin.register(UserAccount)
 class UserAdmin(admin.ModelAdmin):
     list_display = [
-        'id','email', 'first_name', 'last_name','role', 'gender' , 'balance', 'is_active', 'is_staff', 'is_superuser'
+        'id','email', 'first_name', 'last_name','role', 'gender' , 'balance', 'is_active', 'is_staff', 'is_superuser', 'is_parent', 'parent_of_user'
     ]
     # ordering = ('email',)
 
