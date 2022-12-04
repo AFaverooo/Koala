@@ -313,6 +313,8 @@ def get_student_invoices_and_transactions(request, student_id):
 
     return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
 
+
+
 def get_student_and_child_objects(student):
     list_of_students = []
     list_of_students.append(student)
