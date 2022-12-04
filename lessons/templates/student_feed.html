@@ -21,6 +21,7 @@
 <table class="table">
   <thead style="background-color: #023e8a;">
   <tr style="color: white; ">
+    <th>Student Name</th>
     <th>Request Number</th>
     <th>Lesson Type</th>
     <th>Lesson Date</th>
@@ -32,6 +33,7 @@
 </thead>
   {% for key,value in unfulfilled_requests.items %}
     <tr>
+      <td>{{value|get_lesson_student}}</td>
       <td>{{value|get_lesson_request}}</td>
       <td>{{value|get_lesson}}</td>
       <td>{{value|get_lesson_date}}</td>
@@ -51,7 +53,6 @@
         </button>
       </form>
     </td>
-
     </tr>
   {% endfor %}
 </table>
@@ -66,7 +67,7 @@
 <table class="table">
   <thead style="background-color: #023e8a;">
   <tr style="color: white; ">
-
+    <th>Student Name</th>
     <th>Lesson</th>
     <th>Lesson Date</th>
     <th>Lesson Time</th>
@@ -77,6 +78,7 @@
 
   {% for key,value in fullfilled_lessons.items %}
     <tr>
+      <td>{{value|get_lesson_student}}</td>
       <td>{{value|get_lesson}}</td>
       <td>{{value|get_lesson_date}}</td>
       <td>{{value|get_lesson_duration}}</td>
@@ -88,15 +90,11 @@
 <div class="padding">{{admin_email}}</div>
 {% endif %}
 
-
 {% if unfulfilled_requests|length == 0 and fullfilled_lessons|length == 0 %}
 <div class="padding" style="text-align: center;">
 <h5>There are currently no items here</h5>
 </div>
 {%  endif %}
-
-
-
 </body>
 
 {% endblock %}

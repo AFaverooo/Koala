@@ -237,7 +237,7 @@ class Lesson(models.Model):
         blank = False
     )
 
-    lesson_date_time = models.DateTimeField('Lesson Date And Time')
+    lesson_date_time = models.DateTimeField('Lesson Date And Time', blank = False)
 
     teacher_id = models.ForeignKey(UserAccount,on_delete=models.CASCADE, related_name = 'teacher')
 
