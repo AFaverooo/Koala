@@ -14,6 +14,13 @@
         <h2 style="text-align: center; font-family: 'JetBrains Mono'">{{student.first_name}} {{student.last_name}}'s Balance, Invoices and Transaction page</h2>
         <br>
     
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
+        {% endfor %}
+    </ul>
+    {% endif %}
 
 
     {% for balance in Balance %}
@@ -51,6 +58,37 @@
             <td>{{invoice.lesson_ID}}</td>
             <td>{{invoice.invoice_status}}</td>
             <td>{{invoice.amounts_need_to_pay}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<button class="btn EntryButton" type="button" data-toggle="collapse" data-target="#collapseInvoiceTable" aria-expanded="false" aria-controls="collapseInvoiceTable">
+    Child Invoices
+  </button>
+  <div class="divider"></div>
+<div class="collapse" id="collapseInvoiceTable">
+        
+            <table class="table w-auto" >
+                <thead style="background-color: #023e8a;">
+                <tr style="color: white; ">
+            <!-- table head of the invoice -->
+            <th>Reference</th>
+            <th>Student ID</th>
+            <th>Amount of fees</th>
+            <th>Lesson ID</th>
+            <th>Invoice status</th>
+            <th>Amounts left to be paid</th>
+        </tr>
+        </thead>
+        {% for child_invoice in child_invoices reversed %} <!-- this function reads all the invoices under the student and print them out in one single table -->
+        <tr>
+            <td>{{child_invoice.reference_number}}</td>
+            <td>{{child_invoice.student_ID}}</td>
+            <td>{{child_invoice.fees_amount}}</td>
+            <td>{{child_invoice.lesson_ID}}</td>
+            <td>{{child_invoice.invoice_status}}</td>
+            <td>{{child_invoice.amounts_need_to_pay}}</td>
         </tr>
         {% endfor %}
     </table>
@@ -103,7 +141,7 @@
 
                 <div class="form-floating mb-3">
             <input type='number' name="amounts_pay" class = "form-control"  id="floatingInput" for="floatingInput" placeholder="£x"/>
-            <label for='amounts_pay floatingInput'>Amount Deposit:</label>
+            <label for='amounts_pay floatingInput'>Payment amounts:</label>
                 </div>
 
             <button type = 'submit',  class = "btn successbutton">submit</button>
