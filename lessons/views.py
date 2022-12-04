@@ -253,7 +253,6 @@ def check_invoice_belong_to_child(temp_invoice, student):
             return True
     return False
 
-
 def create_new_invoice(student_id, lesson):
     student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
     student = UserAccount.objects.get(id=student_id)
@@ -265,18 +264,26 @@ def create_new_invoice(student_id, lesson):
     update_balance(student)
 
 def update_invoice(lesson):
-    invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
-    student = UserAccount.objects.get(id=invoice.student_ID)
+    try:
+        invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+        student = UserAccount.objects.get(id=invoice.student_ID)
 
-    fees = Invoice.calculate_fees_amount(lesson.duration)
-    fees = int(fees)
-    difference_between_invoice = fees - invoice.fees_amount
-    invoice.fees_amount = fees
-    invoice.amounts_need_to_pay += difference_between_invoice
-    invoice.save()
-    student = UserAccount.objects.get(id=invoice.student_ID)
+        fees = Invoice.calculate_fees_amount(lesson.duration)
+        fees = int(fees)
+        difference_between_invoice = fees - invoice.fees_amount
+        invoice.fees_amount = fees
+        invoice.amounts_need_to_pay += difference_between_invoice
+        invoice.save()
+        student = UserAccount.objects.get(id=invoice.student_ID)
 
-    update_balance(student)
+        update_balance(student)
+    except ObjectDoesNotExist:
+        fees = Invoice.calculate_fees_amount(lesson.duration)
+        students_id_string = str(lesson.student_id.id)
+        student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = lesson.student_id.id)
+        reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice_pre_exist))
+        Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
+
 
 def update_invoice_when_delete(lesson):
     invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
@@ -387,8 +394,10 @@ def admin_update_request(request, lesson_id):
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
             lesson.save()
-
-            update_invoice(lesson)
+            
+            # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
+            if lesson.lesson_status == LessonStatus.FULLFILLED:
+                update_invoice(lesson)
 
             messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
