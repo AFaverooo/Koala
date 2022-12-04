@@ -5,7 +5,7 @@ from lessons.forms import RequestForm
 from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus
 from django.contrib import messages
 from lessons.forms import RequestForm
-from lessons.views import get_saved_lessons,get_unfulfilled_lessons
+from lessons.views import get_saved_lessons
 
 from django.utils import timezone
 from datetime import time

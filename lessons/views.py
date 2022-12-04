@@ -44,6 +44,10 @@ def get_lesson_request(dictionary):
 def get_lesson_saved(dictionary):
     return dictionary.get("Saved")
 
+@register.filter
+def get_lesson_student(dictionary):
+    return dictionary.get("Student")
+
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_student_and_child_lessons(student_user,LessonStatus.FULLFILLED)
 
@@ -106,7 +110,7 @@ def make_lesson_timetable_dictionary(student_user):
 
         duration_str = f'{lesson_date_hr_str}:{lesson_date_minute_str} - {new_lesson_hr_str}:{new_time_minute_str}'
 
-        case = {'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
+        case = {'Student':lesson.student_id,'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
         fullfilled_lessons_dict[lesson] = case
 
     return fullfilled_lessons_dict
@@ -115,12 +119,9 @@ def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
     if lessonStatus == 'Lesson Request':
         lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
-    else:
-        lessons = get_saved_lessons(student_user)
 
     lessons_dict = {}
 
-    id_count = 0
     for lesson in lessons:
         lesson_type_str = ''
 
@@ -135,9 +136,8 @@ def make_lesson_dictionary(student_user,lessonStatus):
 
         lesson_duration_str = f'{lesson.duration} minutes'
 
-        case = {lessonStatus: f'{id_count}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
+        case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
         lessons_dict[lesson] = case
-        id_count += 1
 
     return lessons_dict
 
@@ -173,7 +173,7 @@ def get_child_invoice(student):
         child_invoice = Invoice.objects.filter(student_ID = child.id)
         for invoice in child_invoice:
             list_of_child_invoice.append(invoice)
-    
+
     return list_of_child_invoice
 
 
@@ -335,12 +335,6 @@ def get_student_and_child_lessons(student, statusType):
 
 def get_saved_lessons(student):
     return get_student_and_child_lessons(student,LessonStatus.SAVED)
-
-def get_unfulfilled_lessons(student):
-    return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
-
-def get_fullfilled_lessons(student):
-    return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
 def get_admin_email():
     return UserAccount.objects.filter(role = UserRole.ADMIN).first()
@@ -587,9 +581,6 @@ def delete_term(request, term_number):
 def student_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
-            unfulfilled_lessons = get_unfulfilled_lessons(request.user)
-            fullfilled_lessons = get_fullfilled_lessons(request.user)
-
             greeting_str = f'Welcome back {request.user}, this is your feed!'
 
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
@@ -920,7 +911,7 @@ def save_lessons(request):
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 def check_correct_student_accessing_lesson(student_id, other_lesson):
-    all_student_lessons = Lesson.objects.filter(student_id = student_id, lesson_status = LessonStatus.UNFULFILLED)
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
     for lesson in all_student_lessons:
         if lesson.is_equal(other_lesson):
             return True
@@ -954,6 +945,7 @@ def edit_lesson(request,lesson_id):
             return redirect('student_feed')
 
         if check_correct_student_accessing_lesson(current_student,to_edit_lesson) is False:
+            print(check_correct_student_accessing_lesson(current_student,to_edit_lesson))
             messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 

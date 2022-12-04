@@ -5,14 +5,6 @@
 
 {% load crispy_forms_tags %}
 
-{% if messages %}
-<ul class="messages">
-  {% for message in messages %}
-  <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
-    {% endfor %}
-</ul>
-{% endif %}
-
   <h1>Request Lessons</h1>
   <body>
 <body style="background-color: #edede9">
@@ -72,10 +64,10 @@ crispyforms-->
   <h1>Saved Lessons</h1>
   <table class="table table-striped table-dark" >
     <tr>
-      <th>Student</th>
   <table class="table w-auto">
     <thead style="background-color: #023e8a">
     <tr style="color: white;">
+      <th>Student</th>
       <th>Lesson Date and Time</th>
       <th>Lesson Type</th>
       <th>Lesson Duration</th>
@@ -89,7 +81,8 @@ crispyforms-->
         <td>{{lesson.lesson_date_time}}</td>
         <td>{{lesson.type}}</td>
         <td>{{lesson.duration}}</td>
-        <td>{{lesson.teacher_id}}
+        <td>{{lesson.teacher_id}}</td>
+        <td>
           <form method = "post" action='#'>
             {% csrf_token %}
           <button type="submit" class="btn-danger" style="border-radius:5px">Delete</button>
