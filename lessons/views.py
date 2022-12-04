@@ -173,7 +173,7 @@ def get_child_invoice(student):
         child_invoice = Invoice.objects.filter(student_ID = child.id)
         for invoice in child_invoice:
             list_of_child_invoice.append(invoice)
-    
+
     return list_of_child_invoice
 
 
@@ -911,7 +911,7 @@ def save_lessons(request):
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 def check_correct_student_accessing_lesson(student_id, other_lesson):
-    all_student_lessons = Lesson.objects.filter(student_id = student_id, lesson_status = LessonStatus.UNFULFILLED)
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
     for lesson in all_student_lessons:
         if lesson.is_equal(other_lesson):
             return True
@@ -945,6 +945,7 @@ def edit_lesson(request,lesson_id):
             return redirect('student_feed')
 
         if check_correct_student_accessing_lesson(current_student,to_edit_lesson) is False:
+            print(check_correct_student_accessing_lesson(current_student,to_edit_lesson))
             messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 
