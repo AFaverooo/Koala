@@ -619,7 +619,7 @@ def requests_page(request):
 @login_required
 def admin_feed(request):
 
-    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
+    if (request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
         unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
