@@ -277,7 +277,7 @@ def update_invoice(lesson):
         student = UserAccount.objects.get(id=invoice.student_ID)
 
         update_balance(student)
-    except ObjectDoesNotExist:
+    except ObjectDoesNotExist: # this only happen in the case admin create lesson directly from django admin page
         fees = Invoice.calculate_fees_amount(lesson.duration)
         students_id_string = str(lesson.student_id.id)
         student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = lesson.student_id.id)
