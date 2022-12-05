@@ -89,7 +89,7 @@
               <th scope="col">request_date</th>
               <th scope="col">type</th>
               <th scope="col">duration</th>
-              <th scope="col">lesson_date_time</th>
+              <th scope="col">term/lesson_date_time</th>
               <th scope="col">teacher</th>
               <th scope="col">is_booked</th>
             </tr>
@@ -101,7 +101,11 @@
               <td>{{ lesson.request_date }}</td>
               <td>{{ lesson.type }}</td>
               <td>{{ lesson.duration }}</td>
-              <td>{{ lesson.lesson_date_time }}</td>
+              {% if lesson.term == 'N/A' %}
+                <td>{{ lesson.lesson_date_time }}</td>
+              {% else %}
+                <td>{{ lesson.term }}</td>
+              {% endif %}
               <td>{{ lesson.teacher_id }}</td>
               <td>{{ lesson.lesson_status }}</td>
               <td>

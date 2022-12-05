@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from faker import Faker
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction, TransactionTypes,Term
+from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus,Invoice, InvoiceStatus, Transaction,Term
 import random
 import string
 import datetime
@@ -69,13 +69,13 @@ class Command(BaseCommand):
         Term.objects.create(
             term_number=5,
             start_date = datetime.date(2023, 4,17),
-            end_date = datetime.date(2022, 5,26),
+            end_date = datetime.date(2023, 5,26),
         )
 
         Term.objects.create(
             term_number=6,
             start_date = datetime.date(2023, 6,5),
-            end_date = datetime.date(2022, 7,21),
+            end_date = datetime.date(2023, 7,21),
         )
 
         # Seed the students

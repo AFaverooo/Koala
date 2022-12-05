@@ -47,6 +47,14 @@
         }
       </style>
 
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
+          {% endfor %}
+      </ul>
+      {% endif %}
+
       <p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
 
         <table class="table">
@@ -101,7 +109,11 @@
                 <td>{{ lesson.request_date }}</td>
                 <td>{{ lesson.type }}</td>
                 <td>{{ lesson.duration }}</td>
-                <td>{{ lesson.lesson_date_time }}</td>
+                {% if lesson.term == 'N/A' %}
+                  <td>{{ lesson.lesson_date_time }}</td>
+                {% else %}
+                  <td>{{ lesson.term }}</td>
+                {% endif %}
                 <td>{{ lesson.teacher_id }}</td>
                 <td>{{ lesson.lesson_status }}</td>
               </tr>
@@ -129,7 +141,11 @@
                   <td>{{ lesson.request_date }}</td>
                   <td>{{ lesson.type }}</td>
                   <td>{{ lesson.duration }}</td>
-                  <td>{{ lesson.lesson_date_time }}</td>
+                  {% if lesson.term == 'N/A' %}
+                    <td>{{ lesson.lesson_date_time }}</td>
+                  {% else %}
+                    <td>{{ lesson.term }}</td>
+                  {% endif %}
                   <td>{{ lesson.teacher_id }}</td>
                   <td>{{ lesson.lesson_status }}</td>
                 </tr>

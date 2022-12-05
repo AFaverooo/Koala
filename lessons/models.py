@@ -220,6 +220,9 @@ class Lesson(models.Model):
 
     lesson_status = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.SAVED, blank = False)
 
+    term = models.CharField(max_length=3,default = 'N/A')
+    
+
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
 
@@ -377,3 +380,18 @@ class Term(models.Model):
         blank=True, 
         null=True
     )
+
+    def create_term(self, term_number, start_date, end_date):
+        '''Create and save a term with the given term_number, start_date and end_date'''
+
+        if not term_number:
+            raise ValueError('The given term_number must be set')
+        if not term_number:
+            raise ValueError('The given start_date must be set')
+        if not term_number:
+            raise ValueError('The given end_date must be set')
+
+        # user = self.model(email=email, **extra_fields)
+        term = self.model(term_number=term_number, start_date=start_date,end_date=end_date)
+        term.save(using=self._db)
+        return term
