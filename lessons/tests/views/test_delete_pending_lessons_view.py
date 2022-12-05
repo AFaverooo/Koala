@@ -118,6 +118,25 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.lesson5.lesson_status = LessonStatus.UNFULFILLED
         self.lesson5.save()
 
+    def create_child_student(self):
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Bobby',
+            last_name = 'Lee',
+            email = 'bobbylee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
+
+        self.child_lesson = Lesson.objects.create(
+            type = LessonType.PRACTICE,
+            duration = LessonDuration.FOURTY_FIVE,
+            lesson_date_time = datetime.datetime(2023, 2, 25, 9, 45, 00, tzinfo=timezone.utc),
+            teacher_id = self.teacher3,
+            student_id = self.student,
+            request_date = datetime.date(2022, 10, 15),
+            lesson_status = LessonStatus.UNFULFILLED,
+        )
 
     def test_delete_pending_url(self):
         self.assertEqual(self.delete_url, f'/delete_pending/{self.lesson.lesson_id}')
@@ -240,3 +259,22 @@ class StudentFeedDeleteLessonTestCase(TestCase):
         self.assertEqual(before_count-3, after_count)
         self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),2)
         #self.assertTemplateUsed(response, 'student_feed.html')
+
+    def test_delete_child_lesson(self):
+        self.create_child_student()
+        self.change_lessons_status_to_unfulfilled()
+        self.delete_url = reverse('delete_pending', kwargs={'lesson_id':self.child_lesson.lesson_id})
+
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.delete_url, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-1, after_count)
+        self.assertEqual(Lesson.objects.filter(student_id = self.child).count(),0)
+        redirect_url = reverse('student_feed')
+        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'Lesson request deleted')
+        self.assertEqual(messages_list[0].level, messages.SUCCESS)

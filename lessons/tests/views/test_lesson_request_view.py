@@ -107,6 +107,16 @@ class LessonRequestViewTestCase(TestCase):
 
         self.assertEqual(len(student_options),2)
 
+    def test_drop_down_of_users_is_populated_with_student(self):
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.url, follow = True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+
+        student_options = response.context['students_option']
+
+        self.assertEqual(len(student_options),1)
+
     def test_function_to_get_student_and_children(self):
         #self.fail()
         self.create_child_student()

@@ -213,6 +213,9 @@ class StudentFeedTestCase(TestCase):
         self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson4], self.student,LessonType.PRACTICE.label, "2022-12-25", "09:45 - 10:30", "Mr Amane Hill")
         self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson5], self.student,LessonType.PRACTICE.label, "2022-09-25", "09:45 - 10:30", "Jonathan Jacks")
 
+    def test_student_feed_url(self):
+        self.assertEqual(self.url,'/student_feed/')
+
     def test_get_student_feed_with_booked_lessons(self):
         self.initialise_admin()
         self.client.login(email=self.student.email, password="Password123")
