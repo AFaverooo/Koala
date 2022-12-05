@@ -13,50 +13,55 @@
 <div class="divider"></div>
 {%  if unfulfilled_requests|length > 0 %}
 
-<div class="padding">
-<h5>Currently Requested Lessons:</h5>
-</div>
+  <div class="padding">
+  <h5>Currently Requested Lessons:</h5>
+  </div>
 
-<div class="divider"></div>
-<div class="divider"></div>
-<table class="table">
-  <thead style="background-color: #023e8a;">
-  <tr style="color: white; ">
-    <th>Student Name</th>
-    <th>Request Number</th>
-    <th>Lesson Type</th>
-    <th>Lesson Date</th>
-    <th>Lesson Duration </th>
-    <th>Teacher</th>
-    <!-- <th>Edit Functionalities</th> -->
-    <th></th>
-  </tr>
-</thead>
-  {% for key,value in unfulfilled_requests.items %}
-    <tr>
-      <td>{{value|get_lesson_student}}</td>
-      <td>{{value|get_lesson_request}}</td>
-      <td>{{value|get_lesson}}</td>
-      <td>{{value|get_lesson_date}}</td>
-      <td>{{value|get_lesson_duration}}</td>
-      <td>{{value|get_teacher}}</td>
-      <td>
-      <form method = "post" action='{% url 'delete_pending' key.lesson_id %}'>
-          {% csrf_token %}
-        <button type="submit" class="btn btn-danger">
-          <i class="bi-trash3-fill"></i>
-        </button>
-      </form>
+  <div class="divider"></div>
+  <div class="divider"></div>
+  {% for key_date,value_lessons_list in unfulfilled_requests.items %}
+  <h3>{{key_date}}</h3>
+      <table class="table">
+        <thead style="background-color: #023e8a;">
+        <tr style="color: white; ">
+          <th>Student Name</th>
+          <th>Request Number</th>
+          <th>Lesson Type</th>
+          <th>Lesson Date</th>
+          <th>Lesson Duration </th>
+          <th>Teacher</th>
+          <!-- <th>Edit Functionalities</th> -->
+          <th></th>
+        </tr>
+      </thead>
+      {% for lessons_dict in value_lessons_list %}
+        {% for key,value in lessons_dict.items%}
+          <tr>
+            <td>{{value|get_lesson_student}}</td>
+            <td>{{value|get_lesson_request}}</td>
+            <td>{{value|get_lesson}}</td>
+            <td>{{value|get_lesson_date}}</td>
+            <td>{{value|get_lesson_duration}}</td>
+            <td>{{value|get_teacher}}</td>
+            <td>
+            <form method = "post" action='{% url 'delete_pending' key.lesson_id %}'>
+                {% csrf_token %}
+              <button type="submit" class="btn btn-danger">
+                <i class="bi-trash3-fill"></i>
+              </button>
+            </form>
 
-      <form method = "get" action='{% url 'edit_lesson' key.lesson_id %}'>
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-pencil-square"></i>
-        </button>
-      </form>
-    </td>
-    </tr>
+            <form method = "get" action='{% url 'edit_lesson' key.lesson_id %}'>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+            </form>
+          </td>
+          {% endfor %}
+        {% endfor %}
+          </tr>
+      </table>
   {% endfor %}
-</table>
 {% endif %}
 
 {% if fullfilled_lessons|length > 0 %}

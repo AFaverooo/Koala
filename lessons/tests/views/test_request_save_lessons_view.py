@@ -162,7 +162,7 @@ class RequestSaveLessonsTest(TestCase):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
 
         messages_list = list(response.context['messages'])
-        self.assertEqual(str(messages_list[0]), 'Lessons should be requested before attempting to save')
+        self.assertEqual(str(messages_list[0]), 'Lessons should be saved before attempting to request')
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
     def test_succesfull_save_lessons_post(self):

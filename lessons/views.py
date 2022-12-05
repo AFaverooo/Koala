@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .helper import login_prohibited
+from .helper import login_prohibited,check_valid_date
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
@@ -39,10 +39,6 @@ def get_teacher(dictionary):
 @register.filter
 def get_lesson_request(dictionary):
     return dictionary.get("Lesson Request")
-
-@register.filter
-def get_lesson_saved(dictionary):
-    return dictionary.get("Saved")
 
 @register.filter
 def get_lesson_student(dictionary):
@@ -117,12 +113,20 @@ def make_lesson_timetable_dictionary(student_user):
 
 def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
+
     if lessonStatus == 'Lesson Request':
         lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
 
     lessons_dict = {}
 
     for lesson in lessons:
+        temp_dict = {}
+
+        request_date_str = lesson.request_date.strftime("%Y-%m-%d")
+
+        if request_date_str not in lessons_dict.keys():
+            lessons_dict[request_date_str] = []
+
         lesson_type_str = ''
 
         if lesson.type == LessonType.INSTRUMENT:
@@ -137,7 +141,9 @@ def make_lesson_dictionary(student_user,lessonStatus):
         lesson_duration_str = f'{lesson.duration} minutes'
 
         case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
-        lessons_dict[lesson] = case
+        temp_dict[lesson] = case
+
+        lessons_dict[request_date_str].append(temp_dict)
 
     return lessons_dict
 
@@ -402,7 +408,7 @@ def admin_update_request(request, lesson_id):
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
             lesson.save()
-            
+
             # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
             if lesson.lesson_status == LessonStatus.FULLFILLED:
                 update_invoice(lesson)
@@ -596,8 +602,6 @@ def delete_term(request, term_number):
         term.delete()
         messages.add_message(request, messages.SUCCESS, 'Term was successfully deleted!')
         return term_management_page(request)
-
-
 
 
 @login_required
@@ -911,10 +915,11 @@ def new_lesson(request):
                     messages.add_message(request,messages.ERROR,"Selected user account does not exist")
                     students_option = get_student_and_child_objects(request.user)
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
-                #duration = request_form.cleaned_data.get('duration')
-                #lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                #type = request_form.cleaned_data.get('type')
-                #teacher_id = request_form.cleaned_data.get('teachers')
+
+                if check_valid_date(request_form.cleaned_data.get('lesson_date_time').date()) is False:
+                    messages.add_message(request,messages.ERROR,"The lesson date provided is beyond the term dates available")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
                 try:
                     request_form.save(actual_student)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
@@ -923,8 +928,6 @@ def new_lesson(request):
                     students_option = get_student_and_child_objects(request.user)
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
-                #form = RequestForm()
-                #return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
                 messages.add_message(request,messages.SUCCESS,"Lesson has been created")
                 return redirect('requests_page')
             else:
@@ -932,8 +935,6 @@ def new_lesson(request):
                 students_option = get_student_and_child_objects(request.user)
                 return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
         else:
-            #form = RequestForm()
-            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
             return redirect('requests_page')
 
     else:
@@ -947,7 +948,7 @@ def save_lessons(request):
             all_unsaved_lessons = get_saved_lessons(current_student)
 
             if len(all_unsaved_lessons) == 0:
-                messages.add_message(request,messages.ERROR,"Lessons should be requested before attempting to save")
+                messages.add_message(request,messages.ERROR,"Lessons should be saved before attempting to request")
                 return redirect('requests_page')
 
             for eachLesson in all_unsaved_lessons:
@@ -965,8 +966,16 @@ def save_lessons(request):
         return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
-def check_correct_student_accessing_lesson(student_id, other_lesson):
+def check_correct_student_accessing_pending_lesson(student_id, other_lesson):
     all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
+    for lesson in all_student_lessons:
+        if lesson.is_equal(other_lesson):
+            return True
+
+    return False
+
+def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.SAVED)
     for lesson in all_student_lessons:
         if lesson.is_equal(other_lesson):
             return True
@@ -999,8 +1008,7 @@ def edit_lesson(request,lesson_id):
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
             return redirect('student_feed')
 
-        if check_correct_student_accessing_lesson(current_student,to_edit_lesson) is False:
-            print(check_correct_student_accessing_lesson(current_student,to_edit_lesson))
+        if check_correct_student_accessing_pending_lesson(current_student,to_edit_lesson) is False:
             messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 
@@ -1008,6 +1016,11 @@ def edit_lesson(request,lesson_id):
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():
+
+                if check_valid_date(request_form.cleaned_data.get('lesson_date_time').date()) is False:
+                    messages.add_message(request,messages.ERROR,"The lesson date provided is beyond the term dates available")
+                    return render_edit_request(request,lesson_id)
+
                 try:
                     request_form.update_lesson(to_edit_lesson)
                 except IntegrityError:
@@ -1026,6 +1039,7 @@ def edit_lesson(request,lesson_id):
         # return redirect('log_in')
         return redirect('home')
 
+
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
@@ -1037,13 +1051,40 @@ def delete_pending(request,lesson_id):
                     messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
                     return redirect('student_feed')
 
-                if check_correct_student_accessing_lesson(current_student,lesson_to_delete) is False:
+                if check_correct_student_accessing_pending_lesson(current_student,lesson_to_delete) is False:
                     messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
                     return redirect('student_feed')
 
                 lesson_to_delete.delete()
                 messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
                 return redirect('student_feed')
+
+        else:
+            return redirect('student_feed')
+    else:
+        # return redirect('log_in')
+        return redirect('home')
+
+def delete_saved(request,lesson_id):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        current_student = request.user
+        #if check_correct_student_accessing_lesson(current_student,lesson_id):
+        if request.method == 'POST':
+                try:
+                    lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
+                except ObjectDoesNotExist:
+                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+
+                if check_correct_student_accessing_saved_lesson(current_student,lesson_to_delete) is False:
+                    messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+
+                lesson_to_delete.delete()
+                messages.add_message(request, messages.SUCCESS, "Saved lesson deleted")
+                return redirect('requests_page')
 
         else:
             return redirect('student_feed')

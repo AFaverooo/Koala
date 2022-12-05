@@ -69,13 +69,13 @@ class Command(BaseCommand):
         Term.objects.create(
             term_number=5,
             start_date = datetime.date(2023, 4,17),
-            end_date = datetime.date(2022, 5,26),
+            end_date = datetime.date(2023, 5,26),
         )
 
         Term.objects.create(
             term_number=6,
             start_date = datetime.date(2023, 6,5),
-            end_date = datetime.date(2022, 7,21),
+            end_date = datetime.date(2023, 7,21),
         )
 
         # Seed the students
@@ -124,13 +124,33 @@ class Command(BaseCommand):
         lesson_status.append(LessonStatus.FULLFILLED)
         lesson_status.append(LessonStatus.FULLFILLED)
 
+        terms = list(Term.objects.all())
+
         for i in range(len(students)):
-            random_req_day = self.faker.date_this_year()
+
+            reqdaychosen = False # ensures request date in the same for a set of lessons
+
+            current_term = terms[random.randint(0,len(terms)-1)]
+
             for _ in range(random.randint(0,6)):
+
+
+                # makes sure request date is done before lessons date and time
+                while (reqdaychosen == False):
+                    random_req_day = self.faker.date_between(start_date='-1y', end_date='+1y')
+                    if (random_req_day <=  current_term.end_date):
+                        reqdaychosen = True
+
+                # makes sure lessons date fall within the term
+                while (True):
+                    rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date='-1y', end_date='+1y').replace(second=0, microsecond=0, minute=0)
+                    if (current_term.start_date <= rand_lesson_date_time.date() <= current_term.end_date):
+                        break
+
                 self.lesson = Lesson.objects.create(
                     type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
                     duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
-                    lesson_date_time = self.faker.date_time_this_year(tzinfo = timezone.utc).replace(microsecond=0, second=0, minute=0),
+                    lesson_date_time = rand_lesson_date_time,
                     teacher_id = teachers[random.randint(0,len(teachers)-1)],
                     student_id = students[i],
                     request_date = random_req_day,
@@ -182,8 +202,6 @@ class Command(BaseCommand):
             students[i].balance = payment_fee_total - invoice_fee_total
             students[i].save()
 
-            #TO DO : add paid, overpaid, and unpaid requests
-
         # Seed the admins
         for i in range(3):
             fname = self.faker.unique.first_name()
@@ -215,5 +233,3 @@ class Command(BaseCommand):
                 password=f'{random_password}',
                 gender = f'{genders[random.randint(0,2)]}',
             )
-
-        # CREATE LESSONS
