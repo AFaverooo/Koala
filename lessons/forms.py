@@ -203,7 +203,7 @@ class RequestForm(forms.ModelForm):
         """Create a new Lesson."""
 
         super().save(commit=False)
-        lesson = Lesson.create(
+        lesson = Lesson.objects.create(
             type=self.cleaned_data.get('type'),
             duration=self.cleaned_data.get('duration'),
             lesson_date_time=self.cleaned_data.get('lesson_date_time'),
