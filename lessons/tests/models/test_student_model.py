@@ -47,7 +47,6 @@ class UserAccountModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             self.student.full_clean()
 
-
     #tests for students name
     def test_first_name_must_not_be_blank(self):
         self.student.first_name = ''
@@ -119,8 +118,8 @@ class UserAccountModelTestCase(TestCase):
         self.assertTrue(is_valid_gender(self._create_second_student()))
         self.assertTrue(is_valid_gender(self._create_third_student()))
 
-    def test_student_gender_string_is_invalid(self):
-        self.student.gender = 'MALE'
+    def test_student_gender_must_be_invalid(self):
+        self.student.gender = 'NOTVALIDGENDER'
         self.assertFalse(is_valid_gender(self.student))
         self._assert_student_is_invalid()
 
@@ -129,7 +128,7 @@ class UserAccountModelTestCase(TestCase):
         self.assertTrue(is_valid_role(self._create_second_student()))
         self.assertTrue(is_valid_role(self._create_third_student()))
 
-    def test_student_role_string_is_invalid(self):
+    def test_student_role_string_must_be_valid(self):
         self.student.role = 'NonUserAccount'
         self.assertFalse(is_valid_role(self.student))
         self._assert_student_is_invalid()
@@ -141,3 +140,46 @@ class UserAccountModelTestCase(TestCase):
     def test_student_is_student(self):
         self.assertTrue(self.student.role.is_student())
         self._assert_student_is_valid()
+
+    def test_student_is_not_student(self):
+        self.student.role = UserRole.ADMIN
+        self.assertFalse(self.student.role.is_student())
+
+    def test_student_not_parent(self):
+        second_student = self._create_second_student()
+        third_student = self._create_third_student()
+
+        self.assertFalse(self.student.is_parent)
+        self.assertEqual(self.student.parent_of_user,None)
+        self.assertFalse(second_student.is_parent)
+        self.assertEqual(second_student.parent_of_user,None)
+        self.assertFalse(third_student.is_parent)
+        self.assertEqual(third_student.parent_of_user,None)
+
+    def test_balance_can_be_blank(self):
+        self.student.balance = ''
+        self._assert_student_is_valid()
+
+    def test_balance_default_value_is_0(self):
+        self.assertEqual(self.student.balance, 0)
+
+    def test_balance_can_be_larger_than_0(self):
+        self.student.balance = 10000
+        self._assert_student_is_valid()
+
+    def test_balance_can_be_0(self):
+        self.student.balance = 0
+        self._assert_student_is_valid()
+
+    def test_balance_can_be_smaller_than_0(self):
+        self.student.balance = -1
+        self._assert_student_is_valid()
+
+    def test_balance_must_not_be_unique(self):
+        second_student = self._create_second_student()
+        self.student.balance = second_student.balance
+        self._assert_student_is_valid()
+
+    def test_balance_must_only_contain_number(self):
+        self.student.balance = '45s'
+        self._assert_student_is_invalid()

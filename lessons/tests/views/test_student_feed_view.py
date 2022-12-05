@@ -140,14 +140,16 @@ class StudentFeedTestCase(TestCase):
         self.assertTrue(self.check_lesson_in_returned_dictionary(dictionary,self.lesson5))
 
 
-    def check_unfulfilled_dictionary_equality(self,dictionary, request_number, lesson_date_without_time_string, type_string, lesson_duration_string, teacher_name):
+    def check_unfulfilled_dictionary_equality(self,dictionary, student_id,request_number, lesson_date_without_time_string, type_string, lesson_duration_string, teacher_name):
+        self.assertEqual(dictionary['Student'] , student_id)
         self.assertEqual(dictionary['Lesson Request'] , request_number)
         self.assertEqual(dictionary['Lesson Date'] , lesson_date_without_time_string)
         self.assertEqual(dictionary['Lesson'] , type_string)
         self.assertEqual(dictionary['Lesson Duration'] , lesson_duration_string)
         self.assertEqual(dictionary['Teacher'] , teacher_name)
 
-    def check_fulfilled_dictionary_equality(self, dictionary, type_string, lesson_date_without_time_string, lesson_duration_string, teacher_name):
+    def check_fulfilled_dictionary_equality(self,dictionary,student_id, type_string, lesson_date_without_time_string, lesson_duration_string, teacher_name):
+        self.assertEqual(dictionary['Student'] , student_id)
         self.assertEqual(dictionary['Lesson'] , type_string)
         self.assertEqual(dictionary['Lesson Date'] , lesson_date_without_time_string)
         self.assertEqual(dictionary['Lesson Duration'] , lesson_duration_string)
@@ -160,11 +162,11 @@ class StudentFeedTestCase(TestCase):
 
         self.assertEqual(len(unfulfilled_lessons_dict),5)
         #print(lesson_dict[self.lesson])
-        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson],'0',"2022-11-20", "INSTRUMENT", "30 minutes", "Barbare Dutch")
-        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson2],'1',"2022-10-20", "THEORY", "45 minutes", "Barbare Dutch")
-        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson3],'2',"2022-09-20", "PERFORMANCE", "60 minutes", "Amane Hill")
-        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson4],'3',"2022-12-25", "PRACTICE", "45 minutes", "Amane Hill")
-        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson5],'4',"2022-09-25", "PRACTICE", "45 minutes", "Jonathan Jacks")
+        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson],self.student,'1',"2022-11-20", "INSTRUMENT", "30 minutes", "Barbare Dutch")
+        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson2],self.student,'2',"2022-10-20", "THEORY", "45 minutes", "Barbare Dutch")
+        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson3],self.student,'3',"2022-09-20", "PERFORMANCE", "60 minutes", "Amane Hill")
+        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson4],self.student,'4',"2022-12-25", "PRACTICE", "45 minutes", "Amane Hill")
+        self.check_unfulfilled_dictionary_equality(unfulfilled_lessons_dict[self.lesson5],self.student,'5',"2022-09-25", "PRACTICE", "45 minutes", "Jonathan Jacks")
 
     def test_dictionary_format_for_fullfilled_lessons(self):
         lesson_dict = make_lesson_timetable_dictionary(self.student)
@@ -172,11 +174,11 @@ class StudentFeedTestCase(TestCase):
         #print(lesson_dict)
         self.assertEqual(len(lesson_dict),5)
         #print(lesson_dict[self.lesson])
-        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson], LessonType.INSTRUMENT.label, "2022-11-20", "15:15 - 15:45", "Miss Barbare Dutch")
-        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson2], LessonType.THEORY.label, "2022-10-20", "16:00 - 16:45", "Miss Barbare Dutch")
-        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson3], LessonType.PERFORMANCE.label, "2022-09-20", "09:45 - 10:45", "Mr Amane Hill")
-        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson4], LessonType.PRACTICE.label, "2022-12-25", "09:45 - 10:30", "Mr Amane Hill")
-        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson5], LessonType.PRACTICE.label, "2022-09-25", "09:45 - 10:30", "Jonathan Jacks")
+        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson], self.student,LessonType.INSTRUMENT.label, "2022-11-20", "15:15 - 15:45", "Miss Barbare Dutch")
+        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson2], self.student,LessonType.THEORY.label, "2022-10-20", "16:00 - 16:45", "Miss Barbare Dutch")
+        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson3], self.student,LessonType.PERFORMANCE.label, "2022-09-20", "09:45 - 10:45", "Mr Amane Hill")
+        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson4], self.student,LessonType.PRACTICE.label, "2022-12-25", "09:45 - 10:30", "Mr Amane Hill")
+        self.check_fulfilled_dictionary_equality(lesson_dict[self.lesson5], self.student,LessonType.PRACTICE.label, "2022-09-25", "09:45 - 10:30", "Jonathan Jacks")
 
     def test_get_student_feed_with_booked_lessons(self):
         self.initialise_admin()
@@ -191,7 +193,7 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
         self.assertEqual(len(fullfilled_lessons),5)
         self.check_all_lessons(fullfilled_lessons)
-        self.assertEqual(greeting_str, "Welcome back John Doe")
+        self.assertEqual(greeting_str, 'Welcome back John Doe, this is your feed!')
         self.assertEqual(len(unfullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
@@ -212,7 +214,7 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
         self.assertEqual(len(unfullfilled_lessons),5)
         self.check_all_lessons(unfullfilled_lessons)
-        self.assertEqual(greeting_str, f'Welcome back {self.student}')
+        self.assertEqual(greeting_str, f'Welcome back {self.student}, this is your feed!')
         self.assertEqual(len(fullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
@@ -233,7 +235,7 @@ class StudentFeedTestCase(TestCase):
         self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson3))
         self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson4))
         self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson5))
-        self.assertEqual(greeting_str, "Welcome back John Doe")
+        self.assertEqual(greeting_str, 'Welcome back John Doe, this is your feed!')
         self.assertEqual(len(unfullfilled_lessons),2)
         self.assertTrue(self.check_lesson_in_returned_dictionary(unfullfilled_lessons,self.lesson))
         self.assertTrue(self.check_lesson_in_returned_dictionary(unfullfilled_lessons,self.lesson2))
@@ -255,7 +257,7 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(admin_email, 'No Admins Available To Contact')
         self.assertEqual(len(unfullfilled_lessons),5)
         self.check_all_lessons(unfullfilled_lessons)
-        self.assertEqual(greeting_str, f'Welcome back {self.student}')
+        self.assertEqual(greeting_str, f'Welcome back {self.student}, this is your feed!')
         self.assertEqual(len(fullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')

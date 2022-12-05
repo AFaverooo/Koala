@@ -105,7 +105,7 @@ class Command(BaseCommand):
             mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
-            
+
             self.student = UserAccount.objects.create_teacher(
                 first_name=fname,
                 last_name=lname,
@@ -125,6 +125,7 @@ class Command(BaseCommand):
         lesson_status.append(LessonStatus.FULLFILLED)
 
         for i in range(len(students)):
+            random_req_day = self.faker.date_this_year()
             for _ in range(random.randint(0,6)):
                 self.lesson = Lesson.objects.create(
                     type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
@@ -132,14 +133,14 @@ class Command(BaseCommand):
                     lesson_date_time = self.faker.date_time_this_year(tzinfo = timezone.utc).replace(microsecond=0, second=0, minute=0),
                     teacher_id = teachers[random.randint(0,len(teachers)-1)],
                     student_id = students[i],
-                    request_date = datetime.date(2022, 10, 15),
+                    request_date = random_req_day,
                     lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
                 )
 
 
         # seed the invoices base on existing user and bookings
         seed_lesson_id = 100000 #seed lesson id number is big, in case to be same as existing lesson id
-        for i in range(len(students)):   
+        for i in range(len(students)):
             student_Id = students[i].id
             students_id_string = str(student_Id)
 
@@ -153,14 +154,14 @@ class Command(BaseCommand):
                     Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = pre_fees, lesson_ID = seed_lesson_id)
                 elif(probability == 5 or probability == 6):
                     # partially paid invoice
-                    amount_paid = random.randint(10, pre_fees)
+                    amount_paid = random.randint(10, pre_fees - 1)
                     amount_needs_to_be_pay = pre_fees - amount_paid
                     Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = amount_needs_to_be_pay,lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
                 elif(probability == 7):
                     # overpaid invoice
                     amount_paid = random.randint(pre_fees+100, pre_fees + 200)
-                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PARTIALLY_PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)
+                    Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)
                     Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = pre_reference_number_temp, transaction_amount = amount_paid)
                 else:
                     Invoice.objects.create(reference_number =  pre_reference_number_temp, student_ID = students_id_string, fees_amount = pre_fees, invoice_status = InvoiceStatus.PAID, amounts_need_to_pay = 0, lesson_ID = seed_lesson_id)

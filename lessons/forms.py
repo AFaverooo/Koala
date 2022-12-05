@@ -63,6 +63,81 @@ class SignUpForm(forms.ModelForm):
 
         return student
 
+    def save_child(self,parent):
+        super().save(commit = False)
+        child_student = UserAccount.objects.create_child_student(
+            first_name=self.cleaned_data.get('first_name'),
+            last_name=self.cleaned_data.get('last_name'),
+            email=self.cleaned_data.get('email'),
+            password=self.cleaned_data.get('new_password'),
+            gender=self.cleaned_data.get('gender'),
+            parent_of_user = parent,
+        )
+
+        return child_student
+
+
+
+
+class CreateAdminForm(forms.ModelForm):
+    """Form enabling the creation of admins by director"""
+
+    class Meta:
+        """Form options."""
+
+        model = UserAccount
+        fields = ['first_name', 'last_name','email', 'gender']
+
+    new_password = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput(),
+        validators=[RegexValidator(
+            regex=r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*$',
+            message='Password must contain an uppercase character, a lowercase '
+                    'character and a number'
+            )]
+    )
+    password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
+
+
+    def clean(self):
+            """Clean the data and generate messages for any errors."""
+            super().clean()
+            new_password = self.cleaned_data.get('new_password')
+            password_confirmation = self.cleaned_data.get('password_confirmation')
+            if new_password != password_confirmation:
+                self.add_error('password_confirmation', 'Confirmation does not match password.')
+
+
+    #TO:DO  ADD ABILITY TO CHANGE Password
+
+    # new_password = forms.CharField(
+    #     label='Password',
+    #     widget=forms.PasswordInput(),
+    #     validators=[RegexValidator(
+    #         regex=r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*$',
+    #         message='Password must contain an uppercase character, a lowercase '
+    #                 'character and a number'
+    #         )]
+    # )
+    # password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
+
+    def save(self):
+        """Create a new user."""
+
+        super().save(commit=False)
+        admin = UserAccount.objects.create_admin(
+            first_name=self.cleaned_data.get('first_name'),
+            last_name=self.cleaned_data.get('last_name'),
+            email=self.cleaned_data.get('email'),
+            password=self.cleaned_data.get('new_password'),
+            gender=self.cleaned_data.get('gender'),
+        )
+
+        return admin
+
+
+
 class TermDatesForm(forms.ModelForm):
     # def __init__ (self,*args,**kwargs):
     #     super(TermDatesForm,self).__init__(self,*args,**kwargs)
@@ -75,7 +150,7 @@ class TermDatesForm(forms.ModelForm):
         widgets = {
             "start_date": DatePickerInput(),
             "end_date": DatePickerInput(),
-            } 
+            }
         ordering = ['term_number']
 
     # def clean(self):
@@ -100,6 +175,7 @@ class TermDatesForm(forms.ModelForm):
     #     )
     #     return term
 
+
 class RequestForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
 
@@ -109,11 +185,9 @@ class RequestForm(forms.ModelForm):
         model = Lesson
         fields = ['type','duration','lesson_date_time']
         widgets = {
-            "lesson_date_time": DateTimePickerInput(),}        
-    
-        
-    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
+            "lesson_date_time": DateTimePickerInput(),}
 
+    teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
     # def clean(self, request):
     #     """Clean the data and generate messages for any errors."""
 
@@ -124,16 +198,30 @@ class RequestForm(forms.ModelForm):
     #     self.data['teacher_id'] = self.data['teachers']
 
 
-    # def save(self, request):
-    #     """Create a new user."""
+    def save(self,student_id):
+         """Create a new Lesson."""
 
-    #     super().save(commit=False)
-    #     lesson = Lesson.objects.create(
-    #         type=self.cleaned_data.get('type'),
-    #         duration=self.cleaned_data.get('duration'),
-    #         lesson_date_time=self.cleaned_data.get('lesson_date_time'),
-    #         student_id=self.cleaned_data.get('student_id'),
-    #         teacher_id=self.cleaned_data.get('teacher_id'),
-    #     )
+         super().save(commit=False)
+         lesson = Lesson.objects.create(
+             type=self.cleaned_data.get('type'),
+             duration=self.cleaned_data.get('duration'),
+             lesson_date_time=self.cleaned_data.get('lesson_date_time'),
+             student_id=student_id,
+             teacher_id=self.cleaned_data.get('teachers'),
+         )
 
-    #     return lesson
+         return lesson
+
+    def update_lesson(self, to_edit_lesson):
+        duration = self.cleaned_data.get('duration')
+        lesson_date = self.cleaned_data.get('lesson_date_time')
+        type = self.cleaned_data.get('type')
+        teacher_id = self.cleaned_data.get('teachers')
+
+        to_edit_lesson.duration = duration
+        to_edit_lesson.lesson_date_time = lesson_date
+        to_edit_lesson.type = type
+        to_edit_lesson.teacher_id = teacher_id
+        to_edit_lesson.save()
+
+        return to_edit_lesson
