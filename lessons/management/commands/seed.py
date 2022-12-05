@@ -21,21 +21,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         # Add the set Student, Admin and Directors
-        self.student = UserAccount.objects.create_student(
-            first_name="John",
-            last_name="Doe",
-            email= "john.doe@example.org",
-            password="Password123",
-            gender ="M",
-        )
-        self.student = UserAccount.objects.create_admin(
+        UserAccount.objects.create_admin(
             first_name="Petra",
             last_name="Pickles",
             email= "petra.pickles@example.org",
             password="Password123",
             gender ="F",
         )
-        self.student = UserAccount.objects.create_superuser(
+        UserAccount.objects.create_superuser(
             first_name="Marty",
             last_name="Major",
             email= "marty.major@example.org",
@@ -109,7 +102,7 @@ class Command(BaseCommand):
                 random_password = ''.join(random.choice(letters) for i in range(10))
                 genders = ['M','F','PNOT']
 
-                self.child = UserAccount.objects.create_child_student(
+                UserAccount.objects.create_child_student(
                     parent_of_user = self.student,
                     first_name=fname,
                     last_name=self.student.last_name,
@@ -126,7 +119,7 @@ class Command(BaseCommand):
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
 
-            self.student = UserAccount.objects.create_teacher(
+            UserAccount.objects.create_teacher(
                 first_name=fname,
                 last_name=lname,
                 email= f'{fname[0].lower()}{lname.lower()}{random.randint(0,100)}@{mails[random.randint(0,3)]}',
@@ -151,7 +144,7 @@ class Command(BaseCommand):
 
         for i in range(len(students)):
 
-            reqdaychosen = False # ensures request date in the same for a set of lessons
+            req_day_chosen = False # ensures request date in the same for a set of lessons
             current_term = terms[random.randint(0,len(terms)-1)]
 
             for _ in range(random.randint(0,6)):
@@ -159,10 +152,10 @@ class Command(BaseCommand):
                 rand_teacher = teachers[random.randint(0,len(teachers)-1)]
 
                 # ensures sure request date is done before lessons date and time
-                while (reqdaychosen == False):
+                while (req_day_chosen == False):
                     random_req_day = self.faker.date_between(start_date='-1y', end_date='+1y')
                     if (random_req_day <=  current_term.end_date):
-                        reqdaychosen = True
+                        req_day_chosen = True
 
                 """
                 This while loop ensures sure lessons date :
@@ -181,12 +174,11 @@ class Command(BaseCommand):
                         rand_lesson_date.weekday() != 5 and rand_lesson_date.weekday() != 6 and
                         8 <= rand_lesson_date_time.hour <= 17 and
                         (rand_lesson_date_time,rand_teacher) not in lessons_per_request):
-
                         lessons_per_request.append((rand_lesson_date_time,rand_teacher))
                         break
 
                 try:
-                    self.lesson = Lesson.objects.create(
+                    Lesson.objects.create(
                         type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
                         duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
                         lesson_date_time = rand_lesson_date_time,
@@ -251,7 +243,7 @@ class Command(BaseCommand):
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
 
-            self.student = UserAccount.objects.create_admin(
+            UserAccount.objects.create_admin(
                 first_name=fname,
                 last_name=lname,
                 email= f'{fname[0].lower()}{lname.lower()}{random.randint(0,100)}@{mails[random.randint(0,3)]}',
@@ -259,7 +251,7 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
-        # Seed the director
+        # Seed the directors
         for i in range(1):
             fname = self.faker.unique.first_name()
             lname = self.faker.unique.last_name()
@@ -267,10 +259,120 @@ class Command(BaseCommand):
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
 
-            self.student = UserAccount.objects.create_superuser(
+            UserAccount.objects.create_superuser(
                 first_name=fname,
                 last_name=lname,
                 email= f'{fname[0].lower()}{lname.lower()}{random.randint(0,100)}@{mails[random.randint(0,3)]}',
                 password=f'{random_password}',
                 gender = f'{genders[random.randint(0,2)]}',
             )
+
+
+        #Add set lessons for student john doe, and corresponding lessons and children
+        self.john_doe_student = UserAccount.objects.create_student(
+            first_name="John",
+            last_name="Doe",
+            email= "john.doe@example.org",
+            password="Password123",
+            gender ="M",
+        )
+
+        # create request for John Doe (set of lessons)
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2022, 12, 1, 12, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.john_doe_student,
+            request_date = date(2022,10,25),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2022, 12, 5, 12, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.john_doe_student,
+            request_date = date(2022,10,25),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2022, 12, 12, 12, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.john_doe_student,
+            request_date = date(2022,10,25),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        # TO:DO CREATE INVOICE AND TRANSACTION FOR THIS SET OF LESSONS FOR JOHN DOE (note: lesson is fulfilled and paid-for)
+
+
+        self.alice_doe_child = UserAccount.objects.create_child_student(
+            parent_of_user = self.john_doe_student,
+            first_name= "Alice",
+            last_name= "Doe",
+            email= "alice.doe@example.org",
+            password="Password123",
+            gender = "F",
+        )
+
+        # create request for Alice Doe (set of lessons)
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2023, 1, 21, 10, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.alice_doe_child,
+            request_date = date(2022,12,25),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2023, 1, 12, 13, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.alice_doe_child,
+            request_date = date(2022,12,25),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        # TO:DO CREATE INVOICE AND TRANSACTION FOR THIS SET OF LESSONS FOR ALICE DOE (note: lesson is fulfilled and paid-for)
+
+
+        self.bob_doe_child = UserAccount.objects.create_child_student(
+            parent_of_user = self.john_doe_student,
+            first_name= "Bob",
+            last_name= "Doe",
+            email= "bob.doe@example.org",
+            password="Password123",
+            gender = "M",
+        )
+
+
+        # create request for Bob Doe (set of lessons)
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2023, 2, 26, 10, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.bob_doe_child,
+            request_date = date(2023,1,1),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        Lesson.objects.create(
+            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+            lesson_date_time = datetime.datetime(2023, 2, 28, 13, 0, 0, 0).replace(tzinfo=timezone.utc),
+            teacher_id = teachers[random.randint(0,len(teachers)-1)],
+            student_id = self.bob_doe_child,
+            request_date = date(2022,1,1),
+            lesson_status = LessonStatus.FULLFILLED,
+        )
+
+        # TO:DO CREATE INVOICE AND TRANSACTION FOR THIS SET OF LESSONS FOR BOB DOE (note: lesson is fulfilled and paid-for)
