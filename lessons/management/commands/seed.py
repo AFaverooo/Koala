@@ -277,6 +277,7 @@ class Command(BaseCommand):
             gender ="M",
         )
 
+
         # create request for John Doe (set of lessons)
         Lesson.objects.create(
             type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
