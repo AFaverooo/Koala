@@ -21,8 +21,6 @@ def login_prohibited(view_function):
 
 
 
-
-
 def check_valid_date(lesson_date):
     term_six_date = Term.objects.get(term_number = 6).end_date
     return lesson_date <= term_six_date
