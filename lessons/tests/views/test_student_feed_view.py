@@ -356,8 +356,8 @@ class StudentFeedTestCase(TestCase):
         request_date_str_second = self.lesson3.request_date.strftime("%Y-%m-%d")
 
 
-        self.assertEqual(list(unfullfilled_lessons.keys())[1],request_date_str_first)
-        self.assertEqual(list(unfullfilled_lessons.keys())[0],request_date_str_second)
+        self.assertTrue(request_date_str_first in unfullfilled_lessons.keys())
+        self.assertTrue(request_date_str_second in unfullfilled_lessons.keys())
 
 
         self.assertEqual(len(unfullfilled_lessons[request_date_str_first]),3)
