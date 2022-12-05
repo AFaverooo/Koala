@@ -1,62 +1,33 @@
-{%extends 'base_content.html'%}
+{%extends 'request-base.html'%}
 
 
-{%block content%}
+{%block request-body%}
 
 {% load crispy_forms_tags %}
 
-  <h1>Request Lessons</h1>
   <body>
-<body style="background-color: #edede9">
-
-<div class="row">
-  <div class="col-6">
-      <div class="container vh-100" id="homecardholder">
-             <div class="row h-100">
-               <div class="col-12 my-auto">
-                 <div class="card mx-auto" id="signupcard">
 
                   <h1> Request A Lesson</h1>
-                  <div class="divider"></div>
-
-<!--
-  Do not replace with partial as date time uses custom widget that cannot be rendered using
-crispyforms-->
+               
       <form action="{% url 'new_lesson' %}" method="post">
         {% csrf_token %}
-        {% include 'partials/messages.html' with form=form %}
-
+      
         <label>Select The User To Request Lessons For:</label>
-
-        <select name="selectedStudent" class="player-dropdown">
+        <br>
+        <select name="selectedStudent" class="player-dropdown form-select">
           {% for student in students_option %}
           <option value="{{ student.email }}">{{ student.first_name }} {{ student.last_name }}</option>
           {% endfor %}
         </select>
+{%endblock%}
 
-        {{ form.type|as_crispy_field }}
 
-        {{ form.duration|as_crispy_field }}
 
-        {{ form.media }}
 
-            <div class="fieldWrapper">
-            <label for="{{ form.lesson_date_time.id_for_label }}">Lesson Date and Time:</label>
-            {{ form.lesson_date_time }}
-           </div>
 
-           <div class="divider"></div>
-        {{ form.teachers|as_crispy_field }}
 
-        <input type="submit" value="Save Lesson" class="btn successbutton">
-        <div class="divider"></div>
-  </form>
-</div>
-</div>
-</div>
-</div>
-</div>
 
+  {%block extra-content%}
 <div class="col-6" id="secondColumn">
   <div class="container vh-100">
   <form action = "{% url 'save_lessons' %}" method="post">
@@ -97,5 +68,4 @@ crispyforms-->
 </div>
 </div>
 </body>
-
-{%endblock%}
+  {%endblock%}
