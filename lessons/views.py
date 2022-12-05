@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .helper import login_prohibited
+from .helper import login_prohibited,check_valid_date
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
@@ -39,10 +39,6 @@ def get_teacher(dictionary):
 @register.filter
 def get_lesson_request(dictionary):
     return dictionary.get("Lesson Request")
-
-@register.filter
-def get_lesson_saved(dictionary):
-    return dictionary.get("Saved")
 
 @register.filter
 def get_lesson_student(dictionary):
@@ -117,12 +113,20 @@ def make_lesson_timetable_dictionary(student_user):
 
 def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
+
     if lessonStatus == 'Lesson Request':
         lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
 
     lessons_dict = {}
 
     for lesson in lessons:
+        temp_dict = {}
+
+        request_date_str = lesson.request_date.strftime("%Y-%m-%d")
+
+        if request_date_str not in lessons_dict.keys():
+            lessons_dict[request_date_str] = []
+
         lesson_type_str = ''
 
         if lesson.type == LessonType.INSTRUMENT:
@@ -137,7 +141,9 @@ def make_lesson_dictionary(student_user,lessonStatus):
         lesson_duration_str = f'{lesson.duration} minutes'
 
         case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
-        lessons_dict[lesson] = case
+        temp_dict[lesson] = case
+
+        lessons_dict[request_date_str].append(temp_dict)
 
     return lessons_dict
 
@@ -575,8 +581,6 @@ def delete_term(request, term_number):
         return term_management_page(request)
 
 
-
-
 @login_required
 def student_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
@@ -856,10 +860,11 @@ def new_lesson(request):
                     messages.add_message(request,messages.ERROR,"Selected user account does not exist")
                     students_option = get_student_and_child_objects(request.user)
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
-                #duration = request_form.cleaned_data.get('duration')
-                #lesson_date = request_form.cleaned_data.get('lesson_date_time')
-                #type = request_form.cleaned_data.get('type')
-                #teacher_id = request_form.cleaned_data.get('teachers')
+
+                if check_valid_date(request_form.cleaned_data.get('lesson_date_time').date()) is False:
+                    messages.add_message(request,messages.ERROR,"The lesson date provided is beyond the term dates available")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
                 try:
                     request_form.save(actual_student)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
@@ -868,8 +873,6 @@ def new_lesson(request):
                     students_option = get_student_and_child_objects(request.user)
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
-                #form = RequestForm()
-                #return render(request,'requests_page.html', {'form' : form , 'lessons': get_saved_lessons(current_student)})
                 messages.add_message(request,messages.SUCCESS,"Lesson has been created")
                 return redirect('requests_page')
             else:
@@ -877,8 +880,6 @@ def new_lesson(request):
                 students_option = get_student_and_child_objects(request.user)
                 return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
         else:
-            #form = RequestForm()
-            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
             return redirect('requests_page')
 
     else:
@@ -953,6 +954,11 @@ def edit_lesson(request,lesson_id):
             request_form = RequestForm(request.POST)
 
             if request_form.is_valid():
+
+                if check_valid_date(request_form.cleaned_data.get('lesson_date_time').date()) is False:
+                    messages.add_message(request,messages.ERROR,"The lesson date provided is beyond the term dates available")
+                    return render_edit_request(request,lesson_id)
+
                 try:
                     request_form.update_lesson(to_edit_lesson)
                 except IntegrityError:

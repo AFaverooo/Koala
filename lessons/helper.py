@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from .models import UserRole
+from .models import UserRole, Term
 
 
 # Ensures user must log in before logging out (and redirects specific roles to their home page)
@@ -17,3 +17,12 @@ def login_prohibited(view_function):
         else:
             return view_function(request)
     return modified_view_function
+
+
+
+
+
+
+def check_valid_date(lesson_date):
+    term_six_date = Term.objects.get(term_number = 6).end_date
+    return lesson_date <= term_six_date
