@@ -13,7 +13,7 @@ class UserFormTestCase(TestCase):
             'first_name': 'Jane',
             'last_name': 'Doe',
             'email': 'janedoe@example.org',
-            'gender': 'F',
+            'gender': Gender.FEMALE,
             'new_password': 'Password123',
             'password_confirmation': 'Password123',
         }
