@@ -125,6 +125,7 @@ class Command(BaseCommand):
         lesson_status.append(LessonStatus.FULLFILLED)
 
         for i in range(len(students)):
+            random_req_day = self.faker.date_this_year()
             for _ in range(random.randint(0,6)):
                 self.lesson = Lesson.objects.create(
                     type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
@@ -132,7 +133,7 @@ class Command(BaseCommand):
                     lesson_date_time = self.faker.date_time_this_year(tzinfo = timezone.utc).replace(microsecond=0, second=0, minute=0),
                     teacher_id = teachers[random.randint(0,len(teachers)-1)],
                     student_id = students[i],
-                    request_date = datetime.date(2022, 10, 15),
+                    request_date = random_req_day,
                     lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
                 )
 
