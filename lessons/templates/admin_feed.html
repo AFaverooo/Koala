@@ -98,6 +98,7 @@
               <th scope="col">type</th>
               <th scope="col">duration</th>
               <th scope="col">lesson_date_time</th>
+              <th scope="col">term</th>
               <th scope="col">teacher</th>
               <th scope="col">is_booked</th>
             </tr>
@@ -109,11 +110,11 @@
                 <td>{{ lesson.request_date }}</td>
                 <td>{{ lesson.type }}</td>
                 <td>{{ lesson.duration }}</td>
-                {% if lesson.term == 'N/A' %}
-                  <td>{{ lesson.lesson_date_time }}</td>
-                {% else %}
-                  <td>{{ lesson.term }}</td>
-                {% endif %}
+                
+                <td>{{ lesson.lesson_date_time }}</td>
+              
+                <td>{{ lesson.term }}</td>
+                
                 <td>{{ lesson.teacher_id }}</td>
                 <td>{{ lesson.lesson_status }}</td>
               </tr>
@@ -130,6 +131,7 @@
                 <th scope="col">type</th>
                 <th scope="col">duration</th>
                 <th scope="col">lesson_date_time</th>
+                <th scope="col">term</th>
                 <th scope="col">teacher</th>
                 <th scope="col">is_booked</th>
               </tr>
@@ -141,11 +143,11 @@
                   <td>{{ lesson.request_date }}</td>
                   <td>{{ lesson.type }}</td>
                   <td>{{ lesson.duration }}</td>
-                  {% if lesson.term == 'N/A' %}
-                    <td>{{ lesson.lesson_date_time }}</td>
-                  {% else %}
-                    <td>{{ lesson.term }}</td>
-                  {% endif %}
+                  
+                  <td>{{ lesson.lesson_date_time }}</td>
+                  
+                  <td>{{ lesson.term }}</td>
+                  
                   <td>{{ lesson.teacher_id }}</td>
                   <td>{{ lesson.lesson_status }}</td>
                 </tr>

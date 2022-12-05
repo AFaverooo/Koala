@@ -101,12 +101,10 @@
               <td>{{ lesson.request_date }}</td>
               <td>{{ lesson.type }}</td>
               <td>{{ lesson.duration }}</td>
-              {% if lesson.term == 'N/A' %}
-                <td>{{ lesson.lesson_date_time }}</td>
-              {% else %}
-                <td>{{ lesson.term }}</td>
-              {% endif %}
-              <td>{{ lesson.teacher_id }}</td>
+              
+                <td>{{ lesson.lesson_date_time }} - {{ lesson.term }}</td>
+              
+              <td>1{{ lesson.teacher_id }}</td>
               <td>{{ lesson.lesson_status }}</td>
               <td>
                 <a href='{% url 'admin_update_request_page' lesson.lesson_id %}'>

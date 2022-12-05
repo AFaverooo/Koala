@@ -5,14 +5,12 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
 from .helper import login_prohibited
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
 import datetime
-from django.core.exceptions import ObjectDoesNotExist
 from itertools import chain
 
 
@@ -434,27 +432,31 @@ def admin_update_request(request, lesson_id):
             lesson_date_time = form.cleaned_data.get('lesson_date_time')
             teacher_id = form.cleaned_data.get('teachers')
 
-        if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
-            messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
-            return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+            if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
+                messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
+                return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+            else:
+                lesson.type = type
+                lesson.duration = duration
+                lesson.lesson_date_time = lesson_date_time
+                lesson.teacher_id = teacher_id
+                # set_lesson_term_details(lesson)
+                lesson.save()
+
+                #update_invoice(lesson)
+                
+                # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
+                if lesson.lesson_status == LessonStatus.FULLFILLED:
+                    update_invoice(lesson)
+
+                messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+
+                student = UserAccount.objects.get(id=lesson.student_id.id)
+                return redirect('student_requests',student.id)
         else:
-            lesson.type = type
-            lesson.duration = duration
-            lesson.lesson_date_time = lesson_date_time
-            lesson.teacher_id = teacher_id
-            # set_lesson_term_details(lesson)
-            lesson.save()
-
-            #update_invoice(lesson)
-            
-            # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
-            if lesson.lesson_status == LessonStatus.FULLFILLED:
-                update_invoice(lesson)
-
-            messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
-
-            student = UserAccount.objects.get(id=lesson.student_id.id)
-            return redirect('student_requests',student.id)
+            messages.add_message(request, messages.ERROR, 'Invalid form data!')
+            return redirect('admin_feed')
+            # return redirect(request.path)
 
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, 'Object not found error!')
