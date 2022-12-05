@@ -44,38 +44,38 @@ class Command(BaseCommand):
 
         Term.objects.create(
             term_number=1,
-            start_date = datetime.date(2022, 9,1),
-            end_date = datetime.date(2022, 10,21),
+            start_date = datetime.date(2021, 9,1),
+            end_date = datetime.date(2021, 10,21),
         )
 
         Term.objects.create(
             term_number=2,
-            start_date = datetime.date(2022, 10,31),
-            end_date = datetime.date(2022, 12,16),
+            start_date = datetime.date(2021, 10,31),
+            end_date = datetime.date(2021, 12,16),
         )
 
         Term.objects.create(
             term_number=3,
-            start_date = datetime.date(2023, 1,3),
-            end_date = datetime.date(2023, 2,10),
+            start_date = datetime.date(2022, 1,3),
+            end_date = datetime.date(2022, 2,10),
         )
 
         Term.objects.create(
             term_number=4,
-            start_date = datetime.date(2023, 2,20),
-            end_date = datetime.date(2023, 3,31),
+            start_date = datetime.date(2022, 2,20),
+            end_date = datetime.date(2022, 3,31),
         )
 
         Term.objects.create(
             term_number=5,
-            start_date = datetime.date(2023, 4,17),
-            end_date = datetime.date(2023, 5,26),
+            start_date = datetime.date(2022, 4,17),
+            end_date = datetime.date(2022, 5,26),
         )
 
         Term.objects.create(
             term_number=6,
-            start_date = datetime.date(2023, 6,5),
-            end_date = datetime.date(2023, 7,21),
+            start_date = datetime.date(2022, 6,5),
+            end_date = datetime.date(2022, 7,21),
         )
 
         # Seed the students

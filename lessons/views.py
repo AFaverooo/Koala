@@ -363,40 +363,40 @@ def get_admin_email():
 
 # Admin functionality view functions
 
-def set_lesson_term_details(lesson):
-    terms_list = Term.objects.all()
-    for eachterm in terms_list :
-        #Calculate mid-term date
-        start = eachterm.start_date 
-        end = eachterm.end_date
-        mid_term_date = start + (end - start)/2
-        close_to_end_of_term = end-(end - mid_term_date)/6
-        try:
-            next_term = Term.objects.get(term_number = eachterm.term_number + 1)
-        except ObjectDoesNotExist:
-            next_term = None
-        #Display term number only if the lesson starts before mid-term
-        if(eachterm.start_date <= lesson.lesson_date_time.date()  <= mid_term_date):
-            lesson.term = 'Term : ' + str(eachterm.term_number) + '            For reference : ' + str(lesson.lesson_date_time.date())
-            lesson.save()
-            return
-        #Set term date for next term if the current term is close to finishing
-        elif (next_term != None and close_to_end_of_term <= lesson.lesson_date_time.date()  < next_term.start_date):
-            term = eachterm.term_number + 1
-            lesson.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(lesson.lesson_date_time.date())
-            lesson.save()
-            return
-        elif(next_term == None and close_to_end_of_term <= lesson.lesson_date_time.date()  < end):
-            term = eachterm.term_number + 1
-            lesson.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(lesson.lesson_date_time.date())
-            lesson.save()
-            return
+# def set_lesson_term_details(lesson):
+#     terms_list = Term.objects.all()
+#     for eachterm in terms_list :
+#         #Calculate mid-term date
+#         start = eachterm.start_date 
+#         end = eachterm.end_date
+#         mid_term_date = start + (end - start)/2
+#         close_to_end_of_term = end-(end - mid_term_date)/6
+#         try:
+#             next_term = Term.objects.get(term_number = eachterm.term_number + 1)
+#         except ObjectDoesNotExist:
+#             next_term = None
+#         #Display term number only if the lesson starts before mid-term
+#         if(eachterm.start_date <= lesson.lesson_date_time.date()  <= mid_term_date):
+#             lesson.term = 'Term : ' + str(eachterm.term_number) + '            For reference : ' + str(lesson.lesson_date_time.date())
+#             lesson.save()
+#             return
+#         #Set term date for next term if the current term is close to finishing
+#         elif (next_term != None and close_to_end_of_term <= lesson.lesson_date_time.date()  < next_term.start_date):
+#             term = eachterm.term_number + 1
+#             lesson.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(lesson.lesson_date_time.date())
+#             lesson.save()
+#             return
+#         elif(next_term == None and close_to_end_of_term <= lesson.lesson_date_time.date()  < end):
+#             term = eachterm.term_number + 1
+#             lesson.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(lesson.lesson_date_time.date())
+#             lesson.save()
+#             return
 
     
 
 
-    #If lesson is not before mid term and is not close to end of term 
-    lesson.term = 'N/A'        
+    # #If lesson is not before mid term and is not close to end of term 
+    # lesson.term = 'N/A'        
 
 def student_requests(request,student_id):
     try:
@@ -442,7 +442,7 @@ def admin_update_request(request, lesson_id):
             lesson.duration = duration
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
-            set_lesson_term_details(lesson)
+            # set_lesson_term_details(lesson)
             lesson.save()
 
             #update_invoice(lesson)
@@ -710,12 +710,12 @@ def admin_feed(request):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
 
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
-        for eachlesson in fulfilled_lessons:
-            set_lesson_term_details(eachlesson)
+        # for eachlesson in fulfilled_lessons:
+        #     set_lesson_term_details(eachlesson)
 
         unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
-        for eachlesson in unfulfilled_lessons:
-            set_lesson_term_details(eachlesson)
+        # for eachlesson in unfulfilled_lessons:
+        #     set_lesson_term_details(eachlesson)
 
         return render(request,'admin_feed.html',{'student':student,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
     else:
@@ -872,7 +872,7 @@ def update_user(request,current_user_id):
         try:
             user = UserAccount.objects.get(id=current_user_id)
         except ObjectDoesNotExist:
-            messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+            messages.add_message(request,messages.ERROR,f"{request.user.email} does not exist")
             return redirect("director_manage_roles")
 
 
