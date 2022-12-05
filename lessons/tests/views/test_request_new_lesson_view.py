@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import check_password
 from django.test import TestCase
 from django.urls import reverse
 from lessons.forms import RequestForm
-from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus
+from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus,Term
 from django.contrib import messages
 from lessons.forms import RequestForm
 from lessons.views import get_saved_lessons
@@ -17,6 +17,12 @@ from django.db import transaction
 
 class RequestNewLessonTest(TestCase):
     def setUp(self):
+
+        self.term_six = Term.objects.create(
+            term_number=6,
+            start_date = datetime.date(2023, 6,5),
+            end_date = datetime.date(2022, 7,21),
+        )
 
         self.admin = UserAccount.objects.create_admin(
             first_name='Bob',

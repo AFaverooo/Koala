@@ -6,15 +6,16 @@ import string
 import datetime
 from django.utils import timezone
 from datetime import date
-
+from django.db import IntegrityError
 
 letters = string.ascii_lowercase
 
 
 class Command(BaseCommand):
+
     def __init__(self):
         super().__init__()
-        self.faker = Faker('en_GB')
+        self.faker = Faker()
 
     # Seeds the database with users
     def handle(self, *args, **options):
@@ -78,7 +79,11 @@ class Command(BaseCommand):
             end_date = datetime.date(2023, 7,21),
         )
 
+        #restet fakers uniqueness every time we seed
+        self.faker.unique.clear()
+
         # Seed the students
+
         for i in range(99):
 
             fname = self.faker.unique.first_name()
@@ -95,14 +100,29 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
+            # seed the children
+            for i in range(random.randint(0,3)):
 
+                fname = self.faker.unique.first_name()
+                lname = self.faker.unique.last_name()
+                mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
+                random_password = ''.join(random.choice(letters) for i in range(10))
+                genders = ['M','F','PNOT']
+
+                self.child = UserAccount.objects.create_child_student(
+                    parent_of_user = self.student,
+                    first_name=fname,
+                    last_name=self.student.last_name,
+                    email= f'{fname[0].lower()}{lname.lower()}{random.randint(0,100)}@{mails[random.randint(0,3)]}',
+                    password=f'{random_password}',
+                    gender = f'{genders[random.randint(0,2)]}',
+                )
 
         # Seed the teachers
         for i in range(5):
-
             fname = self.faker.unique.first_name()
             lname = self.faker.unique.last_name()
-            mails = ["gmail.com","yahoo.com","outlook.com","example.org"]
+            mails = ["gmail.com","yahoo.com","outlook.com","example.org","icloud.com"]
             random_password = ''.join(random.choice(letters) for i in range(10))
             genders = ['M','F','PNOT']
 
@@ -114,52 +134,72 @@ class Command(BaseCommand):
                 gender = f'{genders[random.randint(0,2)]}',
             )
 
+        # Seed the lessons for every student
         teachers = UserAccount.objects.filter(role=UserRole.TEACHER.value)
         students = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         lesson_types = list(LessonType)
         Lesson_durations = list(LessonDuration)
         lesson_status = list(LessonStatus)
+
         # increases chances to get booked lessons
         lesson_status.remove(LessonStatus.SAVED)
         lesson_status.append(LessonStatus.FULLFILLED)
         lesson_status.append(LessonStatus.FULLFILLED)
 
         terms = list(Term.objects.all())
+        lessons_per_request = [] #ensures that teachers cant't be double booked
 
         for i in range(len(students)):
 
             reqdaychosen = False # ensures request date in the same for a set of lessons
-
             current_term = terms[random.randint(0,len(terms)-1)]
 
             for _ in range(random.randint(0,6)):
 
+                rand_teacher = teachers[random.randint(0,len(teachers)-1)]
 
-                # makes sure request date is done before lessons date and time
+                # ensures sure request date is done before lessons date and time
                 while (reqdaychosen == False):
                     random_req_day = self.faker.date_between(start_date='-1y', end_date='+1y')
                     if (random_req_day <=  current_term.end_date):
                         reqdaychosen = True
 
-                # makes sure lessons date fall within the term
+                """
+                This while loop ensures sure lessons date :
+                 - fall within a term
+                 - not on a weakend
+                 - between 8am and 5pm
+                 - not conflicting with other teachers at the same time
+                """
+                # ensures sure lessons date fall within the term, and is not on a weekend, and on different time if on the same say
                 while (True):
+
                     rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date='-1y', end_date='+1y').replace(second=0, microsecond=0, minute=0)
-                    if (current_term.start_date <= rand_lesson_date_time.date() <= current_term.end_date):
+                    rand_lesson_date = rand_lesson_date_time.date()
+
+                    if ((current_term.start_date <= rand_lesson_date <= current_term.end_date) and
+                        rand_lesson_date.weekday() != 5 and rand_lesson_date.weekday() != 6 and
+                        8 <= rand_lesson_date_time.hour <= 17 and
+                        (rand_lesson_date_time,rand_teacher) not in lessons_per_request):
+
+                        lessons_per_request.append((rand_lesson_date_time,rand_teacher))
                         break
 
-                self.lesson = Lesson.objects.create(
-                    type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
-                    duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
-                    lesson_date_time = rand_lesson_date_time,
-                    teacher_id = teachers[random.randint(0,len(teachers)-1)],
-                    student_id = students[i],
-                    request_date = random_req_day,
-                    lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
-                )
+                try:
+                    self.lesson = Lesson.objects.create(
+                        type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+                        duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+                        lesson_date_time = rand_lesson_date_time,
+                        teacher_id = rand_teacher,
+                        student_id = students[i],
+                        request_date = random_req_day,
+                        lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
+                    )
+                except IntegrityError:
+                    pass
 
 
         # seed the invoices base on existing user and bookings
-        # seed_lesson_id = 100000 #seed lesson id number is big, in case to be same as existing lesson id
         for i in range(len(students)):
             student_Id = students[i].id
             students_id_string = str(student_Id)
