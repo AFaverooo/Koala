@@ -200,7 +200,6 @@ class Command(BaseCommand):
 
 
         # seed the invoices base on existing user and bookings
-        # seed_lesson_id = 100000 #seed lesson id number is big, in case to be same as existing lesson id
         for i in range(len(students)):
             student_Id = students[i].id
             students_id_string = str(student_Id)

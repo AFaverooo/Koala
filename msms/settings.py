@@ -152,6 +152,8 @@ REDIRECT_URL_WHEN_LOGGED_IN_STUDENT = 'student_feed'
 REDIRECT_URL_WHEN_LOGGED_IN_ADMIN = 'admin_feed'
 REDIRECT_URL_WHEN_LOGGED_IN_DIRECTOR = 'director_feed'
 
+REDIRECT_URL_HOME_WHEN_LOGGED_IN_STUDENT = 'home'
+
 #Message level tags should use Bootstrap terms
 
 MESSAGE_TAGS = {
