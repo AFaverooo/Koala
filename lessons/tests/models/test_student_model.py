@@ -8,7 +8,10 @@ from lessons.modelHelpers import is_valid_gender,is_valid_role
 class UserAccountModelTestCase(TestCase):
     """Unit tests for the UserAccount model"""
 
+    # fixtures = ['lessons/tests/fixtures/default-student.json']
+
     def setUp(self):
+        # self.student=UserAccount.objects.get(email='johndoe@example.org')
         self.student = UserAccount.objects.create_student(
             first_name='John',
             last_name='Doe',
