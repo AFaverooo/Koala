@@ -408,7 +408,7 @@ def admin_update_request(request, lesson_id):
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
             lesson.save()
-            
+
             # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
             if lesson.lesson_status == LessonStatus.FULLFILLED:
                 update_invoice(lesson)
@@ -948,7 +948,7 @@ def save_lessons(request):
             all_unsaved_lessons = get_saved_lessons(current_student)
 
             if len(all_unsaved_lessons) == 0:
-                messages.add_message(request,messages.ERROR,"Lessons should be requested before attempting to save")
+                messages.add_message(request,messages.ERROR,"Lessons should be saved before attempting to request")
                 return redirect('requests_page')
 
             for eachLesson in all_unsaved_lessons:
@@ -966,8 +966,16 @@ def save_lessons(request):
         return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
-def check_correct_student_accessing_lesson(student_id, other_lesson):
+def check_correct_student_accessing_pending_lesson(student_id, other_lesson):
     all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
+    for lesson in all_student_lessons:
+        if lesson.is_equal(other_lesson):
+            return True
+
+    return False
+
+def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.SAVED)
     for lesson in all_student_lessons:
         if lesson.is_equal(other_lesson):
             return True
@@ -1000,8 +1008,7 @@ def edit_lesson(request,lesson_id):
             messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
             return redirect('student_feed')
 
-        if check_correct_student_accessing_lesson(current_student,to_edit_lesson) is False:
-            print(check_correct_student_accessing_lesson(current_student,to_edit_lesson))
+        if check_correct_student_accessing_pending_lesson(current_student,to_edit_lesson) is False:
             messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 
@@ -1032,6 +1039,7 @@ def edit_lesson(request,lesson_id):
         # return redirect('log_in')
         return redirect('home')
 
+
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
@@ -1043,13 +1051,40 @@ def delete_pending(request,lesson_id):
                     messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
                     return redirect('student_feed')
 
-                if check_correct_student_accessing_lesson(current_student,lesson_to_delete) is False:
+                if check_correct_student_accessing_pending_lesson(current_student,lesson_to_delete) is False:
                     messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
                     return redirect('student_feed')
 
                 lesson_to_delete.delete()
                 messages.add_message(request, messages.SUCCESS, "Lesson request deleted")
                 return redirect('student_feed')
+
+        else:
+            return redirect('student_feed')
+    else:
+        # return redirect('log_in')
+        return redirect('home')
+
+def delete_saved(request,lesson_id):
+    if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
+        current_student = request.user
+        #if check_correct_student_accessing_lesson(current_student,lesson_id):
+        if request.method == 'POST':
+                try:
+                    lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
+                except ObjectDoesNotExist:
+                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+
+                if check_correct_student_accessing_saved_lesson(current_student,lesson_to_delete) is False:
+                    messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+                    students_option = get_student_and_child_objects(request.user)
+                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+
+                lesson_to_delete.delete()
+                messages.add_message(request, messages.SUCCESS, "Saved lesson deleted")
+                return redirect('requests_page')
 
         else:
             return redirect('student_feed')
