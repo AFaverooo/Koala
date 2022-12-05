@@ -277,7 +277,7 @@ def update_invoice(lesson):
         student = UserAccount.objects.get(id=invoice.student_ID)
 
         update_balance(student)
-    except ObjectDoesNotExist:
+    except ObjectDoesNotExist: # this only happen in the case admin create lesson directly from django admin page
         fees = Invoice.calculate_fees_amount(lesson.duration)
         students_id_string = str(lesson.student_id.id)
         student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = lesson.student_id.id)
@@ -293,26 +293,38 @@ def update_invoice_when_delete(lesson):
     invoice.lesson_ID = ''
     invoice.save()
 
+@login_required
 def get_all_transactions(request):
-    all_transactions = Transaction.objects.all()
-    total = 0
-    for each_transaction in all_transactions:
-            total+= each_transaction.transaction_amount
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        all_transactions = Transaction.objects.all()
+        total = 0
+        for each_transaction in all_transactions:
+                total+= each_transaction.transaction_amount
 
-    return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+        return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+    else:
+        return redirect('home')
 
+
+@login_required
 def get_all_invocies(request):
-    all_invoices = Invoice.objects.all()
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        all_invoices = Invoice.objects.all()
 
-    return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+        return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+    else:
+        return redirect('home')
 
+@login_required
 def get_student_invoices_and_transactions(request, student_id):
-    student = UserAccount.objects.get(id=student_id)
-    all_invoices = Invoice.objects.filter(student_ID = student_id)
-    all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        student = UserAccount.objects.get(id=student_id)
+        all_invoices = Invoice.objects.filter(student_ID = student_id)
+        all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
 
-    return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
-
+        return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+    else:
+        return redirect('home')
 
 
 def get_student_and_child_objects(student):
