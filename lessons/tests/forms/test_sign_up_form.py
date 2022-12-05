@@ -4,6 +4,7 @@ from django.test import TestCase
 from lessons.forms import SignUpForm
 from lessons.models import UserAccount,Gender
 
+#Checked for fixtures
 
 class SignUpFormTestCase(TestCase):
     """Unit tests of the sign up form."""

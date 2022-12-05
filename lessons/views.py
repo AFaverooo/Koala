@@ -259,7 +259,6 @@ def check_invoice_belong_to_child(temp_invoice, student):
             return True
     return False
 
-
 def create_new_invoice(student_id, lesson):
     student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
     student = UserAccount.objects.get(id=student_id)
@@ -271,18 +270,26 @@ def create_new_invoice(student_id, lesson):
     update_balance(student)
 
 def update_invoice(lesson):
-    invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
-    student = UserAccount.objects.get(id=invoice.student_ID)
+    try:
+        invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+        student = UserAccount.objects.get(id=invoice.student_ID)
 
-    fees = Invoice.calculate_fees_amount(lesson.duration)
-    fees = int(fees)
-    difference_between_invoice = fees - invoice.fees_amount
-    invoice.fees_amount = fees
-    invoice.amounts_need_to_pay += difference_between_invoice
-    invoice.save()
-    student = UserAccount.objects.get(id=invoice.student_ID)
+        fees = Invoice.calculate_fees_amount(lesson.duration)
+        fees = int(fees)
+        difference_between_invoice = fees - invoice.fees_amount
+        invoice.fees_amount = fees
+        invoice.amounts_need_to_pay += difference_between_invoice
+        invoice.save()
+        student = UserAccount.objects.get(id=invoice.student_ID)
 
-    update_balance(student)
+        update_balance(student)
+    except ObjectDoesNotExist: # this only happen in the case admin create lesson directly from django admin page
+        fees = Invoice.calculate_fees_amount(lesson.duration)
+        students_id_string = str(lesson.student_id.id)
+        student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = lesson.student_id.id)
+        reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice_pre_exist))
+        Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
+
 
 def update_invoice_when_delete(lesson):
     invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
@@ -292,25 +299,39 @@ def update_invoice_when_delete(lesson):
     invoice.lesson_ID = ''
     invoice.save()
 
+@login_required
 def get_all_transactions(request):
-    all_transactions = Transaction.objects.all()
-    total = 0
-    for each_transaction in all_transactions:
-            total+= each_transaction.transaction_amount
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        all_transactions = Transaction.objects.all()
+        total = 0
+        for each_transaction in all_transactions:
+                total+= each_transaction.transaction_amount
 
-    return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+        return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+    else:
+        return redirect('home')
 
+
+@login_required
 def get_all_invocies(request):
-    all_invoices = Invoice.objects.all()
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        all_invoices = Invoice.objects.all()
 
-    return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+        return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+    else:
+        return redirect('home')
 
+@login_required
 def get_student_invoices_and_transactions(request, student_id):
-    student = UserAccount.objects.get(id=student_id)
-    all_invoices = Invoice.objects.filter(student_ID = student_id)
-    all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        student = UserAccount.objects.get(id=student_id)
+        all_invoices = Invoice.objects.filter(student_ID = student_id)
+        all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
 
-    return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+        return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+    else:
+        return redirect('home')
+
 
 def get_student_and_child_objects(student):
     list_of_students = []
@@ -387,8 +408,10 @@ def admin_update_request(request, lesson_id):
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
             lesson.save()
-
-            update_invoice(lesson)
+            
+            # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
+            if lesson.lesson_status == LessonStatus.FULLFILLED:
+                update_invoice(lesson)
 
             messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
@@ -623,7 +646,7 @@ def requests_page(request):
 @login_required
 def admin_feed(request):
 
-    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
+    if (request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
         unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
@@ -661,7 +684,13 @@ def promote_director(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
             return redirect('director_manage_roles')
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:#For when editing a lesson with term number 1
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user.role = UserRole.DIRECTOR
             user.is_staff = True
             user.is_superuser = True
@@ -680,6 +709,13 @@ def promote_admin(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
             return redirect('director_manage_roles')
         else:
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user = UserAccount.objects.get(email=current_user_email)
             user.role = UserRole.ADMIN
             user.is_staff = True
@@ -700,7 +736,13 @@ def disable_user(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
             return redirect(director_manage_roles)
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             if (user.is_active == True):
                 user.is_active = False
                 user.save()
@@ -723,7 +765,13 @@ def delete_user(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
             return redirect(director_manage_roles)
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user.delete()
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
             return redirect(director_manage_roles)
@@ -753,7 +801,14 @@ def create_admin_page(request):
 def update_user(request,current_user_id):
 
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-        user = UserAccount.objects.get(id=current_user_id)
+
+        try:
+            user = UserAccount.objects.get(id=current_user_id)
+        except ObjectDoesNotExist:
+            messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+            return redirect("director_manage_roles")
+
+
         form = CreateAdminForm(instance=user)
 
         if request.method == 'POST':
