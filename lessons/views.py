@@ -5,19 +5,16 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
+from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
 from .helper import login_prohibited
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
-from django.utils import timezone
 import datetime
-<<<<<<< HEAD
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-=======
 from django.core.exceptions import ObjectDoesNotExist
 from itertools import chain
->>>>>>> ca9bf9102b7d23bf578165499c4405e643c46c94
+
 
 
 # Create your views here.
@@ -395,6 +392,9 @@ def set_lesson_term_details(lesson):
             lesson.save()
             return
 
+    
+
+
     #If lesson is not before mid term and is not close to end of term 
     lesson.term = 'N/A'        
 
@@ -444,15 +444,12 @@ def admin_update_request(request, lesson_id):
             lesson.teacher_id = teacher_id
             set_lesson_term_details(lesson)
             lesson.save()
-<<<<<<< HEAD
 
             #update_invoice(lesson)
-=======
             
             # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
             if lesson.lesson_status == LessonStatus.FULLFILLED:
                 update_invoice(lesson)
->>>>>>> ca9bf9102b7d23bf578165499c4405e643c46c94
 
             messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
@@ -589,32 +586,9 @@ def update_term_details(request,term_number):
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
 
-<<<<<<< HEAD
             if(int(term_number) != int(term_number_in) and len(Term.objects.filter(term_number=term_number_in)) !=0):
                     messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
                     return render(request,'create_term_form.html', {'form': form})
-=======
-        try:
-            previous_term = Term.objects.get(term_number=str(int(term_number_in)-1))
-        except ObjectDoesNotExist:#For when editing a lesson with term number 1
-            previous_term = None
-
-        try:
-            next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
-        except ObjectDoesNotExist:#For when editing a lesson with a term number with no next term in database
-            next_term = None
-
-        doesTermNumberAlredyExist = None
-        doesTermNumberAlredyExist = Term.objects.filter(term_number=term_number_in)
-        if( doesTermNumberAlredyExist ):
-            messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
-        if (term.start_date == start_date and term.end_date == end_date and term.term_number == term_number_in):
-            #terms_list = Term.objects.all()
-            messages.add_message(request, messages.ERROR, 'Term details are the same as before!')
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
->>>>>>> ca9bf9102b7d23bf578165499c4405e643c46c94
 
 
             try:
@@ -687,11 +661,7 @@ def delete_term(request, term_number):
         messages.add_message(request, messages.SUCCESS, 'Term was successfully deleted!')
         return term_management_page(request)
 
-<<<<<<< HEAD
 # ---------------------------------------------
-=======
-
->>>>>>> ca9bf9102b7d23bf578165499c4405e643c46c94
 
 
 @login_required
