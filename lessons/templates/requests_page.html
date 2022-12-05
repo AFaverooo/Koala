@@ -52,7 +52,8 @@
         <td>
           <form method = "post" action="{% url 'delete_saved' lesson.lesson_id %}">
             {% csrf_token %}
-          <button type="submit" class="btn-danger" style="border-radius:5px">Delete</button>
+          <button type="submit" class="btn-danger" style="border-radius:5px">
+            <i class="bi-trash3-fill"></i></button>
           </form>
         </td>
         </tr>
