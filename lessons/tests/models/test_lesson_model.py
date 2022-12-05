@@ -26,6 +26,23 @@ class LessonModelTestCase(TestCase):
             gender = Gender.MALE,
         )
 
+        self.second_student = UserAccount.objects.create_student(
+            first_name='Jane',
+            last_name='Doe',
+            email='janedoe@example.org',
+            password='Password123',
+            gender = Gender.FEMALE,
+        )
+
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Bobby',
+            last_name = 'Lee',
+            email = 'bobbylee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
+
         self.lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
             duration = LessonDuration.THIRTY,
@@ -53,6 +70,37 @@ class LessonModelTestCase(TestCase):
             lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
+            request_date = datetime.date(2022, 10, 15),
+            lesson_status = LessonStatus.FULLFILLED
+        )
+
+        self.lesson4 = Lesson.objects.create(
+            type = LessonType.PERFORMANCE,
+            duration = LessonDuration.FOURTY_FIVE,
+            lesson_date_time = datetime.datetime(2022, 1, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+            teacher_id = self.teacher,
+            student_id = self.second_student,
+            request_date = datetime.date(2022, 10, 15),
+            lesson_status = LessonStatus.FULLFILLED
+        )
+
+    def create_child_lessons(self):
+        self.booked_child_lesson = Lesson.objects.create(
+            type = LessonType.PRACTICE,
+            duration = LessonDuration.HOUR,
+            lesson_date_time = datetime.datetime(2022, 11, 22, 20, 8, 7, tzinfo=timezone.utc),
+            teacher_id = self.teacher,
+            student_id = self.child,
+            request_date = datetime.date(2022, 10, 15),
+            lesson_status = LessonStatus.FULLFILLED
+        )
+
+        self.booked_child_lesson2 = Lesson.objects.create(
+            type = LessonType.THEORY,
+            duration = LessonDuration.FOURTY_FIVE,
+            lesson_date_time = datetime.datetime(2022, 7, 25, 20, 8, 7, tzinfo=timezone.utc),
+            teacher_id = self.teacher,
+            student_id = self.child,
             request_date = datetime.date(2022, 10, 15),
             lesson_status = LessonStatus.FULLFILLED
         )
@@ -136,6 +184,42 @@ class LessonModelTestCase(TestCase):
         self.assertTrue(is_valid_lessonStatus(self.lesson2))
         self.assertTrue(is_valid_lessonStatus(self.lesson3))
 
-    #def test_output(self):
-    #    print(self.lesson3.type.getType())
-    #    print(self.lesson3.duration.value)
+    def test_student_deletion_deletes_all_related_lessons(self):
+        before_count = Lesson.objects.count()
+
+        UserAccount.objects.get(email = self.student.email).delete()
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-3,after_count)
+        self.assertEqual(after_count,1)
+
+        before_second_count = Lesson.objects.count()
+        UserAccount.objects.get(email = self.second_student.email).delete()
+        after_second_count = Lesson.objects.count()
+        self.assertEqual(before_second_count-1,after_second_count)
+        self.assertEqual(after_second_count,0)
+
+    def test_delete_child_deletes_all_related_lessons(self):
+        self.create_child_lessons()
+        before_count = Lesson.objects.count()
+        UserAccount.objects.get(email = self.child.email).delete()
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-2,after_count)
+        self.assertEqual(after_count,4)
+
+    def test_student_deletion_deletes_child_and_all_student_and_child_lessons(self):
+        self.create_child_lessons()
+        before_count = Lesson.objects.count()
+        UserAccount.objects.get(email = self.student.email).delete()
+        self.assertEqual(UserAccount.objects.count(),2) #second student and teacher
+
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-5,after_count)
+        self.assertEqual(after_count,1)
+
+    def test_teacher_deletion_deletes_all_related_lessons(self):
+        self.create_child_lessons()
+        before_count = Lesson.objects.count()
+        UserAccount.objects.get(email = self.teacher.email).delete()
+        after_count = Lesson.objects.count()
+        self.assertEqual(before_count-6,after_count)
+        self.assertEqual(after_count,0)

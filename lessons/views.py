@@ -44,6 +44,10 @@ def get_lesson_request(dictionary):
 def get_lesson_saved(dictionary):
     return dictionary.get("Saved")
 
+@register.filter
+def get_lesson_student(dictionary):
+    return dictionary.get("Student")
+
 def make_lesson_timetable_dictionary(student_user):
     fullfilled_lessons = get_student_and_child_lessons(student_user,LessonStatus.FULLFILLED)
 
@@ -106,7 +110,7 @@ def make_lesson_timetable_dictionary(student_user):
 
         duration_str = f'{lesson_date_hr_str}:{lesson_date_minute_str} - {new_lesson_hr_str}:{new_time_minute_str}'
 
-        case = {'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
+        case = {'Student':lesson.student_id,'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
         fullfilled_lessons_dict[lesson] = case
 
     return fullfilled_lessons_dict
@@ -115,12 +119,9 @@ def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
     if lessonStatus == 'Lesson Request':
         lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
-    else:
-        lessons = get_saved_lessons(student_user)
 
     lessons_dict = {}
 
-    id_count = 0
     for lesson in lessons:
         lesson_type_str = ''
 
@@ -135,9 +136,8 @@ def make_lesson_dictionary(student_user,lessonStatus):
 
         lesson_duration_str = f'{lesson.duration} minutes'
 
-        case = {lessonStatus: f'{id_count}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
+        case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
         lessons_dict[lesson] = case
-        id_count += 1
 
     return lessons_dict
 
@@ -173,7 +173,7 @@ def get_child_invoice(student):
         child_invoice = Invoice.objects.filter(student_ID = child.id)
         for invoice in child_invoice:
             list_of_child_invoice.append(invoice)
-    
+
     return list_of_child_invoice
 
 
@@ -253,7 +253,6 @@ def check_invoice_belong_to_child(temp_invoice, student):
             return True
     return False
 
-
 def create_new_invoice(student_id, lesson):
     student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
     student = UserAccount.objects.get(id=student_id)
@@ -265,18 +264,26 @@ def create_new_invoice(student_id, lesson):
     update_balance(student)
 
 def update_invoice(lesson):
-    invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
-    student = UserAccount.objects.get(id=invoice.student_ID)
+    try:
+        invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+        student = UserAccount.objects.get(id=invoice.student_ID)
 
-    fees = Invoice.calculate_fees_amount(lesson.duration)
-    fees = int(fees)
-    difference_between_invoice = fees - invoice.fees_amount
-    invoice.fees_amount = fees
-    invoice.amounts_need_to_pay += difference_between_invoice
-    invoice.save()
-    student = UserAccount.objects.get(id=invoice.student_ID)
+        fees = Invoice.calculate_fees_amount(lesson.duration)
+        fees = int(fees)
+        difference_between_invoice = fees - invoice.fees_amount
+        invoice.fees_amount = fees
+        invoice.amounts_need_to_pay += difference_between_invoice
+        invoice.save()
+        student = UserAccount.objects.get(id=invoice.student_ID)
 
-    update_balance(student)
+        update_balance(student)
+    except ObjectDoesNotExist: # this only happen in the case admin create lesson directly from django admin page
+        fees = Invoice.calculate_fees_amount(lesson.duration)
+        students_id_string = str(lesson.student_id.id)
+        student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = lesson.student_id.id)
+        reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice_pre_exist))
+        Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
+
 
 def update_invoice_when_delete(lesson):
     invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
@@ -286,25 +293,39 @@ def update_invoice_when_delete(lesson):
     invoice.lesson_ID = ''
     invoice.save()
 
+@login_required
 def get_all_transactions(request):
-    all_transactions = Transaction.objects.all()
-    total = 0
-    for each_transaction in all_transactions:
-            total+= each_transaction.transaction_amount
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        all_transactions = Transaction.objects.all()
+        total = 0
+        for each_transaction in all_transactions:
+                total+= each_transaction.transaction_amount
 
-    return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+        return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+    else:
+        return redirect('home')
 
+
+@login_required
 def get_all_invocies(request):
-    all_invoices = Invoice.objects.all()
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        all_invoices = Invoice.objects.all()
 
-    return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+        return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+    else:
+        return redirect('home')
 
+@login_required
 def get_student_invoices_and_transactions(request, student_id):
-    student = UserAccount.objects.get(id=student_id)
-    all_invoices = Invoice.objects.filter(student_ID = student_id)
-    all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
+    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+        student = UserAccount.objects.get(id=student_id)
+        all_invoices = Invoice.objects.filter(student_ID = student_id)
+        all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
 
-    return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+        return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+    else:
+        return redirect('home')
+
 
 def get_student_and_child_objects(student):
     list_of_students = []
@@ -335,12 +356,6 @@ def get_student_and_child_lessons(student, statusType):
 
 def get_saved_lessons(student):
     return get_student_and_child_lessons(student,LessonStatus.SAVED)
-
-def get_unfulfilled_lessons(student):
-    return Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED, student_id = student)
-
-def get_fullfilled_lessons(student):
-    return Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED, student_id = student)
 
 def get_admin_email():
     return UserAccount.objects.filter(role = UserRole.ADMIN).first()
@@ -387,8 +402,10 @@ def admin_update_request(request, lesson_id):
             lesson.lesson_date_time = lesson_date_time
             lesson.teacher_id = teacher_id
             lesson.save()
-
-            update_invoice(lesson)
+            
+            # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
+            if lesson.lesson_status == LessonStatus.FULLFILLED:
+                update_invoice(lesson)
 
             messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
@@ -587,9 +604,6 @@ def delete_term(request, term_number):
 def student_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
-            unfulfilled_lessons = get_unfulfilled_lessons(request.user)
-            fullfilled_lessons = get_fullfilled_lessons(request.user)
-
             greeting_str = f'Welcome back {request.user}, this is your feed!'
 
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
@@ -628,7 +642,7 @@ def requests_page(request):
 @login_required
 def admin_feed(request):
 
-    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN):
+    if (request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
         unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
@@ -666,7 +680,13 @@ def promote_director(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
             return redirect('director_manage_roles')
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:#For when editing a lesson with term number 1
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user.role = UserRole.DIRECTOR
             user.is_staff = True
             user.is_superuser = True
@@ -685,6 +705,13 @@ def promote_admin(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
             return redirect('director_manage_roles')
         else:
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user = UserAccount.objects.get(email=current_user_email)
             user.role = UserRole.ADMIN
             user.is_staff = True
@@ -705,7 +732,13 @@ def disable_user(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot disable yourself!")
             return redirect(director_manage_roles)
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             if (user.is_active == True):
                 user.is_active = False
                 user.save()
@@ -728,7 +761,13 @@ def delete_user(request,current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot delete yourself!")
             return redirect(director_manage_roles)
         else:
-            user = UserAccount.objects.get(email=current_user_email)
+
+            try:
+                user = UserAccount.objects.get(email=current_user_email)
+            except ObjectDoesNotExist:
+                messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+                return redirect("director_manage_roles")
+
             user.delete()
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} has been sucessfuly deleted!")
             return redirect(director_manage_roles)
@@ -758,7 +797,14 @@ def create_admin_page(request):
 def update_user(request,current_user_id):
 
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-        user = UserAccount.objects.get(id=current_user_id)
+
+        try:
+            user = UserAccount.objects.get(id=current_user_id)
+        except ObjectDoesNotExist:
+            messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+            return redirect("director_manage_roles")
+
+
         form = CreateAdminForm(instance=user)
 
         if request.method == 'POST':
@@ -920,7 +966,7 @@ def save_lessons(request):
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
 def check_correct_student_accessing_lesson(student_id, other_lesson):
-    all_student_lessons = Lesson.objects.filter(student_id = student_id, lesson_status = LessonStatus.UNFULFILLED)
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
     for lesson in all_student_lessons:
         if lesson.is_equal(other_lesson):
             return True
@@ -954,6 +1000,7 @@ def edit_lesson(request,lesson_id):
             return redirect('student_feed')
 
         if check_correct_student_accessing_lesson(current_student,to_edit_lesson) is False:
+            print(check_correct_student_accessing_lesson(current_student,to_edit_lesson))
             messages.add_message(request, messages.WARNING, "Attempted Edit Is Not Permitted")
             return redirect('student_feed')
 

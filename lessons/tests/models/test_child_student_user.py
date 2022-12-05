@@ -175,3 +175,6 @@ class TestChildStudentUser(TestCase):
                 gender = Gender.MALE,
                 parent_of_user = self.admin,
                 )
+    def test_deletion_of_parent_deletes_child(self):
+        UserAccount.objects.get(email = self.student.email).delete()
+        self.assertEqual(UserAccount.objects.count(),1)

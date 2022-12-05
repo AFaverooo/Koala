@@ -2,13 +2,13 @@
 from django.test import TestCase
 from lessons.models import Invoice, InvoiceStatus, UserAccount, Gender, Transaction, Lesson,LessonType,LessonDuration,LessonStatus
 from django.urls import reverse
-from lessons.views import get_student_balance,get_student_transaction,get_student_invoice
+from lessons.views import get_student_balance,get_student_transaction,get_student_invoice,get_child_invoice
 from lessons.tests.helpers import reverse_with_next
 from django.utils import timezone
 from datetime import time
 import datetime
 
-class InvoiceTestCase(TestCase): 
+class BalanceViewAndGetFunctionsTestCase(TestCase): 
     '''Tests of the invoice view'''
 
     def setUp(self):
@@ -101,6 +101,46 @@ class InvoiceTestCase(TestCase):
             lesson_status = LessonStatus.SAVED
         )
 
+    def create_child_student(self):
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Ace',
+            last_name = 'Lee',
+            email = 'Acelee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
+
+    def create_second_child_student(self):
+        self.child2 = UserAccount.objects.create_child_student(
+            first_name = 'Bce',
+            last_name = 'Bee',
+            email = 'BoeBee@example.org',
+            password = 'Password123',
+            gender = Gender.FEMALE,
+            parent_of_user = self.student,
+        )
+    
+    def create_invoice_for_child(self):
+        self.invoice_child = Invoice.objects.create(
+            reference_number = '5-001',
+            student_ID = '5',
+            fees_amount = '78',
+            amounts_need_to_pay = '78',
+            lesson_ID = '2',
+            invoice_status = InvoiceStatus.UNPAID,
+        )
+
+    def create_invoice_for_child2(self):
+        self.invoice_child2 = Invoice.objects.create(
+            reference_number = '6-001',
+            student_ID = '6',
+            fees_amount = '78',
+            amounts_need_to_pay = '78',
+            lesson_ID = '3',
+            invoice_status = InvoiceStatus.UNPAID,
+        )
+
 
     def test_balance_url(self):
         self.assertEqual(self.url, '/balance/')
@@ -175,6 +215,41 @@ class InvoiceTestCase(TestCase):
         self.assertEqual(invoice[1].invoice_status, InvoiceStatus.PARTIALLY_PAID)
         self.assertEqual(invoice[1].amounts_need_to_pay, 23)
         self.assertEqual(invoice[1].lesson_ID, str(self.saved_lesson2.lesson_id))
+
+    def test_function_to_get_child_invoice_1_child(self):
+        self.create_child_student()
+        child_invoices = get_child_invoice(self.student)
+        self.assertEqual(len(child_invoices), 0)
+
+        self.create_invoice_for_child()
+        child_invoices = get_child_invoice(self.student)
+        self.assertEqual(len(child_invoices), 1)
+
+        self.assertEqual(child_invoices[0].reference_number, '5-001')
+        self.assertEqual(child_invoices[0].student_ID, str(self.child.id))
+        self.assertEqual(child_invoices[0].fees_amount, 78)
+        self.assertEqual(child_invoices[0].invoice_status, InvoiceStatus.UNPAID)
+        self.assertEqual(child_invoices[0].amounts_need_to_pay, 78)
+        self.assertEqual(child_invoices[0].lesson_ID, '2')
+
+    def test_function_to_get_child_invoice_2_children(self):
+        self.create_child_student()
+        self.create_invoice_for_child()
+        child_invoices = get_child_invoice(self.student)
+        self.assertEqual(len(child_invoices), 1)
+
+        self.create_second_child_student()
+        self.create_invoice_for_child2()
+        child_invoices = get_child_invoice(self.student)
+        self.assertEqual(len(child_invoices), 2)
+
+        self.assertEqual(child_invoices[1].reference_number, '6-001')
+        self.assertEqual(child_invoices[1].student_ID, str(self.child2.id))
+        self.assertEqual(child_invoices[1].fees_amount, 78)
+        self.assertEqual(child_invoices[1].invoice_status, InvoiceStatus.UNPAID)
+        self.assertEqual(child_invoices[1].amounts_need_to_pay, 78)
+        self.assertEqual(child_invoices[1].lesson_ID, '3')
+
 
 
 
