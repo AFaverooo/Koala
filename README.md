@@ -1,12 +1,12 @@
-# Team *<enter team name here>* Small Group project
+# Team Koala Small Group project
 
 ## Team members
 The members of the team are:
-- *<name of team member 1>*
-- *<name of team member 2>*
-- *<name of team member 3>*
-- *<name of team member 4>*
-- *<name of team member 5>*
+- Bowen Zhu
+- Saathveekan Satheeshkumar
+- Augusto Favero
+- Karim Mousa
+- Shozab Anwar Siddique
 
 ## Project structure
 The project is called `msms` (Music School Management System).  It currently consists of a single app `lessons` where all functionality resides.
@@ -45,9 +45,27 @@ Run all tests with:
 $ python3 manage.py test
 ```
 
+Run server with:
+```
+$ python3 manage.py runserver
+```
+
 *The above instructions should work in your version of the application.  If there are deviations, declare those here in bold.  Otherwise, remove this line.*
 
 ## Sources
 The packages used by this application are specified in `requirements.txt`
-
+```
+asgiref==3.4.1
+coverage==6.0.1
+Django==3.2.5
+django-widget-tweaks==1.4.8
+Faker==8.10.3
+humanize==3.12.0
+libgravatar==1.0.0
+python-dateutil==2.8.2
+pytz==2021.1
+six==1.16.0
+sqlparse==0.4.1
+text-unidecode==1.3
+```
 *Declare are other sources here.*

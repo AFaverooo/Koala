@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import time
 import datetime
 
-class InvoiceTestCase(TestCase): 
+class BalanceViewAndGetFunctionsTestCase(TestCase): 
     '''Tests of the invoice view'''
 
     def setUp(self):

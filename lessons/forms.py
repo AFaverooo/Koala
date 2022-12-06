@@ -186,7 +186,12 @@ class RequestForm(forms.ModelForm):
         model = Lesson
         fields = ['type','duration','lesson_date_time']
         widgets = {
-            "lesson_date_time": DateTimePickerInput(),}
+            "lesson_date_time": DateTimePickerInput( 
+                # options={
+                #     'minDate': (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00'),
+                #     'maxDate': (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y-%m-%d 23:59:59'),}
+                    )
+                    }
 
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
     # def clean(self, request):

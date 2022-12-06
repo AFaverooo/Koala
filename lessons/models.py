@@ -306,7 +306,6 @@ class Invoice(models.Model):
         )]
     )
 
-    # student number store the student
     student_ID = models.CharField(
         max_length = 30,
         blank=False,
@@ -401,7 +400,7 @@ class Transaction(models.Model):
             MinValueValidator(1),
         ]
     )
-    
+
 class Term(models.Model):
     term_number =  models.IntegerField(
         # blank = True,
