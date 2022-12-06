@@ -175,7 +175,32 @@ body{
     transform: translateY(-2px);
 }
 
+.SelectStudentbutton {
+  background-color: #1183ca;
+  padding: 10px 10px;
+  font-size: 12px;
+  color: white;
+  font-weight:bold;
+  border-radius: 10px;
+  border:none;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid;
+}
 
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  border: 1px solid;
+}
+tr:hover {background-color: gray;}
+
+div {
+  padding: 0.5% 1% 0% 1%;
+}
 .divider{
     width:5px;
     height:15px;
