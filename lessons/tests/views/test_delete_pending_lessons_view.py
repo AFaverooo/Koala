@@ -143,6 +143,8 @@ class StudentFeedDeletePendingLessonTestCase(TestCase):
         response = self.client.get(self.delete_url, follow = True)
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student_feed.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
 
     def test_attempt_deletion_of_other_student_lessons(self):
         self.student_jane = UserAccount.objects.create_student(
@@ -173,6 +175,8 @@ class StudentFeedDeletePendingLessonTestCase(TestCase):
         redirect_url = reverse('home')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'home.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
 
     #prev causing errors
     def test_not_student_accessing_deleting_pending_lessons(self):
@@ -181,6 +185,8 @@ class StudentFeedDeletePendingLessonTestCase(TestCase):
         redirect_url = reverse('admin_feed')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'admin_feed.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
 
     def test_incorrect_deletion_of_lesson(self):
         self.client.login(email=self.student.email, password="Password123")

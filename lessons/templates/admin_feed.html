@@ -1,65 +1,32 @@
-<html>
-  <h1> THIS IS THE ADMIN FEED PAGE</h1>
-  
-</html>
-<a href = '{% url 'transaction_history' %}' class = "btn">
-  <button type="button" class="btn button">Bank Transaction History</button>
-</a>
-<a href = '{% url 'invoices_history' %}' class = "btn">
-  <button type="button" class="btn button">Student Invoices History</button>
-</a>
+{% extends 'admin_base_content.html' %}
 
-<a href = '{% url 'term_management' %}' class = "btn">
-  <button type="button" class="btn button">Term Management</button>
-</a>
+
+{%block content%}
+<div class="divider"></div>
+<h1 style="text-align:center;" >Admin Feed Page</h1>
+
+  
+
+<div class="divider"></div>
+<div class="divider"></div>
+<div class="divider"></div>
 
 <div class="container">
   <div class="row">
     <div class="col-12">
 
-      <style>
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          border: 1px solid;
-        }
 
-        th, td {
-          padding: 8px;
-          text-align: left;
-          border-bottom: 1px solid #ddd;
-          border: 1px solid;
-        }
-        tr:hover {background-color: gray;}
-
-        .button {
-          background-color: #1183ca;
-          padding: 10px 10px;
-          font-size: 12px;
-          color: white;
-          font-weight:bold;
-          border-radius: 10px;
-          border:none;
-        }
-        div {
-          padding: 0.5% 1% 0% 1%;
-        }
-      </style>
-
-      {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
-          {% endfor %}
-      </ul>
-      {% endif %}
       
-      <h1>Students</h1>
 
-      <p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
+      <button class="btn EntryButton" type="button" data-toggle="collapse" data-target="#students" aria-expanded="false" aria-controls="collapseInvoiceTable">
+        <h2>All Students</h2>
+      </button>
+      <div class="divider"></div>
+    <div class="collapse" id="students">
+            
 
         <table class="table">
-        <thead>
+        <thead style="background-color: #023e8a;">
           <tr>
             <th scope="col">ID</th>
             <th scope="col">Firstname</th>
@@ -80,7 +47,7 @@
               <td>{{ user.is_active }}</td>
               <td>
                 <a href = '{% url 'student_requests' user.id %}' class = "btn">
-                  <button type="button" class="btn button">Select Student</button>
+                  <button type="button" class="EntryButton"><i class="bi bi-check2"></i></button>
                 </a>
               </td>
             </tr>
@@ -88,9 +55,18 @@
         </tbody>
         </table>
 
+        </div>
+
+
+
+        <button class="btn EntryButton" type="button" data-toggle="collapse" data-target="#parents" aria-expanded="false" aria-controls="collapseInvoiceTable">
+          <h2>Parents/Guardians</h2>
+        </button>
+        <div class="divider"></div>
+      <div class="collapse" id="parents">
       
 
-        <h1>Parents/Guardians</h1>
+        
 
         <table class="table">
           <thead>
@@ -114,7 +90,7 @@
                 <td>{{ user.is_active }}</td>
                 <td>
                   <a href = '{% url 'student_requests' user.id %}' class = "btn">
-                    <button type="button" class="btn button">Select Guardians</button>
+                    <button type="button" class="EntryButton"><i class="bi bi-check2"></i></button>
                   </a>
                 </td>
               </tr>
@@ -122,8 +98,28 @@
           </tbody>
           </table><br><br>
 
-        <h1>Requests</h1>
-        <h4>UnfulFilled Requests</h4>
+
+          </div>
+
+
+
+
+          <button class="btn EntryButton" type="button" data-toggle="collapse" data-target="#requests" aria-expanded="false" aria-controls="collapseInvoiceTable">
+            <h2>Requests</h2>
+          </button>
+          <div class="divider"></div>
+        <div class="collapse" id="requests">
+
+              
+
+
+          <button class="btn EntryButton" type="button" data-toggle="collapse" data-target="#UnfulfilledRequests" aria-expanded="false" aria-controls="collapseInvoiceTable">
+            <h4>- Unfulfilled Requests</h4>
+          </button>
+          <div class="divider"></div>
+        <div class="collapse" id="UnfulfilledRequests">
+          
+        
         <table class="table">
           <thead>
             <tr>
@@ -156,7 +152,17 @@
           </tbody>
           </table>
 
-          <h4>Fulfilled Requests</h4>
+          </div>
+
+
+
+          <button class="btn EntryButton" type="button" data-toggle="collapse" data-target="#FulfilledRequests" aria-expanded="false" aria-controls="collapseInvoiceTable">
+            <h4>Fulfilled Requests</h4>
+          </button>
+          <div class="divider"></div>
+        <div class="collapse" id="FulfilledRequests">
+
+          <h4>- Fulfilled Requests</h4>
           <table class="table">
             <thead>
               <tr>
@@ -188,6 +194,14 @@
               {% endfor %}
             </tbody>
             </table>
+
+            </div>
     </div>
+
+
+
   </div>
 </div>
+
+</div>
+{%endblock%}
