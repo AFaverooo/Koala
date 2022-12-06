@@ -396,12 +396,28 @@ def get_admin_email():
     # #If lesson is not before mid term and is not close to end of term 
     # lesson.term = 'N/A'        
 
+def get_parent(student):
+    for eachuser in UserAccount.objects.filter(is_parent = True):
+        child_students = UserAccount.objects.filter(parent_of_user = eachuser)
+        for eachchild in child_students:
+            if(eachchild.id == student.id):
+                return eachuser
+    return None
+
+
 def student_requests(request,student_id):
     try:
-        saved_lessons = Lesson.objects.filter(student_id = student_id).order_by('request_date').values()
+        # saved_lessons = Lesson.objects.filter(student_id = student_id).order_by('request_date').values()
         student = UserAccount.objects.get(id=student_id)
+        family = get_student_and_child_objects(student)
 
-        return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
+        user_lesson_dictionary = {}
+
+        for eachuser in family:
+            lessons = Lesson.objects.filter(student_id = eachuser).order_by('request_date')
+            user_lesson_dictionary.update({ eachuser : lessons})
+
+        return render(request,'admin_student_requests_page.html',{'user_lesson_dictionary':user_lesson_dictionary, 'student':student})
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, 'Student does not exist!')
         return redirect('admin_feed')
@@ -418,7 +434,7 @@ def admin_update_request_page(request, lesson_id):
         form = RequestForm(data)
         return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
     except ObjectDoesNotExist:
-        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+        messages.add_message(request, messages.ERROR, 'Something went wrong!')
         return redirect('admin_feed')
 
 def admin_update_request(request, lesson_id):
@@ -452,7 +468,13 @@ def admin_update_request(request, lesson_id):
                 messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
 
                 student = UserAccount.objects.get(id=lesson.student_id.id)
-                return redirect('student_requests',student.id)
+
+                parent = get_parent(student)
+                
+                if (parent != None):
+                    return redirect('student_requests',parent.id)
+                else:
+                    return redirect('student_requests',student.id)
         else:
             messages.add_message(request, messages.ERROR, 'Invalid form data!')
             return redirect('admin_feed')
@@ -471,8 +493,15 @@ def admin_confirm_booking(request, lesson_id):
         lesson.save()
         messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
         create_new_invoice(lesson.student_id.id, lesson)
+
     student = UserAccount.objects.get(id=lesson.student_id.id)
-    return redirect('student_requests',student.id)
+
+    parent = get_parent(student)
+                
+    if (parent != None):
+        return redirect('student_requests',parent.id)
+    else:
+        return redirect('student_requests',student.id)
 
 def delete_lesson(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
@@ -481,8 +510,15 @@ def delete_lesson(request, lesson_id):
         lesson.delete()
 
         messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
+
         student = UserAccount.objects.get(id=lesson.student_id.id)
-        return redirect('student_requests',student.id)
+        
+        parent = get_parent(student)
+                
+        if (parent != None):
+            return redirect('student_requests',parent.id)
+        else:
+            return redirect('student_requests',student.id)
 
 
 # Term view functions
@@ -709,17 +745,14 @@ def requests_page(request):
 def admin_feed(request):
 
     if (request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
-        student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
+        student = UserAccount.objects.filter(role=UserRole.STUDENT.value,is_parent = False)
+        parents = UserAccount.objects.filter(role=UserRole.STUDENT.value,is_parent = True)
 
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
-        # for eachlesson in fulfilled_lessons:
-        #     set_lesson_term_details(eachlesson)
 
         unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
-        # for eachlesson in unfulfilled_lessons:
-        #     set_lesson_term_details(eachlesson)
 
-        return render(request,'admin_feed.html',{'student':student,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
+        return render(request,'admin_feed.html',{'student':student,'parents':parents,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
     else:
         # return redirect('log_in')
         return redirect('home')

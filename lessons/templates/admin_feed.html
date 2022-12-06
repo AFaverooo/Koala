@@ -16,7 +16,6 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>Users</h1>
 
       <style>
         table {
@@ -54,6 +53,8 @@
           {% endfor %}
       </ul>
       {% endif %}
+      
+      <h1>Students</h1>
 
       <p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
 
@@ -83,10 +84,43 @@
                 </a>
               </td>
             </tr>
-            {# <h2>user :{{user}}</h2> #}
           {% endfor %}
         </tbody>
         </table>
+
+      
+
+        <h1>Parents/Guardians</h1>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Firstname</th>
+              <th scope="col">Lastname</th>
+              <th scope="col">Email</th>
+              <th scope="col">is_staff</th>
+              <th scope="col">is_active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in parents %}
+              <tr>
+                <th scope="row">{{user.id}}</th>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.is_staff }}</td>
+                <td>{{ user.is_active }}</td>
+                <td>
+                  <a href = '{% url 'student_requests' user.id %}' class = "btn">
+                    <button type="button" class="btn button">Select Guardians</button>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table><br><br>
 
         <h1>Requests</h1>
         <h4>UnfulFilled Requests</h4>
@@ -138,6 +172,7 @@
             </thead>
             <tbody>
               {% for lesson in fulfilled_lessons %}
+                <p>{{lesson}}</p>
                 <tr>
                   <th scope="row">{{ lesson.lesson_id }}</th>
                   <td>{{ lesson.request_date }}</td>

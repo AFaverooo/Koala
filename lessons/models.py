@@ -269,17 +269,17 @@ class Lesson(models.Model):
 
             #Display term number only if the lesson starts before mid-term
             if(eachterm.start_date <= self.lesson_date_time.date()  <= mid_term_date):
-                self.term = 'Term : ' + str(eachterm.term_number) + '            For reference : ' + str(self.lesson_date_time.date())
+                self.term = 'Term : ' + str(eachterm.term_number) #+ '            For reference : ' + str(self.lesson_date_time.date())
                 break
             #Set term date for next term if the current term is close to finishing
             elif (next_term != None and close_to_end_of_term <= self.lesson_date_time.date()  < next_term.start_date):
                 term = eachterm.term_number + 1
-                self.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(self.lesson_date_time.date())
+                self.term = 'Term : ' + str(term) + '(Close to next term)'#               For reference : ' + str(self.lesson_date_time.date())
                 break
             #Set term date for next term if the current term is close to finishing and the is no next term set
             elif(next_term == None and close_to_end_of_term <= self.lesson_date_time.date()  < end):
                 term = eachterm.term_number + 1
-                self.term = 'Term : ' + str(term) + '(Close to next term)        (No next term)       For reference : ' + str(self.lesson_date_time.date())
+                self.term = 'Term : ' + str(term) + '(Close to next term but no next term)'#       For reference : ' + str(self.lesson_date_time.date())
                 break
             else:#If lesson is not before mid term and is not close to end of term 
                 self.term = 'N/A' 
