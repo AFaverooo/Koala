@@ -3,10 +3,11 @@ from django.core.validators import RegexValidator
 from .models import UserAccount, Gender, Lesson, Term
 from  django.contrib.admin.widgets import AdminSplitDateTime
 from django.shortcuts import render
-from .models import UserAccount, Gender, Lesson, UserRole
+from .models import UserAccount, Gender, Lesson, UserRole, Term
 from django.forms import DateTimeInput
 import datetime
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput, DatePickerInput
+
 
 class LogInForm(forms.Form):
     email = forms.CharField(label='email')
@@ -178,7 +179,17 @@ class TermDatesForm(forms.ModelForm):
 
 class RequestForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
-
+    
+    # def generateDates(self):
+    #     terms = Term.objects.all()
+    #         for eachterm in terms:
+    #             start = eachterm.start_date
+    #             end = eachterm.end_date
+    #             today = datetime.date.today()
+    #             if (start <= today <= end):
+    #                 maxDate = end
+    #                 if(today.weekday() != )
+        
 
     class Meta:
         """Form options."""
@@ -204,18 +215,19 @@ class RequestForm(forms.ModelForm):
 
 
     def save(self,student_id):
-         """Create a new Lesson."""
+        """Create a new Lesson."""
 
-         super().save(commit=False)
-         lesson = Lesson.objects.create(
-             type=self.cleaned_data.get('type'),
-             duration=self.cleaned_data.get('duration'),
-             lesson_date_time=self.cleaned_data.get('lesson_date_time'),
-             student_id=student_id,
-             teacher_id=self.cleaned_data.get('teachers'),
-         )
+        super().save(commit=False)
+        lesson = Lesson.objects.create(
+            type=self.cleaned_data.get('type'),
+            duration=self.cleaned_data.get('duration'),
+            lesson_date_time=self.cleaned_data.get('lesson_date_time'),
+            student_id=student_id,
+            teacher_id=self.cleaned_data.get('teachers'),
+            term = 'N/A',
+        )
 
-         return lesson
+        return lesson
 
     def update_lesson(self, to_edit_lesson):
         duration = self.cleaned_data.get('duration')

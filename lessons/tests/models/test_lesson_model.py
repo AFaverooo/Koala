@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
+from lessons.models import UserAccount, Lesson, Gender, LessonType,LessonDuration,LessonStatus
 from lessons.modelHelpers import is_valid_lessonStatus,is_valid_lessonDuration,is_valid_lessonType
 from django.db import IntegrityError
 import datetime

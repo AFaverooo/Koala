@@ -5,16 +5,13 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .helper import login_prohibited,check_valid_date
+from .helper import login_prohibited,check_valid_date,make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons,get_saved_lessons,get_admin_email,make_lesson_dictionary,check_correct_student_accessing_pending_lesson,check_correct_student_accessing_saved_lesson
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
-from django.utils import timezone
 import datetime
-from django.core.exceptions import ObjectDoesNotExist
 from itertools import chain
-
 
 # Create your views here.
 
@@ -43,109 +40,6 @@ def get_lesson_request(dictionary):
 @register.filter
 def get_lesson_student(dictionary):
     return dictionary.get("Student")
-
-def make_lesson_timetable_dictionary(student_user):
-    fullfilled_lessons = get_student_and_child_lessons(student_user,LessonStatus.FULLFILLED)
-
-    fullfilled_lessons_dict = {}
-
-    if len(fullfilled_lessons) == 0:
-        return fullfilled_lessons_dict
-
-    for lesson in fullfilled_lessons:
-        lesson_type_str = ''
-
-        if lesson.type == LessonType.INSTRUMENT:
-            lesson_type_str = LessonType.INSTRUMENT.label
-        elif lesson.type == LessonType.THEORY:
-            lesson_type_str = LessonType.THEORY.label
-        elif lesson.type == LessonType.PRACTICE:
-            lesson_type_str = LessonType.PRACTICE.label
-        elif lesson.type == LessonType.PERFORMANCE:
-            lesson_type_str = LessonType.PERFORMANCE.label
-
-
-        new_time = lesson.lesson_date_time + datetime.timedelta(minutes=int(lesson.duration))
-
-        new_lesson_hr_str = ''
-        lesson_date_hr_str = ''
-
-        new_time_minute_str = ''
-        lesson_date_minute_str = ''
-
-        #format minutes using :00 notation
-        if new_time.minute < 10:
-            new_time_minute_str = f'0{new_time.minute}'
-        else:
-            new_time_minute_str = f'{new_time.minute}'
-
-        if lesson.lesson_date_time.minute < 10:
-            lesson_date_minute_str = f'0{lesson.lesson_date_time.minute}'
-        else:
-            lesson_date_minute_str = f'{lesson.lesson_date_time.minute}'
-
-        #format hours using 00: notation
-        if new_time.hour < 10:
-            new_lesson_hr_str = f'0{new_time.hour}'
-        else:
-            new_lesson_hr_str = f'{new_time.hour}'
-
-        if lesson.lesson_date_time.hour < 10:
-            lesson_date_hr_str = f'0{lesson.lesson_date_time.hour}'
-        else:
-            lesson_date_hr_str = f'{lesson.lesson_date_time.hour}'
-
-        teacher_str = ''
-
-        if lesson.teacher_id.gender == Gender.FEMALE:
-            teacher_str = f'Miss {lesson.teacher_id}'
-        elif lesson.teacher_id.gender == Gender.MALE:
-            teacher_str = f'Mr {lesson.teacher_id}'
-        else:
-            teacher_str = f'{lesson.teacher_id}'
-
-        duration_str = f'{lesson_date_hr_str}:{lesson_date_minute_str} - {new_lesson_hr_str}:{new_time_minute_str}'
-
-        case = {'Student':lesson.student_id,'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
-        fullfilled_lessons_dict[lesson] = case
-
-    return fullfilled_lessons_dict
-
-def make_lesson_dictionary(student_user,lessonStatus):
-    lessons = []
-
-    if lessonStatus == 'Lesson Request':
-        lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
-
-    lessons_dict = {}
-
-    for lesson in lessons:
-        temp_dict = {}
-
-        request_date_str = lesson.request_date.strftime("%Y-%m-%d")
-
-        if request_date_str not in lessons_dict.keys():
-            lessons_dict[request_date_str] = []
-
-        lesson_type_str = ''
-
-        if lesson.type == LessonType.INSTRUMENT:
-            lesson_type_str = LessonType.INSTRUMENT.name
-        elif lesson.type == LessonType.THEORY:
-            lesson_type_str = LessonType.THEORY.name
-        elif lesson.type == LessonType.PRACTICE:
-            lesson_type_str = LessonType.PRACTICE.name
-        elif lesson.type == LessonType.PERFORMANCE:
-            lesson_type_str = LessonType.PERFORMANCE.name
-
-        lesson_duration_str = f'{lesson.duration} minutes'
-
-        case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
-        temp_dict[lesson] = case
-
-        lessons_dict[request_date_str].append(temp_dict)
-
-    return lessons_dict
 
 
 @login_required
@@ -333,45 +227,35 @@ def get_student_invoices_and_transactions(request, student_id):
         return redirect('home')
 
 
-def get_student_and_child_objects(student):
-    list_of_students = []
-    list_of_students.append(student)
-
-    if student.is_parent is True:
-        child_students = UserAccount.objects.filter(parent_of_user = student)
-
-        for child in child_students:
-            list_of_students.append(child)
-
-    return list_of_students
-
-def get_student_and_child_lessons(student, statusType):
-    student_queryset = Lesson.objects.filter(lesson_status = statusType, student_id = student)
-
-    if student.is_parent:
-        child_queryset = UserAccount.objects.filter(parent_of_user = student)
-        result_queryset = student_queryset
-
-        for eachChild in child_queryset:
-            lesson_queryset = Lesson.objects.filter(student_id = eachChild , lesson_status = statusType)
-            result_queryset = chain(result_queryset, lesson_queryset)
-
-        return list(result_queryset)
-
-    return list(student_queryset)
-
-def get_saved_lessons(student):
-    return get_student_and_child_lessons(student,LessonStatus.SAVED)
-
-def get_admin_email():
-    return UserAccount.objects.filter(role = UserRole.ADMIN).first()
 
 # Admin functionality view functions
 
+
+def get_parent(student):
+    for eachuser in UserAccount.objects.filter(is_parent = True):
+        child_students = UserAccount.objects.filter(parent_of_user = eachuser)
+        for eachchild in child_students:
+            if(eachchild.id == student.id):
+                return eachuser
+    return None
+
+
 def student_requests(request,student_id):
-    saved_lessons = Lesson.objects.filter(student_id = student_id)
-    student = UserAccount.objects.get(id=student_id)
-    return render(request,'admin_student_requests_page.html',{'saved_lessons':saved_lessons, 'student': student})
+    try:
+        # saved_lessons = Lesson.objects.filter(student_id = student_id).order_by('request_date').values()
+        student = UserAccount.objects.get(id=student_id)
+        family = get_student_and_child_objects(student)
+
+        user_lesson_dictionary = {}
+
+        for eachuser in family:
+            lessons = Lesson.objects.filter(student_id = eachuser).order_by('request_date')
+            user_lesson_dictionary.update({ eachuser : lessons})
+
+        return render(request,'admin_student_requests_page.html',{'user_lesson_dictionary':user_lesson_dictionary, 'student':student})
+    except ObjectDoesNotExist:
+        messages.add_message(request, messages.ERROR, 'Student does not exist!')
+        return redirect('admin_feed')
 
 def admin_update_request_page(request, lesson_id):
     try:
@@ -385,7 +269,7 @@ def admin_update_request_page(request, lesson_id):
         form = RequestForm(data)
         return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
     except ObjectDoesNotExist:
-        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+        messages.add_message(request, messages.ERROR, 'Something went wrong!')
         return redirect('admin_feed')
 
 def admin_update_request(request, lesson_id):
@@ -399,26 +283,40 @@ def admin_update_request(request, lesson_id):
             lesson_date_time = form.cleaned_data.get('lesson_date_time')
             teacher_id = form.cleaned_data.get('teachers')
 
-        if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
-            messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
-            return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+            if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
+                messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
+                return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+            else:
+                lesson.type = type
+                lesson.duration = duration
+                lesson.lesson_date_time = lesson_date_time
+                lesson.teacher_id = teacher_id
+                # set_lesson_term_details(lesson)
+                lesson.save()
+
+                #update_invoice(lesson)
+
+                # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
+                if lesson.lesson_status == LessonStatus.FULLFILLED:
+                    update_invoice(lesson)
+
+                messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+
+                student = UserAccount.objects.get(id=lesson.student_id.id)
+
+                parent = get_parent(student)
+
+                if (parent != None):
+                    return redirect('student_requests',parent.id)
+                else:
+                    return redirect('student_requests',student.id)
         else:
-            lesson.type = type
-            lesson.duration = duration
-            lesson.lesson_date_time = lesson_date_time
-            lesson.teacher_id = teacher_id
-            lesson.save()
-
-            # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
-            if lesson.lesson_status == LessonStatus.FULLFILLED:
-                update_invoice(lesson)
-
-            messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
-
-            student = UserAccount.objects.get(id=lesson.student_id.id)
-            return redirect('student_requests',student.id)
+            messages.add_message(request, messages.ERROR, 'Invalid form data!')
+            return redirect('admin_feed')
+            # return redirect(request.path)
 
     except ObjectDoesNotExist:
+        messages.add_message(request, messages.ERROR, 'Object not found error!')
         return redirect('admin_feed')
 
 def admin_confirm_booking(request, lesson_id):
@@ -430,8 +328,15 @@ def admin_confirm_booking(request, lesson_id):
         lesson.save()
         messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
         create_new_invoice(lesson.student_id.id, lesson)
+
     student = UserAccount.objects.get(id=lesson.student_id.id)
-    return redirect('student_requests',student.id)
+
+    parent = get_parent(student)
+
+    if (parent != None):
+        return redirect('student_requests',parent.id)
+    else:
+        return redirect('student_requests',student.id)
 
 def delete_lesson(request, lesson_id):
     lesson = Lesson.objects.get(lesson_id=lesson_id)
@@ -440,8 +345,15 @@ def delete_lesson(request, lesson_id):
         lesson.delete()
 
         messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
+
         student = UserAccount.objects.get(id=lesson.student_id.id)
-        return redirect('student_requests',student.id)
+
+        parent = get_parent(student)
+
+        if (parent != None):
+            return redirect('student_requests',parent.id)
+        else:
+            return redirect('student_requests',student.id)
 
 
 # Term view functions
@@ -465,61 +377,75 @@ def create_term(request):
         term_number = form.cleaned_data.get('term_number')
         start_date = form.cleaned_data.get('start_date')
         end_date = form.cleaned_data.get('end_date')
-        # if(term_number!=1):
-
-        doesTermNumberAlredyExist = None
-        doesTermNumberAlredyExist = Term.objects.filter(term_number=term_number)
-        if(doesTermNumberAlredyExist):
-            messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
-            return render(request,'create_term_form.html', {'form': form})
-
-        try:
-            previous_term = Term.objects.get(term_number=str(int(term_number)-1))
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, "Previous term's numbers are missing, please rectify term numbers!")
-            return render(request, 'create_term_form.html', {'form':form})
 
         if(start_date > end_date or end_date < start_date):
             messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
             return render(request, 'create_term_form.html', {'form':form})
 
-        elif(start_date < previous_term.end_date):
-            messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
+        if(start_date == end_date):
+            messages.add_message(request, messages.ERROR, "Term cannot start and end on the same day!")
             return render(request, 'create_term_form.html', {'form':form})
 
+
+        if(term_number!=1):
+
+            if(len(Term.objects.filter(term_number=term_number)) !=0):
+                messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
+                return render(request,'create_term_form.html', {'form': form})
+
+            if (len(Term.objects.filter(term_number=term_number-1)) !=0):
+
+                previous_term = Term.objects.get(term_number=term_number-1)
+
+                if(start_date <= previous_term.end_date):
+                    messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
+                    return render(request, 'create_term_form.html', {'form':form})
+
+            # except ObjectDoesNotExist:
+                # messages.add_message(request, messages.ERROR, "Previous term's numbers are missing, please rectify term numbers!")
+                # return render(request, 'create_term_form.html', {'form':form})
+
+
+        if(term_number!= 6):
+            if(len(Term.objects.filter(term_number=term_number+1)) !=0):
+                next_term = Term.objects.get(term_number=term_number+1)
+
+                if(end_date >= next_term.start_date):
+                    messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
+                    return render(request, 'create_term_form.html', {'form':form})
+
+            # except ObjectDoesNotExist:
+                # messages.add_message(request, messages.ERROR, "Next term's numbers are missing, please rectify term numbers!")
+                # return render(request, 'create_term_form.html', {'form':form})
+
         form.save()
+        messages.add_message(request,messages.SUCCESS, "Successfully added term!")
+        return term_management_page(request)
     else:
-        messages.add_message(request,messages.ERROR, "Validator is set to only accept term numbers from 1 to 6!")
+        messages.add_message(request,messages.ERROR, "Invalid form input, Validator is set to only accept term numbers from 1 to 6!")
         return term_management_page(request)
 
-    messages.add_message(request,messages.SUCCESS, "Successfully added term!")
-    return term_management_page(request)
 
 
 def edit_term_details_page(request,term_number):
     term = Term.objects.get(term_number=term_number)
-    terms_list = Term.objects.all()
-    # if( int(term_number)-1 >0 ):
+
     try:
         previous_term = Term.objects.get(term_number=str(int(term_number)-1))
     except ObjectDoesNotExist:
         previous_term = None
-            # messages.add_message(request,messages.ERROR, f'Please ensure the previous term number ({int(term_number)-1}) is added before attempting to edit!')
-            # return term_management_page(request)
 
-    # if( int(term_number)+1 <len(terms_list) + 1 ):
     try:
         next_term = Term.objects.get(term_number=str(int(term_number)+1))
     except ObjectDoesNotExist:
         next_term = None
-            # messages.add_message(request,messages.ERROR, f'Please ensure the next term number ({int(term_number)+1}) is added before attempting to edit!')
-            # return term_management_page(request)
 
     data = {
         'term_number': term.term_number,
         'start_date': term.start_date,
         'end_date': term.end_date,
         }
+
     form = TermDatesForm(data)
     return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
 
@@ -533,66 +459,71 @@ def update_term_details(request,term_number):
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
 
-        try:
-            previous_term = Term.objects.get(term_number=str(int(term_number_in)-1))
-        except ObjectDoesNotExist:#For when editing a lesson with term number 1
-            previous_term = None
-
-        try:
-            next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
-        except ObjectDoesNotExist:#For when editing a lesson with a term number with no next term in database
-            next_term = None
-
-        doesTermNumberAlredyExist = None
-        doesTermNumberAlredyExist = Term.objects.filter(term_number=term_number_in)
-        if( doesTermNumberAlredyExist ):
-            messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
-        if (term.start_date == start_date and term.end_date == end_date and term.term_number == term_number_in):
-            #terms_list = Term.objects.all()
-            messages.add_message(request, messages.ERROR, 'Term details are the same as before!')
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+            if(int(term_number) != int(term_number_in) and len(Term.objects.filter(term_number=term_number_in)) !=0):
+                    messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
+                    return render(request,'create_term_form.html', {'form': form})
 
 
+            try:
+                previous_term = Term.objects.get(term_number=str(int(term_number_in)-1))
 
-        if(next_term != None and end_date > next_term.start_date and term_number != term_number_in):
-            messages.add_message(request, messages.ERROR, "Term's end date overlaps with the next term's start date for the chosen term number. Try changing the term number or fix term overlap before attempting to alter term number!")
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+                if(int(term_number_in)-1 == int(term_number)):
+                    previous_term = None
 
-        elif(previous_term != None and start_date < previous_term.end_date and term_number != term_number_in):
-            messages.add_message(request, messages.ERROR, "Term's start date overlaps with the previous term's end date for the chosen term number. Try changing the term number or fix term overlap before attempting to alter term number!")
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+                if(previous_term != None and start_date < previous_term.end_date and term_number != term_number_in):
+                    messages.add_message(request, messages.ERROR, "Term's start date overlaps with the previous term's end date for the chosen term number! Try changing the term number or fix term overlap before attempting to alter term number.")
+                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
 
-
-
-        if(start_date > end_date or end_date < start_date):
-            messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
-        elif(previous_term !=None and next_term !=None  and end_date > next_term.start_date and start_date < previous_term.end_date):
-            messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with other terms!")
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+                if(previous_term != None and start_date < previous_term.end_date):
+                    messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
+                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
 
 
-        elif(next_term !=None and end_date > next_term.start_date):
-            messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+            except ObjectDoesNotExist:
+                previous_term = None
 
-        elif(previous_term !=None and start_date < previous_term.end_date):
-            messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+            try:
+                next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
 
-        term.term_number = term_number_in
-        term.start_date = start_date
-        term.end_date = end_date
-        term.save()
-        messages.add_message(request, messages.SUCCESS, 'Term details were successfully updated!')
+                if(int(term_number_in)+1 == int(term_number)):
+                    next_term = None
 
-        return term_management_page(request)
+                if(next_term!= None and end_date > next_term.start_date and term_number != term_number_in):
+                    messages.add_message(request, messages.ERROR, "Term's end date overlaps with the next term's start date for the chosen term number. Try changing the term number or fix term overlap before attempting to alter term number!")
+                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+                if(next_term!= None and end_date > next_term.start_date):
+                    messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
+                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+            except ObjectDoesNotExist:
+                next_term = None
+
+            if(previous_term !=None and next_term !=None  and end_date > next_term.start_date and start_date < previous_term.end_date):
+                messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with other terms!")
+                return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+            if (term.start_date == start_date and term.end_date == end_date and term.term_number == term_number_in):
+                messages.add_message(request, messages.ERROR, 'Term details are the same as before!')
+                return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+            if(start_date > end_date or end_date < start_date):
+                messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
+                return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+            term.term_number = term_number_in
+            term.start_date = start_date
+            term.end_date = end_date
+            term.save()
+
+            messages.add_message(request, messages.SUCCESS, 'Term details were successfully updated!')
+            return term_management_page(request)
+        else:
+            messages.add_message(request, messages.ERROR, 'The input data is invalid. Only term numbers 1-6 are accepted')
+            return term_management_page(request)
 
     except ObjectDoesNotExist:
-        messages.add_message(request, messages.ERROR, 'The input data is invalid (Term number must be 1-6)')
+        messages.add_message(request, messages.ERROR, 'Unexpected Error')
         return term_management_page(request)
 
 
@@ -602,6 +533,8 @@ def delete_term(request, term_number):
         term.delete()
         messages.add_message(request, messages.SUCCESS, 'Term was successfully deleted!')
         return term_management_page(request)
+
+# ---------------------------------------------
 
 
 @login_required
@@ -647,10 +580,14 @@ def requests_page(request):
 def admin_feed(request):
 
     if (request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
-        student = UserAccount.objects.filter(role=UserRole.STUDENT.value)
+        student = UserAccount.objects.filter(role=UserRole.STUDENT.value,is_parent = False)
+        parents = UserAccount.objects.filter(role=UserRole.STUDENT,is_parent = True)
+
         fulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.FULLFILLED)
+
         unfulfilled_lessons = Lesson.objects.filter(lesson_status = LessonStatus.UNFULFILLED)
-        return render(request,'admin_feed.html',{'student':student,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
+
+        return render(request,'admin_feed.html',{'student':student,'parents':parents,'fulfilled_lessons':fulfilled_lessons,'unfulfilled_lessons':unfulfilled_lessons})
     else:
         # return redirect('log_in')
         return redirect('home')
@@ -805,7 +742,7 @@ def update_user(request,current_user_id):
         try:
             user = UserAccount.objects.get(id=current_user_id)
         except ObjectDoesNotExist:
-            messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
+            messages.add_message(request,messages.ERROR,f"{request.user.email} does not exist")
             return redirect("director_manage_roles")
 
 
@@ -852,18 +789,25 @@ def home(request):
             role = form.cleaned_data.get('role')
             user = authenticate(email=email, password=password)
             if user is not None:
-                login(request,user)
+                if user.parent_of_user is None:
+                    login(request,user)
 
-                 # redirects the user based on his role
-                if (user.role == UserRole.ADMIN.value):
-                     #redirect_url = request.POST.get('next') or 'admin_feed'
-                    return redirect('admin_feed')
-                elif (user.role == UserRole.DIRECTOR.value):
-                    redirect_url = request.POST.get('next') or 'director_feed'
-                    return redirect(redirect_url)
+                     # redirects the user based on his role
+                    if (user.role == UserRole.ADMIN.value):
+                         #redirect_url = request.POST.get('next') or 'admin_feed'
+                        return redirect('admin_feed')
+                    elif (user.role == UserRole.DIRECTOR.value):
+                        redirect_url = request.POST.get('next') or 'director_feed'
+                        return redirect(redirect_url)
+                    else:
+                        redirect_url = request.POST.get('next') or 'student_feed'
+                        return redirect(redirect_url)
                 else:
-                    redirect_url = request.POST.get('next') or 'student_feed'
-                    return redirect(redirect_url)
+                    messages.add_message(request,messages.ERROR,"Child credentials cannot be used to access the application")
+                    form = LogInForm()
+                    next = request.GET.get('next') or ''
+                    #return render(request,'log_in.html', {'form' : form, 'next' : next})
+                    return render(request,'home.html', {'form' : form, 'next' : next})
 
         messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
     form = LogInForm()
@@ -966,21 +910,6 @@ def save_lessons(request):
         return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
-def check_correct_student_accessing_pending_lesson(student_id, other_lesson):
-    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
-    for lesson in all_student_lessons:
-        if lesson.is_equal(other_lesson):
-            return True
-
-    return False
-
-def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
-    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.SAVED)
-    for lesson in all_student_lessons:
-        if lesson.is_equal(other_lesson):
-            return True
-
-    return False
 
 def render_edit_request(request,lesson_id):
     try:
@@ -1070,24 +999,25 @@ def delete_saved(request,lesson_id):
         current_student = request.user
         #if check_correct_student_accessing_lesson(current_student,lesson_id):
         if request.method == 'POST':
-                try:
-                    lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
-                except ObjectDoesNotExist:
-                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
-                    students_option = get_student_and_child_objects(request.user)
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+            request_form = RequestForm()
+            students_option = get_student_and_child_objects(request.user)
 
-                if check_correct_student_accessing_saved_lesson(current_student,lesson_to_delete) is False:
-                    messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
-                    students_option = get_student_and_child_objects(request.user)
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+            try:
+                lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
-                lesson_to_delete.delete()
-                messages.add_message(request, messages.SUCCESS, "Saved lesson deleted")
-                return redirect('requests_page')
+            if check_correct_student_accessing_saved_lesson(current_student,lesson_to_delete) is False:
+                messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+
+            lesson_to_delete.delete()
+            messages.add_message(request, messages.SUCCESS, "Saved lesson deleted")
+            return redirect('requests_page')
 
         else:
-            return redirect('student_feed')
+            return redirect('requests_page')
     else:
         # return redirect('log_in')
         return redirect('home')
