@@ -1070,24 +1070,25 @@ def delete_saved(request,lesson_id):
         current_student = request.user
         #if check_correct_student_accessing_lesson(current_student,lesson_id):
         if request.method == 'POST':
-                try:
-                    lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
-                except ObjectDoesNotExist:
-                    messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
-                    students_option = get_student_and_child_objects(request.user)
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+            request_form = RequestForm()
+            students_option = get_student_and_child_objects(request.user)
 
-                if check_correct_student_accessing_saved_lesson(current_student,lesson_to_delete) is False:
-                    messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
-                    students_option = get_student_and_child_objects(request.user)
-                    return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+            try:
+                lesson_to_delete = Lesson.objects.get(lesson_id = int(lesson_id))
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
-                lesson_to_delete.delete()
-                messages.add_message(request, messages.SUCCESS, "Saved lesson deleted")
-                return redirect('requests_page')
+            if check_correct_student_accessing_saved_lesson(current_student,lesson_to_delete) is False:
+                messages.add_message(request, messages.WARNING, "Attempted Deletion Not Permitted")
+                return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
+
+            lesson_to_delete.delete()
+            messages.add_message(request, messages.SUCCESS, "Saved lesson deleted")
+            return redirect('requests_page')
 
         else:
-            return redirect('student_feed')
+            return redirect('requests_page')
     else:
         # return redirect('log_in')
         return redirect('home')
