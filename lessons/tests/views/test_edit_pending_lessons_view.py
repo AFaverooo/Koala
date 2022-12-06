@@ -17,6 +17,12 @@ class StudentFeedEditLessonTestCase(TestCase):
             end_date = datetime.date(2023, 7,21),
         )
 
+        self.term_one = Term.objects.create(
+            term_number=1,
+            start_date = datetime.date(2022, 9,1),
+            end_date = datetime.date(2022, 10,21),
+        )
+
         self.teacher = UserAccount.objects.create_teacher(
             first_name='Barbare',
             last_name='Dutch',
@@ -154,14 +160,14 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.form_input = {
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.FOURTY_FIVE,
-            'lesson_date_time' : datetime.datetime(2022, 7, 21, 16, 00, 00, tzinfo=timezone.utc),
+            'lesson_date_time' : datetime.datetime(2022, 9, 21, 16, 00, 00, tzinfo=timezone.utc),
             'teachers': self.teacher2.id,
         }
 
         self.form_input2 = {
             'type': LessonType.PERFORMANCE,
             'duration': LessonDuration.HOUR,
-            'lesson_date_time' : datetime.datetime(2022, 7, 17, 16, 00, 00, tzinfo=timezone.utc),
+            'lesson_date_time' : datetime.datetime(2022, 9, 17, 16, 00, 00, tzinfo=timezone.utc),
             'teachers': self.teacher3.id,
         }
 
@@ -454,7 +460,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(updated_lesson.request_date, request_date)
         self.assertEqual(updated_lesson.duration, LessonDuration.FOURTY_FIVE)
         self.assertEqual(updated_lesson.teacher_id,self.teacher2)
-        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 7, 21, 16, 00, 00, tzinfo=timezone.utc))
+        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 9, 21, 16, 00, 00, tzinfo=timezone.utc))
 
     def test_apply_edit_to_lesson2_succesfully(self):
         self.create_forms()
@@ -485,7 +491,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(updated_lesson.request_date, request_date)
         self.assertEqual(updated_lesson.duration, LessonDuration.HOUR)
         self.assertEqual(updated_lesson.teacher_id,self.teacher3)
-        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 7, 17, 16, 00, 00, tzinfo=timezone.utc))
+        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 9, 17, 16, 00, 00, tzinfo=timezone.utc))
 
     def test_apply_edit_to_child_lesson_succesfully(self):
         self.create_child_student()
@@ -519,4 +525,4 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(updated_lesson.request_date, request_date)
         self.assertEqual(updated_lesson.duration, LessonDuration.HOUR)
         self.assertEqual(updated_lesson.teacher_id,self.teacher3)
-        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 7, 17, 16, 00, 00, tzinfo=timezone.utc))
+        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 9, 17, 16, 00, 00, tzinfo=timezone.utc))

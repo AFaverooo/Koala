@@ -133,12 +133,12 @@ class TestChildStudentUser(TestCase):
         self.assertFalse(self.child.is_staff)
 
     def test_child_student_is_student(self):
-        self.assertTrue(self.child.role.is_student())
+        self.assertEqual(self.child.role, UserRole.STUDENT)
         self._assert_child_student_is_valid()
 
     def test_child_student_is_not_student(self):
         self.child.role = UserRole.ADMIN
-        self.assertFalse(self.child.role.is_student())
+        self.assertNotEqual(self.child.role, UserRole.STUDENT)
 
     def test_child_user_is_valid(self):
         self._assert_child_student_is_valid()
