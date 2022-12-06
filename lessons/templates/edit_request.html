@@ -1,46 +1,12 @@
 
-{%extends 'base_content.html'%}
-
-
-{%block content%}
-{% load crispy_forms_tags %}
-
-
+{%extends 'request-base.html'%}
 <body>
-        <div class="container vh-100" id="homecardholder">
-               <div class="row h-100">
-                 <div class="col-12 my-auto">
-                   <div class="card mx-auto" id="signupcard">
-
-<!--
-  Do not replace with partial as date time uses custom widget that cannot be rendered using
-crispyforms-->
-                    <div class="divider"></div>
-
+{%block request-body%}
+{% load crispy_forms_tags %}
+<h1> Edit A Lesson</h1>
   <form action='{% url 'edit_lesson' lesson_id %}' method="post">
-    {% csrf_token %}
-    {% include 'partials/messages.html' with form=form %}
-    {{ form.type|as_crispy_field }}
-
-    {{ form.duration|as_crispy_field }}
-
-       {{ form.media }}
-
-        <div class="fieldWrapper">
-        <label for="{{ form.lesson_date_time.id_for_label }}">Lesson Date and Time:</label>
-        {{ form.lesson_date_time }}
-       </div>
-
-       <div class="divider"></div>
-    {{ form.teachers|as_crispy_field }}
-
-   <button type="submit" value="Edit Lesson" class="btn successbutton">Edit Lesson</button>
-      </form>
-
-    </div>
-  </div>
-  </div>
+    {% csrf_token %}  
 
 
-</body>
-{% endblock %}
+{%endblock%}
+  </body>
