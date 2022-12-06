@@ -171,7 +171,7 @@ class Command(BaseCommand):
                     rand_lesson_date = rand_lesson_date_time.date()
 
                     if ((current_term.start_date <= rand_lesson_date <= current_term.end_date) and
-                        rand_lesson_date.weekday() != 5 and rand_lesson_date.weekday() != 6 and
+                        rand_lesson_date.weekday() != 5 and rand_lesson_date.week day() != 6 and
                         8 <= rand_lesson_date_time.hour <= 17 and
                         (rand_lesson_date_time,rand_teacher) not in lessons_per_request):
                         lessons_per_request.append((rand_lesson_date_time,rand_teacher))

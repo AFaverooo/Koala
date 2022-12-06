@@ -18,21 +18,21 @@ class InvoiceStatus(models.TextChoices):
     PARTIALLY_PAID = 'PARTIALLY_PAID', _('This invoice has been partially paid')
     DELETED = 'DELETED', _('This invoice has been deleted')
 
+#Enum type for the status of a lesson 
 class LessonStatus(models.TextChoices):
     SAVED = 'SA', _('The lesson has been saved')
     UNFULFILLED = 'PN', _('The lesson request is pending')
     FULLFILLED = 'BK', _('The lesson has been booked')
-#test fot lesson type
+
+#Enum type for the type of lesson requested by the student
 class LessonType(models.TextChoices):
     INSTRUMENT = 'INSTR', _('Learn To Play An Instrument'),
     THEORY = 'TH', _('Instrument Music Theory'),
     PRACTICE = 'PR', _('Instrument practice'),
     PERFORMANCE = 'PERF', _('Performance Preparation'),
 
-    #def getType(self):
-    #    return f'{self.label}'
 
-#test for lesson duration
+#Enum type for the duration of a lesson
 class LessonDuration(models.TextChoices):
     THIRTY = '30', _('30 minute lesson')
     FOURTY_FIVE = '45', _('45 minute lesson')
@@ -54,13 +54,13 @@ class UserRole(models.TextChoices):
     def is_student(self):
         return self.value == 'Student'
 
-
+#Enum type for the gender of the student user
 class Gender(models.TextChoices):
     MALE = 'M' , _('Male')
     FEMALE = 'F', _('Female')
     PNOT = 'PNOT', _('Prefer Not To Say')
 
-
+#custom manager for creating different types of user accounts
 class UserAccountManager(BaseUserManager):
     use_in_migrations = True
 
@@ -77,6 +77,7 @@ class UserAccountManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    #creates a student account
     def create_student(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
@@ -85,14 +86,12 @@ class UserAccountManager(BaseUserManager):
         extra_fields.setdefault('role', UserRole.STUDENT)
         return self._create_user(email, password, **extra_fields)
 
+    #creates a child student account, parameters include the UserAccount object which is the parent of the student to be created
     def create_child_student(self, email, password, **extra_fields):
 
-        #try:
-        #    parent = UserAccount.objects.get(email = extra_fields('parent_id').email)
-        #except ObjectDoesNotExist:
-        #        raise ValueError('parent user account provided does not exist')
         parent = extra_fields['parent_of_user']
 
+        #checks to ensure that the parent_of_user object passed in is of type UserAccount
         if hasattr(parent,'email') is False:
             raise AttributeError('Provided parent field is not of type UserAccount')
 
@@ -108,6 +107,7 @@ class UserAccountManager(BaseUserManager):
         extra_fields.setdefault('role', UserRole.STUDENT)
         return self._create_user(email, password, **extra_fields)
 
+    #creates an admin account
     def create_admin(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', False)
@@ -124,6 +124,7 @@ class UserAccountManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
+    #creates a teacher account
     def create_teacher(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', False)
@@ -140,6 +141,7 @@ class UserAccountManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
+    #creates a director account of the system
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -182,6 +184,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         default=timezone.now,
     )
 
+    #making the email the unique primary field
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -189,6 +192,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     is_parent = models.BooleanField(default = False, blank = False)
 
+    #object referring to the parent of this student user
     parent_of_user = models.ForeignKey('self',related_name = 'parent',on_delete=models.CASCADE, blank = True, null = True)
 
     gender = models.CharField(
@@ -218,6 +222,9 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
+#Lesson model refers to the single lesson requested by the student user
+#It can have varying information such as the type of lessons, its duration , the teacher related to the lesson and the student requesting it
+#Lessons have varying status, SAVED when the lesson is first created by the user , UNFULFILLED when it is requested by the user and FULLFILLED when it is booked by an admin
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
 
@@ -245,6 +252,7 @@ class Lesson(models.Model):
 
     lesson_status = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.SAVED, blank = False)
 
+    #the unique composite key is defined by the date the lesson was requested, for what date and time the lesson was requested and what student requested it
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
 

@@ -178,7 +178,17 @@ class TermDatesForm(forms.ModelForm):
 
 class RequestForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
-
+    
+    # def generateDates(self):
+    #     terms = Term.objects.all()
+    #         for eachterm in terms:
+    #             start = eachterm.start_date
+    #             end = eachterm.end_date
+    #             today = datetime.date.today()
+    #             if (start <= today <= end):
+    #                 maxDate = end
+    #                 if(today.weekday() != )
+        
 
     class Meta:
         """Form options."""
