@@ -17,6 +17,8 @@ The deployed version of the application can be found at *<[enter URL here](URL)>
 ## Installation instructions
 To install the software and use it in your local development environment, you must first set up and activate a local development environment.  From the root of the project:
 
+If possible test our application in firefox or Google Chrome, avoid safari if possible as the bootstrap doesn't render properly.
+
 ```
 $ virtualenv venv
 $ source venv/bin/activate
@@ -69,3 +71,18 @@ sqlparse==0.4.1
 text-unidecode==1.3
 ```
 *Declare are other sources here.*
+
+##Reference
+Material we refers to when writing code
+```
+When Log in View in views was written, we refer to part of the code in Login View from clucker
+When Sign up View in views was written, we refer to part of the code in Sginup View from clucker
+When Log in Tests in tests/views was written, we refer to part of the code in test/views/test_sign_up_view from clucker
+When Sign up Test in tests/views was written, we refer to part of the code in test/views/test_sign_up_view from clucker
+When UserAccount model in models was written, we refer to part of the code in User model from clucker
+When UserAccount model's tests in test/models was writtent, we refer to part of the code in tests/models/test_user_model from clucker
+When Invoice model's tests in test/models was writtent, we refer to part of the code in tests/models/test_user_model from clucker
+When Transaction model's tests in test/models was writtent, we refer to part of the code in tests/models/test_user_model from clucker
+When login_required and login_prohibited in tests/helpers was written, we refer to part of the code in test/helpers from clucker
+.EntryButton in static/custom.css is taken from https://getcssscan.com/css-buttons-examples
+```

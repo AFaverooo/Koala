@@ -1,0 +1,24 @@
+[
+{
+    "model": "lessons.useraccount",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$390000$nB9dWLHIIov8f7RDPs51Wm$3sPokqTwnQONQCRV5U+uNUOg36SKyskzei+Bd2LBTQI=",
+        "last_login": null,
+        "is_superuser": false,
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "johndoe@example.org",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2022-12-05T19:08:46.386Z",
+        "is_parent": false,
+        "parent_of_user": null,
+        "gender": "M",
+        "role": "Student",
+        "balance": 0,
+        "groups": [],
+        "user_permissions": []
+    }
+}
+]

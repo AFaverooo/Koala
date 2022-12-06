@@ -4,8 +4,8 @@ from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,Les
 import random
 import string
 import datetime
-from django.utils import timezone
 from datetime import date
+from django.utils import timezone
 from django.db import IntegrityError
 
 letters = string.ascii_lowercase
@@ -94,7 +94,7 @@ class Command(BaseCommand):
             )
 
             # seed the children
-            for i in range(random.randint(0,3)):
+            for i in range(random.randint(0,2)):
 
                 fname = self.faker.unique.first_name()
                 lname = self.faker.unique.last_name()
@@ -140,7 +140,6 @@ class Command(BaseCommand):
         lesson_status.append(LessonStatus.FULLFILLED)
 
         terms = list(Term.objects.all())
-        lessons_per_request = [] #ensures that teachers cant't be double booked
 
         for i in range(len(students)):
 
@@ -152,30 +151,12 @@ class Command(BaseCommand):
                 rand_teacher = teachers[random.randint(0,len(teachers)-1)]
 
                 # ensures sure request date is done before lessons date and time
-                while (req_day_chosen == False):
-                    random_req_day = self.faker.date_between(start_date='-1y', end_date='+1y')
-                    if (random_req_day <=  current_term.end_date):
-                        req_day_chosen = True
+                random_req_day = self.faker.date_between(start_date='-1y', end_date=current_term.end_date)
 
-                """
-                This while loop ensures sure lessons date :
-                 - fall within a term
-                 - not on a weakend
-                 - between 8am and 5pm
-                 - not conflicting with other teachers at the same time
-                """
+                rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date=current_term.start_date, end_date=current_term.end_date)
+
                 # ensures sure lessons date fall within the term, and is not on a weekend, and on different time if on the same say
-                while (True):
 
-                    rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date='-1y', end_date='+1y').replace(second=0, microsecond=0, minute=0)
-                    rand_lesson_date = rand_lesson_date_time.date()
-
-                    if ((current_term.start_date <= rand_lesson_date <= current_term.end_date) and
-                        rand_lesson_date.weekday() != 5 and rand_lesson_date.weekday() != 6 and
-                        8 <= rand_lesson_date_time.hour <= 17 and
-                        (rand_lesson_date_time,rand_teacher) not in lessons_per_request):
-                        lessons_per_request.append((rand_lesson_date_time,rand_teacher))
-                        break
 
                 try:
                     Lesson.objects.create(
@@ -375,7 +356,7 @@ class Command(BaseCommand):
             # this calculate the balance for student
             if(students[i].parent_of_user):
                 current_existing_invoice_parent = Invoice.objects.filter(student_ID = students[i].parent_of_user.id)
-                
+
                 list_of_child_invoice = []
                 children = UserAccount.objects.filter(parent_of_user = students[i].parent_of_user)
                 for child in children:
@@ -384,7 +365,7 @@ class Command(BaseCommand):
                         list_of_child_invoice.append(invoice)
 
                 current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = students[i].parent_of_user.id)
-                
+
                 invoice_fee_total = 0
                 payment_fee_total = 0
 
