@@ -60,6 +60,7 @@ $ python3 manage.py runserver
 
 ## Sources
 The packages used by this application are specified in `requirements.txt`
+```
 asgiref==3.4.1
 coverage==6.0.1
 Django==3.2.5
@@ -72,5 +73,5 @@ pytz==2021.1
 six==1.16.0
 sqlparse==0.4.1
 text-unidecode==1.3
-
+```
 *Declare are other sources here.*
