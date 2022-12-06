@@ -28,12 +28,6 @@ Install all required packages:
 $ pip3 install -r requirements.txt
 ```
 
-Make Migrations:
-
-```
-$ python3 manage.py make migrations
-```
-
 Migrate the database:
 
 ```
