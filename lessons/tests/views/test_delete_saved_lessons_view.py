@@ -1,11 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
-from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus
+from lessons.models import UserAccount, Lesson, Gender, LessonType,LessonDuration,LessonStatus
 import datetime
 from django.utils import timezone
 from django.contrib import messages
-# from lessons.models import UserAccount, Gender
-from lessons.tests.helpers import reverse_with_next
+
 
 class StudentFeedDeleteSavedLessonTestCase(TestCase):
     """Tests for the student feed."""

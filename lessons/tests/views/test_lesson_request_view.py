@@ -1,14 +1,12 @@
-from django.contrib.auth.hashers import check_password
+
 from django.test import TestCase
 from django.urls import reverse
 from lessons.forms import RequestForm
 from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus
 
-from lessons.forms import RequestForm
-from lessons.views import get_student_and_child_objects
+from lessons.helper import get_student_and_child_objects
 from django import forms
 from django.utils import timezone
-from datetime import time
 import datetime
 from lessons.tests.helpers import reverse_with_next
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
