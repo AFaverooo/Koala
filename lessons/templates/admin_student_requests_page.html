@@ -75,11 +75,6 @@
       </ul>
       {% endif %}
 
-      <div>
-        <a href = '{% url 'student_invoices_and_transactions' student.id %}' class = "btn">
-          <button type="button" class="btn button">Student Invoices and Transactions History</button>
-        </a>
-      </div>
       {% for user,lessons in user_lesson_dictionary.items %}
 
         <h1>Requests from {{user.first_name}} {{user.last_name}}</h1><br>
@@ -161,8 +156,15 @@
           <h2>There are currently no items here</h2>
           {% endif %}
 
+          <div>
+            <a href = '{% url 'student_invoices_and_transactions' user.id %}' class = "btn">
+              <button type="button" class="btn button">Invoices and Transactions History</button>
+            </a>
+          </div>
+
         </div>
       {% endfor %}
+      
     </div>
   </div>
 </div>

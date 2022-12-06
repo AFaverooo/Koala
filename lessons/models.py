@@ -268,7 +268,7 @@ class Lesson(models.Model):
                 next_term = None
 
             #Display term number only if the lesson starts before mid-term
-            if(eachterm.start_date <= self.lesson_date_time.date()  <= mid_term_date):
+            if(eachterm.start_date <= self.lesson_date_time.date()  <= close_to_end_of_term):
                 self.term = 'Term : ' + str(eachterm.term_number) #+ '            For reference : ' + str(self.lesson_date_time.date())
                 break
             #Set term date for next term if the current term is close to finishing
@@ -281,8 +281,8 @@ class Lesson(models.Model):
                 term = eachterm.term_number + 1
                 self.term = 'Term : ' + str(term) + '(Close to next term but no next term)'#       For reference : ' + str(self.lesson_date_time.date())
                 break
-            else:#If lesson is not before mid term and is not close to end of term 
-                self.term = 'N/A' 
+            # else:#If lesson is not before mid term and is not close to end of term 
+            #     self.term = 'N/A' 
 
         super(Lesson,self).save(*args, **kwargs)
 
@@ -306,6 +306,7 @@ class Invoice(models.Model):
         )]
     )
 
+    # student number store the student
     student_ID = models.CharField(
         max_length = 30,
         blank=False,
@@ -400,7 +401,7 @@ class Transaction(models.Model):
             MinValueValidator(1),
         ]
     )
-
+    
 class Term(models.Model):
     term_number =  models.IntegerField(
         # blank = True,
