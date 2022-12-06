@@ -106,6 +106,8 @@ class LessonRequestViewTestCase(TestCase):
         student_options = response.context['students_option']
 
         self.assertEqual(len(student_options),2)
+        self.assertTrue(self.student in student_options)
+        self.assertTrue(self.child in student_options)
 
     def test_drop_down_of_users_is_populated_with_student(self):
         self.client.login(email=self.student.email, password="Password123")
@@ -116,6 +118,7 @@ class LessonRequestViewTestCase(TestCase):
         student_options = response.context['students_option']
 
         self.assertEqual(len(student_options),1)
+        self.assertTrue(self.student in student_options)
 
     def test_function_to_get_student_and_children(self):
         #self.fail()
@@ -124,15 +127,21 @@ class LessonRequestViewTestCase(TestCase):
 
         self.assertEqual(len(options),2)
 
-        self.assertEqual(options[0].email,self.student.email)
-        self.assertEqual(options[1].email,self.child.email)
+        self.assertTrue(self.student in options)
+        self.assertTrue(self.child in options)
 
-        self.assertTrue(options[0].is_parent)
-        self.assertEqual(options[0].parent_of_user,None)
-        self.assertEqual(options[1].parent_of_user.email,self.student.email)
+        actual_student = list(filter(lambda student: student.email == self.student.email,options))
+        actual_child = list(filter(lambda student: student.email == self.child.email,options))
 
-        self.assertEqual(options[0].role,UserRole.STUDENT)
-        self.assertEqual(options[1].role,UserRole.STUDENT)
+        self.assertEqual(actual_student[0].email,self.student.email)
+        self.assertEqual(actual_child[0].email,self.child.email)
+
+        self.assertTrue(actual_student[0].is_parent)
+        self.assertEqual(actual_student[0].parent_of_user,None)
+        self.assertEqual(actual_child[0].parent_of_user.email,actual_student[0].email)
+
+        self.assertEqual(actual_student[0].role,UserRole.STUDENT)
+        self.assertEqual(actual_child[0].role,UserRole.STUDENT)
 
     def test_get_request_page_with_saved_lessons(self):
         self.client.login(email=self.student.email, password="Password123")
@@ -141,6 +150,10 @@ class LessonRequestViewTestCase(TestCase):
         self.assertTemplateUsed(response, 'requests_page.html')
 
         form = response.context['form']
+        student_options = response.context['students_option']
+        self.assertEqual(len(student_options),1)
+        self.assertTrue(self.student in student_options)
+
         self.assertEqual(len(response.context['lessons']),2)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertFalse(form.is_bound)
@@ -161,6 +174,10 @@ class LessonRequestViewTestCase(TestCase):
 
         form = response.context['form']
         self.assertEqual(len(response.context['lessons']),0)
+        student_options = response.context['students_option']
+
+        self.assertEqual(len(student_options),1)
+        self.assertTrue(self.student in student_options)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertFalse(form.is_bound)
 

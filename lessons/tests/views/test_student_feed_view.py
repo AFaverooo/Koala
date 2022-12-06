@@ -2,7 +2,8 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.models import UserAccount, Lesson, Gender, LessonType,LessonDuration,LessonStatus
-from lessons.views import make_lesson_timetable_dictionary,make_lesson_dictionary
+from lessons.views import make_lesson_dictionary
+from lessons.helper import make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons
 import datetime
 from django.utils import timezone
 # from lessons.models import UserAccount, Gender

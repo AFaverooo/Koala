@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .helper import login_prohibited,check_valid_date
+from .helper import login_prohibited,check_valid_date,make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
@@ -44,72 +44,6 @@ def get_lesson_request(dictionary):
 def get_lesson_student(dictionary):
     return dictionary.get("Student")
 
-def make_lesson_timetable_dictionary(student_user):
-    fullfilled_lessons = get_student_and_child_lessons(student_user,LessonStatus.FULLFILLED)
-
-    fullfilled_lessons_dict = {}
-
-    if len(fullfilled_lessons) == 0:
-        return fullfilled_lessons_dict
-
-    for lesson in fullfilled_lessons:
-        lesson_type_str = ''
-
-        if lesson.type == LessonType.INSTRUMENT:
-            lesson_type_str = LessonType.INSTRUMENT.label
-        elif lesson.type == LessonType.THEORY:
-            lesson_type_str = LessonType.THEORY.label
-        elif lesson.type == LessonType.PRACTICE:
-            lesson_type_str = LessonType.PRACTICE.label
-        elif lesson.type == LessonType.PERFORMANCE:
-            lesson_type_str = LessonType.PERFORMANCE.label
-
-
-        new_time = lesson.lesson_date_time + datetime.timedelta(minutes=int(lesson.duration))
-
-        new_lesson_hr_str = ''
-        lesson_date_hr_str = ''
-
-        new_time_minute_str = ''
-        lesson_date_minute_str = ''
-
-        #format minutes using :00 notation
-        if new_time.minute < 10:
-            new_time_minute_str = f'0{new_time.minute}'
-        else:
-            new_time_minute_str = f'{new_time.minute}'
-
-        if lesson.lesson_date_time.minute < 10:
-            lesson_date_minute_str = f'0{lesson.lesson_date_time.minute}'
-        else:
-            lesson_date_minute_str = f'{lesson.lesson_date_time.minute}'
-
-        #format hours using 00: notation
-        if new_time.hour < 10:
-            new_lesson_hr_str = f'0{new_time.hour}'
-        else:
-            new_lesson_hr_str = f'{new_time.hour}'
-
-        if lesson.lesson_date_time.hour < 10:
-            lesson_date_hr_str = f'0{lesson.lesson_date_time.hour}'
-        else:
-            lesson_date_hr_str = f'{lesson.lesson_date_time.hour}'
-
-        teacher_str = ''
-
-        if lesson.teacher_id.gender == Gender.FEMALE:
-            teacher_str = f'Miss {lesson.teacher_id}'
-        elif lesson.teacher_id.gender == Gender.MALE:
-            teacher_str = f'Mr {lesson.teacher_id}'
-        else:
-            teacher_str = f'{lesson.teacher_id}'
-
-        duration_str = f'{lesson_date_hr_str}:{lesson_date_minute_str} - {new_lesson_hr_str}:{new_time_minute_str}'
-
-        case = {'Student':lesson.student_id,'Lesson': f'{lesson_type_str}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson Duration': f'{duration_str}', 'Teacher': f'{teacher_str}'}
-        fullfilled_lessons_dict[lesson] = case
-
-    return fullfilled_lessons_dict
 
 def make_lesson_dictionary(student_user,lessonStatus):
     lessons = []
@@ -333,32 +267,6 @@ def get_student_invoices_and_transactions(request, student_id):
         return redirect('home')
 
 
-def get_student_and_child_objects(student):
-    list_of_students = []
-    list_of_students.append(student)
-
-    if student.is_parent is True:
-        child_students = UserAccount.objects.filter(parent_of_user = student)
-
-        for child in child_students:
-            list_of_students.append(child)
-
-    return list_of_students
-
-def get_student_and_child_lessons(student, statusType):
-    student_queryset = Lesson.objects.filter(lesson_status = statusType, student_id = student)
-
-    if student.is_parent:
-        child_queryset = UserAccount.objects.filter(parent_of_user = student)
-        result_queryset = student_queryset
-
-        for eachChild in child_queryset:
-            lesson_queryset = Lesson.objects.filter(student_id = eachChild , lesson_status = statusType)
-            result_queryset = chain(result_queryset, lesson_queryset)
-
-        return list(result_queryset)
-
-    return list(student_queryset)
 
 def get_saved_lessons(student):
     return get_student_and_child_lessons(student,LessonStatus.SAVED)
