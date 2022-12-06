@@ -5,7 +5,7 @@ from lessons.tests.helpers import LogInTester, reverse_with_next
 from django.urls import reverse
 from django.contrib import messages
 from lessons.forms import LogInForm
-from lessons.models import UserAccount
+from lessons.models import UserAccount, Gender
 
 class LogInTestCase(TestCase,LogInTester):
     """Tests for the login up view."""
@@ -37,6 +37,18 @@ class LogInTestCase(TestCase,LogInTester):
         self.student_form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
         self.admin_form_input = {'email' : 'janedoe@example.org', 'password' : 'Password123'}
         self.director_form_input = {'email' : 'jsmith@example.org', 'password' : 'Password123'}
+
+    def create_child_student(self):
+        self.child = UserAccount.objects.create_child_student(
+            first_name = 'Bobby',
+            last_name = 'Lee',
+            email = 'bobbylee@example.org',
+            password = 'Password123',
+            gender = Gender.MALE,
+            parent_of_user = self.student,
+        )
+
+        self.child_form_input = {'email' : 'bobbylee@example.org', 'password' : 'Password123'}
 
     def test_log_in_url(self):
         #should this be: self.assertEqual(self.url,'/') or  self.assertEqual(self.url,'')
@@ -177,6 +189,48 @@ class LogInTestCase(TestCase,LogInTester):
         messages_list = list(response.context['messages'])
         self.assertEqual(len(messages_list),1)
         self.assertEqual(messages_list[0].level,messages.ERROR)
+
+    def test_child_log_in_is_invalid(self):
+        self.create_child_student()
+        response = self.client.post(self.url,self.child_form_input)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        form = response.context['form']
+        self.assertTrue(isinstance(form, LogInForm))
+        self.assertFalse(form.is_bound)
+        self.assertFalse(self._is_logged_in())
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),1)
+        self.assertEqual(messages_list[0].level,messages.ERROR)
+        self.assertEqual(str(messages_list[0]), 'Child credentials cannot be used to access the application')
+
+    def test_succesful_log_in_after_child_log_in_is_invalid(self):
+        self.create_child_student()
+        response = self.client.post(self.url,self.child_form_input)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        form = response.context['form']
+        self.assertTrue(isinstance(form, LogInForm))
+        self.assertFalse(form.is_bound)
+        self.assertFalse(self._is_logged_in())
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),1)
+        self.assertEqual(messages_list[0].level,messages.ERROR)
+        self.assertEqual(str(messages_list[0]), 'Child credentials cannot be used to access the application')
+
+        destination_url = reverse('student_feed')
+        self.url = reverse_with_next('home', destination_url)
+        response_after = self.client.get(self.url)
+        self.assertEqual(response_after.status_code,200)
+        self.assertTemplateUsed(response_after,'home.html')
+        form = response_after.context['form']
+        next = response_after.context['next']
+        self.assertTrue(isinstance(form,LogInForm))
+        self.assertFalse(form.is_bound)
+        self.assertEqual(next, destination_url)
+        messages_list = list(response_after.context['messages'])
+        self.assertEqual(len(messages_list),0)
+
 
     #test that invalid users can not log into system
     def test_invalid_log_in_by_inactive_user(self):

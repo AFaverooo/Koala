@@ -149,6 +149,8 @@ class StudentFeedDeleteSavedLessonTestCase(TestCase):
         self.assertTrue(self.student in student_options)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'requests_page.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
 
     def test_attempt_deletion_of_other_student_lessons(self):
         self.student_jane = UserAccount.objects.create_student(
@@ -184,6 +186,8 @@ class StudentFeedDeleteSavedLessonTestCase(TestCase):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'home.html')
         self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),5)
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
 
     #prev causing errors
     def test_not_student_accessing_deleting_saved_lessons(self):
@@ -194,6 +198,8 @@ class StudentFeedDeleteSavedLessonTestCase(TestCase):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'admin_feed.html')
         self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),5)
+        messages_list = list(response.context['messages'])
+        self.assertEqual(len(messages_list),0)
 
     def test_incorrect_deletion_of_lesson(self):
         self.change_lessons_status_to_saved()

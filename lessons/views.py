@@ -789,18 +789,25 @@ def home(request):
             role = form.cleaned_data.get('role')
             user = authenticate(email=email, password=password)
             if user is not None:
-                login(request,user)
+                if user.parent_of_user is None:
+                    login(request,user)
 
-                 # redirects the user based on his role
-                if (user.role == UserRole.ADMIN.value):
-                     #redirect_url = request.POST.get('next') or 'admin_feed'
-                    return redirect('admin_feed')
-                elif (user.role == UserRole.DIRECTOR.value):
-                    redirect_url = request.POST.get('next') or 'director_feed'
-                    return redirect(redirect_url)
+                     # redirects the user based on his role
+                    if (user.role == UserRole.ADMIN.value):
+                         #redirect_url = request.POST.get('next') or 'admin_feed'
+                        return redirect('admin_feed')
+                    elif (user.role == UserRole.DIRECTOR.value):
+                        redirect_url = request.POST.get('next') or 'director_feed'
+                        return redirect(redirect_url)
+                    else:
+                        redirect_url = request.POST.get('next') or 'student_feed'
+                        return redirect(redirect_url)
                 else:
-                    redirect_url = request.POST.get('next') or 'student_feed'
-                    return redirect(redirect_url)
+                    messages.add_message(request,messages.ERROR,"Child credentials cannot be used to access the application")
+                    form = LogInForm()
+                    next = request.GET.get('next') or ''
+                    #return render(request,'log_in.html', {'form' : form, 'next' : next})
+                    return render(request,'home.html', {'form' : form, 'next' : next})
 
         messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
     form = LogInForm()
