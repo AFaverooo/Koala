@@ -6,7 +6,7 @@ The members of the team are:
 - Saathveekan Satheeshkumar
 - Augusto Favero
 - Karim Mousa
-- Shoazab Anwar Siddique
+- Shozab Anwar Siddique
 
 ## Project structure
 The project is called `msms` (Music School Management System).  It currently consists of a single app `lessons` where all functionality resides.
