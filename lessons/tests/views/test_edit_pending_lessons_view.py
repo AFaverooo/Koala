@@ -1,13 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
 from lessons.models import UserAccount, Lesson, UserRole, Gender, LessonType,LessonDuration,LessonStatus, Term
-from lessons.views import make_lesson_timetable_dictionary,make_lesson_dictionary
-from lessons.views import RequestForm
+from lessons.forms import RequestForm
 from django.contrib import messages
+from django import forms
 import datetime
 from django.utils import timezone
-from django import forms
-from lessons.tests.helpers import reverse_with_next
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 
 class StudentFeedEditLessonTestCase(TestCase):
@@ -173,14 +171,6 @@ class StudentFeedEditLessonTestCase(TestCase):
             'lesson_date_time' : datetime.datetime(2024, 7, 17, 16, 00, 00, tzinfo=timezone.utc),
             'teachers': self.teacher3.id,
         }
-
-    #def create_duplicate_form(self):
-    #    self.form_input_duplicate = {
-    #        'type': LessonType.INSTRUMENT,
-    #        'duration': LessonDuration.THIRTY,
-    #        'lesson_date_time' : datetime.datetime(2022, 10, 20, 16, 00, 00, tzinfo=timezone.utc),
-    #        'teachers': UserAccount.objects.filter(role = UserRole.TEACHER).first().id,
-    #    }
 
     def test_edit_lesson_url(self):
         self.assertEqual(self.edit_url, f'/edit_lesson/{self.lesson.lesson_id}')
