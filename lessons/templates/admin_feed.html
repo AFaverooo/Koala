@@ -16,7 +16,6 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>Users</h1>
 
       <style>
         table {
@@ -47,6 +46,16 @@
         }
       </style>
 
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.level_tag }}" role="alert">{{ message }}</div>
+          {% endfor %}
+      </ul>
+      {% endif %}
+      
+      <h1>Students</h1>
+
       <p> <a href = '{% url 'log_out' %}' class = "btn btn-lg btn-secondary">log out</a></p>
 
         <table class="table">
@@ -75,10 +84,43 @@
                 </a>
               </td>
             </tr>
-            {# <h2>user :{{user}}</h2> #}
           {% endfor %}
         </tbody>
         </table>
+
+      
+
+        <h1>Parents/Guardians</h1>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Firstname</th>
+              <th scope="col">Lastname</th>
+              <th scope="col">Email</th>
+              <th scope="col">is_staff</th>
+              <th scope="col">is_active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in parents %}
+              <tr>
+                <th scope="row">{{user.id}}</th>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.is_staff }}</td>
+                <td>{{ user.is_active }}</td>
+                <td>
+                  <a href = '{% url 'student_requests' user.id %}' class = "btn">
+                    <button type="button" class="btn button">Select Guardians</button>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table><br><br>
 
         <h1>Requests</h1>
         <h4>UnfulFilled Requests</h4>
@@ -90,6 +132,7 @@
               <th scope="col">type</th>
               <th scope="col">duration</th>
               <th scope="col">lesson_date_time</th>
+              <th scope="col">term</th>
               <th scope="col">teacher</th>
               <th scope="col">is_booked</th>
             </tr>
@@ -101,7 +144,11 @@
                 <td>{{ lesson.request_date }}</td>
                 <td>{{ lesson.type }}</td>
                 <td>{{ lesson.duration }}</td>
+                
                 <td>{{ lesson.lesson_date_time }}</td>
+              
+                <td>{{ lesson.term }}</td>
+                
                 <td>{{ lesson.teacher_id }}</td>
                 <td>{{ lesson.lesson_status }}</td>
               </tr>
@@ -118,6 +165,7 @@
                 <th scope="col">type</th>
                 <th scope="col">duration</th>
                 <th scope="col">lesson_date_time</th>
+                <th scope="col">term</th>
                 <th scope="col">teacher</th>
                 <th scope="col">is_booked</th>
               </tr>
@@ -129,7 +177,11 @@
                   <td>{{ lesson.request_date }}</td>
                   <td>{{ lesson.type }}</td>
                   <td>{{ lesson.duration }}</td>
+                  
                   <td>{{ lesson.lesson_date_time }}</td>
+                  
+                  <td>{{ lesson.term }}</td>
+                  
                   <td>{{ lesson.teacher_id }}</td>
                   <td>{{ lesson.lesson_status }}</td>
                 </tr>

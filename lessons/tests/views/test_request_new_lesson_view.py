@@ -21,7 +21,7 @@ class RequestNewLessonTest(TestCase):
         self.term_six = Term.objects.create(
             term_number=6,
             start_date = datetime.date(2023, 6,5),
-            end_date = datetime.date(2022, 7,21),
+            end_date = datetime.date(2023, 7,21),
         )
 
         self.admin = UserAccount.objects.create_admin(
@@ -53,7 +53,7 @@ class RequestNewLessonTest(TestCase):
         self.form_input = {
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.THIRTY,
-            'lesson_date_time' : datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
+            'lesson_date_time' : datetime.datetime(2023, 4, 4, 15, 15, 15, tzinfo=timezone.utc),
             'teachers': self.teacher.id,
             'selectedStudent': self.student.email,
         }
@@ -61,7 +61,15 @@ class RequestNewLessonTest(TestCase):
         self.form_input_2 = {
             'type': LessonType.PERFORMANCE,
             'duration': LessonDuration.HOUR,
-            'lesson_date_time' : datetime.datetime(2022, 5, 4, 15, 15, 15, tzinfo=timezone.utc),
+            'lesson_date_time' : datetime.datetime(2023, 5, 4, 15, 15, 15, tzinfo=timezone.utc),
+            'teachers': self.teacher.id,
+            'selectedStudent': self.student.email,
+        }
+
+        self.form_input_invalid_date = {
+            'type': LessonType.THEORY,
+            'duration': LessonDuration.FOURTY_FIVE,
+            'lesson_date_time' : datetime.datetime(2023, 9, 4, 15, 15, 15, tzinfo=timezone.utc),
             'teachers': self.teacher.id,
             'selectedStudent': self.student.email,
         }
@@ -115,6 +123,45 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(len(UserAccount.objects.filter(role = UserRole.TEACHER)), 1)
         form = RequestForm(data=self.form_input)
         self.assertTrue(form.is_valid())
+
+    def test_unsuccesful_new_lesson_selected_selectedStudent_is_not_valid(self):
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        self.form_input['selectedStudent'] = 'notextistentemail@example.org'
+
+        response = self.client.post(self.url, self.form_input, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+
+        form = response.context['form']
+        student_options = response.context['students_option']
+        self.assertEqual(len(student_options),1)
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'Selected user account does not exist')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertTrue(form.is_bound)
+
+    def test_unsuccesful_new_lesson_request_lesson_date_outside_term_dates(self):
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.url,self.form_input_invalid_date,follow=True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+
+        form = response.context['form']
+        student_options = response.context['students_option']
+        self.assertEqual(len(student_options),1)
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'The lesson date provided is beyond the term dates available')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertTrue(form.is_bound)
 
     def test_unsuccesful_new_lesson_not_logged_in(self):
         redirect_url = reverse('home',)
@@ -214,7 +261,7 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(lessons[0].student_id.email, self.student.email)
         self.assertEqual(lessons[0].type,LessonType.INSTRUMENT)
         self.assertEqual(lessons[0].duration, LessonDuration.THIRTY)
-        self.assertEqual(lessons[0].lesson_date_time, datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc))
+        self.assertEqual(lessons[0].lesson_date_time, datetime.datetime(2023, 4, 4, 15, 15, 15, tzinfo=timezone.utc))
         self.assertEqual(lessons[0].teacher_id, self.teacher)
 
         self.assertTemplateUsed(response, 'requests_page.html')
@@ -271,7 +318,7 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(lessons[0].student_id.email, self.child.email)
         self.assertEqual(lessons[0].type,LessonType.INSTRUMENT)
         self.assertEqual(lessons[0].duration, LessonDuration.THIRTY)
-        self.assertEqual(lessons[0].lesson_date_time, datetime.datetime(2022, 4, 4, 15, 15, 15, tzinfo=timezone.utc))
+        self.assertEqual(lessons[0].lesson_date_time, datetime.datetime(2023, 4, 4, 15, 15, 15, tzinfo=timezone.utc))
         self.assertEqual(lessons[0].teacher_id, self.teacher)
 
         self.assertTemplateUsed(response, 'requests_page.html')

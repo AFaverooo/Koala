@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 #imports for Request
 from django.conf import settings
 
+from django.core.exceptions import ObjectDoesNotExist
+
 #Shows the status of the invoices
 class InvoiceStatus(models.TextChoices):
     PAID = 'PAID', _('This invoices has been paid')
@@ -252,7 +254,47 @@ class Lesson(models.Model):
 
     lesson_status = models.CharField(max_length=30,choices = LessonStatus.choices, default = LessonStatus.SAVED, blank = False)
 
-    #the unique composite key is defined by the date the lesson was requested, for what date and time the lesson was requested and what student requested it
+    term = models.CharField(max_length=3,default = 'N/A')
+
+
+    def save(self, *args,**kwargs):
+        
+        terms_list = Term.objects.all()
+
+        for eachterm in terms_list :
+
+            #Calculate mid-term date
+            start = eachterm.start_date 
+            end = eachterm.end_date
+            mid_term_date = start + (end - start)/2
+            close_to_end_of_term = end-(end - mid_term_date)/6
+
+            try:
+                next_term = Term.objects.get(term_number = eachterm.term_number + 1)
+            except ObjectDoesNotExist:
+                next_term = None
+
+            #Display term number only if the lesson starts before mid-term
+            if(eachterm.start_date <= self.lesson_date_time.date()  <= close_to_end_of_term):
+                self.term = 'Term : ' + str(eachterm.term_number) #+ '            For reference : ' + str(self.lesson_date_time.date())
+                break
+            #Set term date for next term if the current term is close to finishing
+            elif (next_term != None and close_to_end_of_term <= self.lesson_date_time.date()  < next_term.start_date):
+                term = eachterm.term_number + 1
+                self.term = 'Term : ' + str(term) + '(Close to next term)'#               For reference : ' + str(self.lesson_date_time.date())
+                break
+            #Set term date for next term if the current term is close to finishing and the is no next term set
+            elif(next_term == None and close_to_end_of_term <= self.lesson_date_time.date()  < end):
+                term = eachterm.term_number + 1
+                self.term = 'Term : ' + str(term) + '(Close to next term but no next term)'#       For reference : ' + str(self.lesson_date_time.date())
+                break
+            # else:#If lesson is not before mid term and is not close to end of term 
+            #     self.term = 'N/A' 
+
+        super(Lesson,self).save(*args, **kwargs)
+
+    
+
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
 
@@ -271,6 +313,7 @@ class Invoice(models.Model):
         )]
     )
 
+    # student number store the student
     student_ID = models.CharField(
         max_length = 30,
         blank=False,
@@ -365,7 +408,7 @@ class Transaction(models.Model):
             MinValueValidator(1),
         ]
     )
-
+    
 class Term(models.Model):
     term_number =  models.IntegerField(
         # blank = True,
@@ -389,3 +432,19 @@ class Term(models.Model):
         blank=True,
         null=True
     )
+    
+
+    def create_term(self, term_number, start_date, end_date):
+        '''Create and save a term with the given term_number, start_date and end_date'''
+
+        if not term_number:
+            raise ValueError('The given term_number must be set')
+        if not term_number:
+            raise ValueError('The given start_date must be set')
+        if not term_number:
+            raise ValueError('The given end_date must be set')
+
+        # user = self.model(email=email, **extra_fields)
+        term = self.model(term_number=term_number, start_date=start_date,end_date=end_date)
+        term.save(using=self._db)
+        return term
