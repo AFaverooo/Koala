@@ -5,7 +5,7 @@ from lessons.forms import RequestForm
 from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,LessonDuration,LessonStatus,Term
 from django.contrib import messages
 from lessons.forms import RequestForm,TermDatesForm
-from lessons.views import get_saved_lessons,get_unfulfilled_lessons
+from lessons.helper import get_saved_lessons
 
 from django.utils import timezone
 from datetime import time
@@ -86,7 +86,7 @@ class RequestNewLessonTest(TestCase):
         # )
 
     def create_saved_lessons(self):
-        
+
 
         self.saved_term1 = Term.objects.create(
             term_number=2,

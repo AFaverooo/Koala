@@ -5,15 +5,13 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .helper import login_prohibited,check_valid_date,make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons
+from .helper import login_prohibited,check_valid_date,make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons,get_saved_lessons,get_admin_email,make_lesson_dictionary
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
 import datetime
 from itertools import chain
-
-
 
 # Create your views here.
 
@@ -42,43 +40,6 @@ def get_lesson_request(dictionary):
 @register.filter
 def get_lesson_student(dictionary):
     return dictionary.get("Student")
-
-
-def make_lesson_dictionary(student_user,lessonStatus):
-    lessons = []
-
-    if lessonStatus == 'Lesson Request':
-        lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
-
-    lessons_dict = {}
-
-    for lesson in lessons:
-        temp_dict = {}
-
-        request_date_str = lesson.request_date.strftime("%Y-%m-%d")
-
-        if request_date_str not in lessons_dict.keys():
-            lessons_dict[request_date_str] = []
-
-        lesson_type_str = ''
-
-        if lesson.type == LessonType.INSTRUMENT:
-            lesson_type_str = LessonType.INSTRUMENT.name
-        elif lesson.type == LessonType.THEORY:
-            lesson_type_str = LessonType.THEORY.name
-        elif lesson.type == LessonType.PRACTICE:
-            lesson_type_str = LessonType.PRACTICE.name
-        elif lesson.type == LessonType.PERFORMANCE:
-            lesson_type_str = LessonType.PERFORMANCE.name
-
-        lesson_duration_str = f'{lesson.duration} minutes'
-
-        case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
-        temp_dict[lesson] = case
-
-        lessons_dict[request_date_str].append(temp_dict)
-
-    return lessons_dict
 
 
 @login_required
@@ -267,11 +228,7 @@ def get_student_invoices_and_transactions(request, student_id):
 
 
 
-def get_saved_lessons(student):
-    return get_student_and_child_lessons(student,LessonStatus.SAVED)
 
-def get_admin_email():
-    return UserAccount.objects.filter(role = UserRole.ADMIN).first()
 
 # Admin functionality view functions
 
@@ -279,7 +236,7 @@ def get_admin_email():
 #     terms_list = Term.objects.all()
 #     for eachterm in terms_list :
 #         #Calculate mid-term date
-#         start = eachterm.start_date 
+#         start = eachterm.start_date
 #         end = eachterm.end_date
 #         mid_term_date = start + (end - start)/2
 #         close_to_end_of_term = end-(end - mid_term_date)/6
@@ -304,11 +261,11 @@ def get_admin_email():
 #             lesson.save()
 #             return
 
-    
 
 
-    # #If lesson is not before mid term and is not close to end of term 
-    # lesson.term = 'N/A'        
+
+    # #If lesson is not before mid term and is not close to end of term
+    # lesson.term = 'N/A'
 
 def get_parent(student):
     for eachuser in UserAccount.objects.filter(is_parent = True):
@@ -374,7 +331,7 @@ def admin_update_request(request, lesson_id):
                 lesson.save()
 
                 #update_invoice(lesson)
-                
+
                 # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
                 if lesson.lesson_status == LessonStatus.FULLFILLED:
                     update_invoice(lesson)
@@ -384,7 +341,7 @@ def admin_update_request(request, lesson_id):
                 student = UserAccount.objects.get(id=lesson.student_id.id)
 
                 parent = get_parent(student)
-                
+
                 if (parent != None):
                     return redirect('student_requests',parent.id)
                 else:
@@ -411,7 +368,7 @@ def admin_confirm_booking(request, lesson_id):
     student = UserAccount.objects.get(id=lesson.student_id.id)
 
     parent = get_parent(student)
-                
+
     if (parent != None):
         return redirect('student_requests',parent.id)
     else:
@@ -426,9 +383,9 @@ def delete_lesson(request, lesson_id):
         messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
 
         student = UserAccount.objects.get(id=lesson.student_id.id)
-        
+
         parent = get_parent(student)
-                
+
         if (parent != None):
             return redirect('student_requests',parent.id)
         else:
@@ -484,7 +441,7 @@ def create_term(request):
                 # messages.add_message(request, messages.ERROR, "Previous term's numbers are missing, please rectify term numbers!")
                 # return render(request, 'create_term_form.html', {'form':form})
 
-        
+
         if(term_number!= 6):
             if(len(Term.objects.filter(term_number=term_number+1)) !=0):
                 next_term = Term.objects.get(term_number=term_number+1)
@@ -561,7 +518,7 @@ def update_term_details(request,term_number):
             except ObjectDoesNotExist:
                 previous_term = None
 
-            try:    
+            try:
                 next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
 
                 if(int(term_number_in)+1 == int(term_number)):
@@ -570,13 +527,13 @@ def update_term_details(request,term_number):
                 if(next_term!= None and end_date > next_term.start_date and term_number != term_number_in):
                     messages.add_message(request, messages.ERROR, "Term's end date overlaps with the next term's start date for the chosen term number. Try changing the term number or fix term overlap before attempting to alter term number!")
                     return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-                
+
                 if(next_term!= None and end_date > next_term.start_date):
                     messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
                     return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-                
+
             except ObjectDoesNotExist:
-                next_term = None 
+                next_term = None
 
             if(previous_term !=None and next_term !=None  and end_date > next_term.start_date and start_date < previous_term.end_date):
                 messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with other terms!")

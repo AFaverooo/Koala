@@ -23,6 +23,12 @@ def login_prohibited(view_function):
 def check_valid_date(lesson_date):
     term_six_date = Term.objects.get(term_number = 6).end_date
     return lesson_date <= term_six_date
+    
+def get_saved_lessons(student):
+    return get_student_and_child_lessons(student,LessonStatus.SAVED)
+
+def get_admin_email():
+    return UserAccount.objects.filter(role = UserRole.ADMIN).first()
 
 def get_student_and_child_lessons(student, statusType):
     student_queryset = Lesson.objects.filter(lesson_status = statusType, student_id = student)
@@ -117,3 +123,39 @@ def make_lesson_timetable_dictionary(student_user):
         fullfilled_lessons_dict[lesson] = case
 
     return fullfilled_lessons_dict
+
+def make_lesson_dictionary(student_user,lessonStatus):
+    lessons = []
+
+    if lessonStatus == 'Lesson Request':
+        lessons = get_student_and_child_lessons(student_user,LessonStatus.UNFULFILLED)
+
+    lessons_dict = {}
+
+    for lesson in lessons:
+        temp_dict = {}
+
+        request_date_str = lesson.request_date.strftime("%Y-%m-%d")
+
+        if request_date_str not in lessons_dict.keys():
+            lessons_dict[request_date_str] = []
+
+        lesson_type_str = ''
+
+        if lesson.type == LessonType.INSTRUMENT:
+            lesson_type_str = LessonType.INSTRUMENT.name
+        elif lesson.type == LessonType.THEORY:
+            lesson_type_str = LessonType.THEORY.name
+        elif lesson.type == LessonType.PRACTICE:
+            lesson_type_str = LessonType.PRACTICE.name
+        elif lesson.type == LessonType.PERFORMANCE:
+            lesson_type_str = LessonType.PERFORMANCE.name
+
+        lesson_duration_str = f'{lesson.duration} minutes'
+
+        case = {'Student':lesson.student_id, lessonStatus: f'{lesson.lesson_id}', 'Lesson Date': f'{lesson.lesson_date_time.date()}', 'Lesson': f'{lesson_type_str}', "Lesson Duration": f'{lesson_duration_str}', "Teacher": f'{lesson.teacher_id}'}
+        temp_dict[lesson] = case
+
+        lessons_dict[request_date_str].append(temp_dict)
+
+    return lessons_dict
