@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import LogInForm,SignUpForm,RequestForm,TermDatesForm,CreateAdminForm
 from django.contrib.auth import authenticate,login,logout
 from .models import UserRole, UserAccount, Lesson, LessonStatus, LessonType, Gender, Invoice, Transaction, InvoiceStatus,Term
-from .helper import login_prohibited,check_valid_date,make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons,get_saved_lessons,get_admin_email,make_lesson_dictionary
+from .helper import login_prohibited,check_valid_date,make_lesson_timetable_dictionary,get_student_and_child_objects,get_student_and_child_lessons,get_saved_lessons,get_admin_email,make_lesson_dictionary,check_correct_student_accessing_pending_lesson,check_correct_student_accessing_saved_lesson
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
@@ -228,10 +228,8 @@ def get_student_invoices_and_transactions(request, student_id):
 
 
 
-
-
 # Admin functionality view functions
-    
+
 
 def get_parent(student):
     for eachuser in UserAccount.objects.filter(is_parent = True):
@@ -905,21 +903,6 @@ def save_lessons(request):
         return redirect('home')
         #form = RequestForm()
         #return render(rquest,'requests_page.html', {'form':form})
-def check_correct_student_accessing_pending_lesson(student_id, other_lesson):
-    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
-    for lesson in all_student_lessons:
-        if lesson.is_equal(other_lesson):
-            return True
-
-    return False
-
-def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
-    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.SAVED)
-    for lesson in all_student_lessons:
-        if lesson.is_equal(other_lesson):
-            return True
-
-    return False
 
 def render_edit_request(request,lesson_id):
     try:

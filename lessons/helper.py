@@ -20,10 +20,26 @@ def login_prohibited(view_function):
             return view_function(request)
     return modified_view_function
 
+def check_correct_student_accessing_pending_lesson(student_id, other_lesson):
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.UNFULFILLED)
+    for lesson in all_student_lessons:
+        if lesson.is_equal(other_lesson):
+            return True
+
+    return False
+
+def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
+    all_student_lessons = get_student_and_child_lessons(student_id,LessonStatus.SAVED)
+    for lesson in all_student_lessons:
+        if lesson.is_equal(other_lesson):
+            return True
+
+    return False
+
 def check_valid_date(lesson_date):
     term_six_date = Term.objects.get(term_number = 6).end_date
     return lesson_date <= term_six_date
-    
+
 def get_saved_lessons(student):
     return get_student_and_child_lessons(student,LessonStatus.SAVED)
 
