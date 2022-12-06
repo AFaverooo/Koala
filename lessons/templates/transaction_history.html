@@ -1,42 +1,14 @@
-<html>
+{% extends 'admin_base_content.html' %}
+
+
+{%block content%}
 
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>School Transaction History</h1><br>
-      <h2>School Total balance:  £ {{total}} </h2>
+      <h1 style="text-align:center;">School Transaction History</h1><br>
+      <h2>Total School Balance:  £ {{total}} </h2>
 
-      <style>
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          border: 1px solid;
-        }
-
-        th,td {
-          padding: 8px;
-          text-align: left;
-          border-bottom: 1px solid #ddd;
-          border: 1px solid;
-        }
-
-        tr:hover {
-          background-color: gray;
-        }
-
-        button {
-          padding: 10px 10px;
-          font-size: 12px;
-          color: white;
-          font-weight: bold;
-          border-radius: 8px;
-          border: none;
-        }
-
-        div {
-          padding: 0.5% 1% 0% 1%;
-        }
-      </style>
       <div>
         <table class="table">
           <thead>
@@ -62,4 +34,4 @@
       </div>
     </div>
 
-</html>
+    {%endblock%}
