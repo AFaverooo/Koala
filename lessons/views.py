@@ -231,47 +231,8 @@ def get_student_invoices_and_transactions(request, student_id):
 
 
 # Admin functionality view functions
-<<<<<<< HEAD
     
 
-=======
-
-# def set_lesson_term_details(lesson):
-#     terms_list = Term.objects.all()
-#     for eachterm in terms_list :
-#         #Calculate mid-term date
-#         start = eachterm.start_date
-#         end = eachterm.end_date
-#         mid_term_date = start + (end - start)/2
-#         close_to_end_of_term = end-(end - mid_term_date)/6
-#         try:
-#             next_term = Term.objects.get(term_number = eachterm.term_number + 1)
-#         except ObjectDoesNotExist:
-#             next_term = None
-#         #Display term number only if the lesson starts before mid-term
-#         if(eachterm.start_date <= lesson.lesson_date_time.date()  <= mid_term_date):
-#             lesson.term = 'Term : ' + str(eachterm.term_number) + '            For reference : ' + str(lesson.lesson_date_time.date())
-#             lesson.save()
-#             return
-#         #Set term date for next term if the current term is close to finishing
-#         elif (next_term != None and close_to_end_of_term <= lesson.lesson_date_time.date()  < next_term.start_date):
-#             term = eachterm.term_number + 1
-#             lesson.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(lesson.lesson_date_time.date())
-#             lesson.save()
-#             return
-#         elif(next_term == None and close_to_end_of_term <= lesson.lesson_date_time.date()  < end):
-#             term = eachterm.term_number + 1
-#             lesson.term = 'Term : ' + str(term) + '(Close to next term)               For reference : ' + str(lesson.lesson_date_time.date())
-#             lesson.save()
-#             return
-
-
-
-
-    # #If lesson is not before mid term and is not close to end of term
-    # lesson.term = 'N/A'
-
->>>>>>> aeecfb62bfdc00f2f75586ce150874fb64db5631
 def get_parent(student):
     for eachuser in UserAccount.objects.filter(is_parent = True):
         child_students = UserAccount.objects.filter(parent_of_user = eachuser)
