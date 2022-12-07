@@ -10,7 +10,8 @@ import datetime
 
 class BalanceViewAndGetFunctionsTestCase(TestCase): 
     '''Tests of the invoice view'''
-    fixtures = ['lessons/tests/fixtures/invoices.json'],
+    fixtures = ['lessons/tests/fixtures/invoices.json']
+    
     def setUp(self):
         self.url = reverse('balance')
 
@@ -23,6 +24,8 @@ class BalanceViewAndGetFunctionsTestCase(TestCase):
             gender = Gender.MALE,
         )
 
+        # self.student = UserAccount.objects.get(email='johndoe@example.org')
+        # self.teacher=UserAccount.objects.get(email='bobby@example.org')
         self.teacher = UserAccount.objects.create_teacher(
             first_name='Bob',
             last_name='Jacobs',
