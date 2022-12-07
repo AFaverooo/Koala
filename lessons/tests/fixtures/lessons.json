@@ -1,0 +1,31 @@
+[
+{
+    "model": "lessons.lesson",
+    "pk": 1,
+    "fields": {
+        "request_date": "2022-10-15",
+        "type": "INSTR",
+        "duration": "30",
+        "lesson_date_time": "2022-11-20T15:15:00Z",
+        "teacher_id": 4,
+        "student_id": 1,
+        "lesson_status": "SA",
+        "term": "N/A"
+    }
+},
+
+{
+  "model": "lessons.lesson",
+  "pk": 2,
+  "fields": {
+      "request_date": "2022-10-15",
+      "type": "TH",
+      "duration": "45",
+      "lesson_date_time": "2022-10-20T16:00:00Z",
+      "teacher_id": 4,
+      "student_id": 1,
+      "lesson_status": "SA",
+      "term": "N/A"
+  }
+}
+]
