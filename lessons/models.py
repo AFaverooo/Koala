@@ -286,7 +286,7 @@ class Lesson(models.Model):
                 break
             #Set term date for next term if the current term is close to finishing and the is no next term set
             elif(next_term == None and close_to_end_of_term <= self.lesson_date_time.date()  < end):
-                self.term = 'Term : ' + str(term) + '(Close to next term but no next term)'#       For reference : ' + str(self.lesson_date_time.date())
+                self.term = 'Term : ' + str(eachterm.term_number) + '(Close to next term but no next term)'#       For reference : ' + str(self.lesson_date_time.date())
                 break
             # else:#If lesson is not before mid term and is not close to end of term
             #     self.term = 'N/A'
