@@ -15,38 +15,12 @@ class UserAccountModelTestCase(TestCase):
 
         self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
         self.admin = UserAccount.objects.get(email='bobby@example.org')
-        #self.student = UserAccount.objects.create_student(
-        #    first_name='John',
-        #    last_name='Doe',
-        #    email='johndoe@example.org',
-        #    password='Password123',
-        #    gender = Gender.MALE,
-        #)
 
-        #self.teacher = UserAccount.objects.create_teacher(
-        #    first_name='Barbare',
-        #    last_name='Dutch',
-        #    email='barbdutch@example.org',
-        #    password='Password123',
-        #    gender = Gender.FEMALE,
-        #)
+        self.director = UserAccount.objects.get(email='jsmith@example.org')
 
-        #self.admin = UserAccount.objects.create_admin(
-        #    first_name='Bob',
-        #    last_name='Jacobs',
-        #    email='bobby@example.org',
-        #    password='Password123',
-        #    gender = Gender.MALE,
-        #)
 
     def _create_second_student(self):
-        #student = UserAccount.objects.create_student(
-        #    first_name='Jane',
-        #    last_name='Doe',
-        #    email='janedoe@example.org',
-        #    password='Password123',
-        #    gender = Gender.FEMALE,
-        #)
+
         student = UserAccount.objects.get(email='janedoe@example.org')
         return student
 
@@ -167,6 +141,11 @@ class UserAccountModelTestCase(TestCase):
     def test_admin_is_staff(self):
         self.assertTrue(self.admin.is_staff)
         self._assert_useraccount_is_valid(self.admin)
+
+    def test_director_is_staff(self):
+        self.assertTrue(self.director.is_staff)
+        self.assertTrue(self.director.is_superuser)
+        self._assert_useraccount_is_valid(self.director)
 
     def test_teacher_is_staff(self):
         self.assertTrue(self.teacher.is_staff)

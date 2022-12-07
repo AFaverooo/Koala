@@ -5,7 +5,7 @@ from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,Lesson
 from django.contrib import messages
 from lessons.forms import RequestForm
 from lessons.views import get_saved_lessons
-
+from django.conf import settings
 from django.utils import timezone
 from datetime import time
 import datetime
@@ -20,6 +20,7 @@ class RequestNewLessonTest(TestCase):
     fixtures = ['lessons/tests/fixtures/useraccounts.json']
 
     def setUp(self):
+        settings.CURRENT_DATE = datetime.date(2022, 9,1)
 
         self.term_six = Term.objects.create(
             term_number=6,
@@ -33,32 +34,9 @@ class RequestNewLessonTest(TestCase):
             end_date = datetime.date(2022, 10,21),
         )
 
-        #self.admin = UserAccount.objects.create_admin(
-        #    first_name='Bob',
-        #    last_name='Jacobs',
-        #    email='bobby@example.org',
-        #    password='Password123',
-        #    gender = Gender.MALE,
-        #)
         self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        #self.student = UserAccount.objects.create_student(
-        #  first_name='John',
-        #    last_name='Doe',
-        #    email='johndoe@example.org',
-        #    password='Password123',
-        #    gender = Gender.MALE,
-        #)
-
         self.student = UserAccount.objects.get(email='johndoe@example.org')
-
-        #self.teacher = UserAccount.objects.create_teacher(
-        #    first_name='Barbare',
-        #    last_name='Dutch',
-        #    email='barbdutch@example.org',
-        #    password='Password123',
-        #    gender = Gender.FEMALE,
-        #)
 
         self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
@@ -88,15 +66,15 @@ class RequestNewLessonTest(TestCase):
             'selectedStudent': self.student.email,
         }
 
+        self.form_input_invalid_date_before_CURRENT_DATE = {
+            'type': LessonType.THEORY,
+            'duration': LessonDuration.FOURTY_FIVE,
+            'lesson_date_time' : datetime.datetime(2022, 8, 30, 15, 15, 15, tzinfo=timezone.utc),
+            'teachers': self.teacher.id,
+            'selectedStudent': self.student.email,
+        }
+
     def create_child_student(self):
-        #self.child = UserAccount.objects.create_child_student(
-        #    first_name = 'Bobby',
-        #    last_name = 'Lee',
-        #    email = 'bobbylee@example.org',
-        #    password = 'Password123',
-        #    gender = Gender.MALE,
-        #    parent_of_user = self.student,
-        #)
         self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
     def create_saved_lessons(self):
@@ -260,6 +238,18 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertTrue(form.is_bound)
+
+    def test_unsuccesful_request_date_smaller_then_CURRENT_DATE(self):
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.url, self.form_input_invalid_date_before_CURRENT_DATE, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+        form = response.context['form']
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertTrue(form.is_bound)
+
+        self.assertTemplateUsed(response, 'requests_page.html')
 
     def test_succesful_request(self):
         self.client.login(email=self.student.email, password="Password123")

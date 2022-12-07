@@ -12,22 +12,8 @@ class SignUpChildViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('sign_up_child')
 
-        #self.admin = UserAccount.objects.create_admin(
-        #    first_name='Bob',
-        #    last_name='Jacobs',
-        #    email='bobby@example.org',
-        #    password='Password123',
-        #    gender = Gender.MALE,
-        #)
         self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        #self.student = UserAccount.objects.create_student(
-        #    first_name='John',
-        #    last_name='Doe',
-        #    email='johndoe@example.org',
-        #    password='Password123',
-        #    gender = Gender.MALE,
-        #)
         self.student = UserAccount.objects.get(email='johndoe@example.org')
 
         self.form_input = {
@@ -132,8 +118,6 @@ class SignUpChildViewTestCase(TestCase):
         self.assertEqual(parent_of_child.email,self.student.email)
         self.assertTrue(parent_of_child.is_parent)
         self.assertEqual(self.student.parent_of_user,None)
-        #After we have LogInTester defined, uncomment
-        #self.assertTrue(self._is_logged_in())
 
     def test_unsuccessfull_sign_up_of_child_user_copy(self):
         self.client.login(email=self.student.email, password="Password123")

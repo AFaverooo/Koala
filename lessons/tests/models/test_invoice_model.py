@@ -5,14 +5,9 @@ from lessons.models import Invoice, InvoiceStatus, LessonDuration
 
 class InvoiceModelTestCase(TestCase):
 
+    fixtures = ['lessons/tests/fixtures/invoices.json']
     def setUp(self):
-        self.invoice = Invoice.objects.create(
-            reference_number = '111-001',
-            student_ID = '111',
-            fees_amount = '78',
-            lesson_ID = '2345',
-            invoice_status = InvoiceStatus.UNPAID,
-        )
+        self.invoice = Invoice.objects.get(reference_number='111-001')
 
     def _create_paid_invoice(self):
         invoice = Invoice.objects.create(
