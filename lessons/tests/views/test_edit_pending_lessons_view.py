@@ -59,7 +59,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.lesson4 = Lesson.objects.get(lesson_id=4)
         self.lesson4.lesson_status = LessonStatus.FULLFILLED
         self.lesson4.save()
-        
+
         self.lesson5 = Lesson.objects.get(lesson_id=5)
         self.lesson5.lesson_status = LessonStatus.FULLFILLED
         self.lesson5.save()
@@ -112,6 +112,13 @@ class StudentFeedEditLessonTestCase(TestCase):
             'teachers': self.teacher3.id,
         }
 
+        self.form_input_invalid_date_before_CURRENT_DATE = {
+            'type': LessonType.PERFORMANCE,
+            'duration': LessonDuration.HOUR,
+            'lesson_date_time' : datetime.datetime(2019, 7, 17, 16, 00, 00, tzinfo=timezone.utc),
+            'teachers': self.teacher3.id,
+        }
+
     def test_edit_lesson_url(self):
         self.assertEqual(self.edit_url, f'/edit_lesson/{self.lesson.lesson_id}')
 
@@ -134,11 +141,30 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(str(messages_list[0]), 'Incorrect lesson ID passed')
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
+    def test_unsuccesful_request_date_smaller_then_CURRENT_DATE(self):
+        self.change_lessons_status_to_unfulfilled()
+        self.create_forms()
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.edit_url, self.form_input_invalid_date_before_CURRENT_DATE, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+
+        self.assertTemplateUsed(response, 'edit_request.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'The lesson date provided is beyond the term dates available')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
+
+        actual_lesson = Lesson.objects.get(lesson_id = self.lesson.lesson_id)
+
+        self.assertEqual(actual_lesson.type, self.lesson.type)
+        self.assertEqual(actual_lesson.duration, self.lesson.duration)
+        self.assertEqual(actual_lesson.lesson_date_time, self.lesson.lesson_date_time)
+        self.assertEqual(actual_lesson.request_date, self.lesson.request_date)
 
     def test_not_logged_in_accessing_edit_pending_lessons(self):
         before_count = Lesson.objects.count()
         self.change_lessons_status_to_unfulfilled()
-        reverse('edit_lesson', kwargs={'lesson_id':self.lesson.lesson_id})
         response = self.client.get(self.edit_url, follow = True)
         after_count = Lesson.objects.count()
 

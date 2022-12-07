@@ -610,7 +610,8 @@ def delete_term(request, term_number):
               The above extends to any of the students' childrens' lesson
               The requested lessons are grouped by request date [The day the request was made]
               POST Requests to this page are forbidden
-              Only students can access this functionality
+              Only Student UserAccounts can acces this functionality
+@return: Renders or redirects to another specified view with relevant messages
 """
 @login_required
 def student_feed(request):
@@ -645,7 +646,9 @@ def student_feed(request):
 @Description: Function called when a student attempts to request page which provides functionalities to create and request lessons
               Displays to the student any saved lessons they have already made and yet to be requested
               POST Requests to this page are forbidden
-              Only students can access this functionality
+              Only Student UserAccounts can acces this functionality
+
+@return: Renders or redirects to another specified view with relevant messages
 """
 @login_required
 def requests_page(request):
@@ -902,6 +905,16 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
+"""
+@params: Either a post or get request to the url sign_up_child associated to sign_up_child function in views
+
+@Description: Function called when a student attempts to sign up their child as a student user to the system
+              This child and parent are related by the parent_of_user field in the UserAccount models
+              POST Requests create the new Child Student
+              Child Students are identified by their email -> no two UserAccount models can have the same email but can have the same name
+              Only Student UserAccounts can acces this functionality
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def sign_up_child(request):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         if request.method == 'POST':
@@ -931,6 +944,19 @@ def sign_up(request):
         form = SignUpForm()
     return render(request, 'sign_up.html', {'form': form})
 
+"""
+@params: Either a post or get request to the url new_lesson associated to new_lesson function in views
+
+@Description: Function called when a student attempts to create a new lesson they wish to request
+              Lessons are uniquely identified by their request_date,lesson_Date_time and student_id, enforcing this as the primary key to avoid duplicates
+              The student utilising this functionality can request lessons for themselves and for their children
+              POST Requests create the new Child Student
+              GET requests render the requests_page template
+              Child Students are identified by their email -> no two UserAccount models can have the same email but can have the same name
+              Only Student UserAccounts can acces this functionality
+
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def new_lesson(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         #current_student = request.user
@@ -970,7 +996,19 @@ def new_lesson(request):
     else:
         return redirect('home')
 
-#make it that all lessons for both the student and if they have a child
+"""
+@params: Either a post or get request to the url new_lesson associated to new_lesson function in views
+
+@Description: Function called when a student attempts to create a new lesson they wish to request
+              Lessons are uniquely identified by their request_date,lesson_Date_time and student_id, enforcing this as the primary key to avoid duplicates
+              The student utilising this functionality can request lessons for themselves and for their children
+              POST Requests create the new Child Student
+              GET requests render the requests_page template
+              Child Students are identified by their email -> no two UserAccount models can have the same email but can have the same name
+              Only Student UserAccounts can acces this functionality
+
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def save_lessons(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user

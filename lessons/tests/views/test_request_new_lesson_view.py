@@ -5,7 +5,7 @@ from lessons.models import Lesson, UserAccount,Gender,UserRole,LessonType,Lesson
 from django.contrib import messages
 from lessons.forms import RequestForm
 from lessons.views import get_saved_lessons
-
+from django.conf import settings
 from django.utils import timezone
 from datetime import time
 import datetime
@@ -20,6 +20,7 @@ class RequestNewLessonTest(TestCase):
     fixtures = ['lessons/tests/fixtures/useraccounts.json']
 
     def setUp(self):
+        settings.CURRENT_DATE = datetime.date(2022, 9,1)
 
         self.term_six = Term.objects.create(
             term_number=6,
@@ -61,6 +62,14 @@ class RequestNewLessonTest(TestCase):
             'type': LessonType.THEORY,
             'duration': LessonDuration.FOURTY_FIVE,
             'lesson_date_time' : datetime.datetime(2023, 9, 4, 15, 15, 15, tzinfo=timezone.utc),
+            'teachers': self.teacher.id,
+            'selectedStudent': self.student.email,
+        }
+
+        self.form_input_invalid_date_before_CURRENT_DATE = {
+            'type': LessonType.THEORY,
+            'duration': LessonDuration.FOURTY_FIVE,
+            'lesson_date_time' : datetime.datetime(2022, 8, 30, 15, 15, 15, tzinfo=timezone.utc),
             'teachers': self.teacher.id,
             'selectedStudent': self.student.email,
         }
@@ -229,6 +238,18 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertTrue(form.is_bound)
+
+    def test_unsuccesful_request_date_smaller_then_CURRENT_DATE(self):
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.url, self.form_input_invalid_date_before_CURRENT_DATE, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+        form = response.context['form']
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertTrue(form.is_bound)
+
+        self.assertTemplateUsed(response, 'requests_page.html')
 
     def test_succesful_request(self):
         self.client.login(email=self.student.email, password="Password123")
