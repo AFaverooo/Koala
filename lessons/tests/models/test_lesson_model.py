@@ -7,6 +7,8 @@ import datetime
 from django.utils import timezone
 
 class LessonModelTestCase(TestCase):
+    """Unit Tests for Lesson model"""
+
     fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
 

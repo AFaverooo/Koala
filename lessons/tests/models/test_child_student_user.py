@@ -6,6 +6,7 @@ from lessons.models import UserAccount,UserRole, Gender
 from lessons.modelHelpers import is_valid_gender,is_valid_role
 
 class TestChildStudentUser(TestCase):
+    """Unit Tests for child student UserAccounts of the application"""
 
     fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):

@@ -10,41 +10,46 @@ from lessons.tests.helpers import reverse_with_next
 class StudentFeedTestCase(TestCase):
     """Tests for the student feed."""
 
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
 
         self.url = reverse('student_feed')
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        #self.teacher = UserAccount.objects.create_teacher(
+        #    first_name='Barbare',
+        #    last_name='Dutch',
+        #    email='barbdutch@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
-        self.teacher2 = UserAccount.objects.create_teacher(
-            first_name='Amane',
-            last_name='Hill',
-            email='amanehill@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.teacher2 = UserAccount.objects.create_teacher(
+        #    first_name='Amane',
+        #    last_name='Hill',
+        #    email='amanehill@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.teacher2 = UserAccount.objects.get(email='amanehill@example.org')
 
-        self.teacher3 = UserAccount.objects.create_teacher(
-            first_name='Jonathan',
-            last_name='Jacks',
-            email='johnjacks@example.org',
-            password='Password123',
-            gender = Gender.PNOT,
-        )
+        #self.teacher3 = UserAccount.objects.create_teacher(
+        #    first_name='Jonathan',
+        #    last_name='Jacks',
+        #    email='johnjacks@example.org',
+        #    password='Password123',
+        #    gender = Gender.PNOT,
+        #)
+        self.teacher3 = UserAccount.objects.get(email='johnjacks@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.student = UserAccount.objects.create_student(
+        #    first_name='John',
+        #    last_name='Doe',
+        #    email='johndoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
         self.lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
@@ -97,23 +102,25 @@ class StudentFeedTestCase(TestCase):
         )
 
     def initialise_admin(self):
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.admin = UserAccount.objects.create_admin(
+        #    first_name='Bob',
+        #    last_name='Jacobs',
+        #    email='bobby@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
     def create_child_student_with_lessons(self):
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        #self.child = UserAccount.objects.create_child_student(
+        #    first_name = 'Bobby',
+        #    last_name = 'Lee',
+        #    email = 'bobbylee@example.org',
+        #    password = 'Password123',
+        #    gender = Gender.MALE,
+        #    parent_of_user = self.student,
+        #)
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
         self.lesson.student_id = self.child
         self.lesson.save()
@@ -287,7 +294,7 @@ class StudentFeedTestCase(TestCase):
     def test_get_student_feed_with_pending_lessons_without_an_admin(self):
         self.change_lessons_status_to_unfulfilled()
         self.client.login(email=self.student.email, password="Password123")
-
+        admin = UserAccount.objects.get(email='bobby@example.org').delete()
         response = self.client.get(self.url, follow = True)
 
         unfullfilled_lessons = response.context['unfulfilled_requests']
