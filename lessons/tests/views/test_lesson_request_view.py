@@ -104,6 +104,10 @@ class LessonRequestViewTestCase(TestCase):
         self.assertEqual(actual_child[0].role,UserRole.STUDENT)
 
     def test_saved_lessons_with_different_request_date(self):
+        Lesson.objects.get(lesson_id = 3).delete()
+        Lesson.objects.get(lesson_id = 4).delete()
+        Lesson.objects.get(lesson_id = 5).delete()
+
         self.client.login(email=self.student.email, password="Password123")
         self.saved_lesson2.request_date = datetime.date(2022, 11, 15)
         UserAccount.objects.get(email='bobbylee@example.org').delete()
@@ -132,7 +136,7 @@ class LessonRequestViewTestCase(TestCase):
         self.assertEqual(len(student_options),1)
         self.assertTrue(self.student in student_options)
 
-        self.assertEqual(len(response.context['lessons']),2)
+        self.assertEqual(len(response.context['lessons']),5)
         self.assertTrue(isinstance(form, RequestForm))
         self.assertFalse(form.is_bound)
 
@@ -145,6 +149,12 @@ class LessonRequestViewTestCase(TestCase):
 
     def test_get_request_page_without_saved_lessons(self):
         self.change_lessons_status_to_unfulfilled()
+        Lesson.objects.get(lesson_id = 1).delete()
+        Lesson.objects.get(lesson_id = 2).delete()
+        Lesson.objects.get(lesson_id = 3).delete()
+        Lesson.objects.get(lesson_id = 4).delete()
+        Lesson.objects.get(lesson_id = 5).delete()
+
         self.client.login(email=self.student.email, password="Password123")
         UserAccount.objects.get(email='bobbylee@example.org').delete()
         response = self.client.get(self.url, follow = True)
