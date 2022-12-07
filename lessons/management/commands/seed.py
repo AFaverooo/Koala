@@ -143,33 +143,31 @@ class Command(BaseCommand):
 
         for i in range(len(students)):
 
-            req_day_chosen = False # ensures request date in the same for a set of lessons
             current_term = terms[random.randint(0,len(terms)-1)]
 
-            for _ in range(random.randint(0,6)):
+            current_lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)]
 
-                rand_teacher = teachers[random.randint(0,len(teachers)-1)]
-
-                # ensures sure request date is done before lessons date and time
+            for x in range(0,3):
                 random_req_day = self.faker.date_between(start_date='-1y', end_date=current_term.end_date)
 
-                rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date=current_term.start_date, end_date=current_term.end_date)
+                for _ in range(random.randint(0,6)):
 
-                # ensures sure lessons date fall within the term, and is not on a weekend, and on different time if on the same say
+                    rand_teacher = teachers[random.randint(0,len(teachers)-1)]
+                    rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date=current_term.start_date, end_date=current_term.end_date)
 
-
-                try:
-                    Lesson.objects.create(
-                        type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
-                        duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
-                        lesson_date_time = rand_lesson_date_time,
-                        teacher_id = rand_teacher,
-                        student_id = students[i],
-                        request_date = random_req_day,
-                        lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
-                    )
-                except IntegrityError:
-                    pass
+                    # ensures sure lessons date fall within the term, and is not on a weekend, and on different time if on the same say
+                    try:
+                        Lesson.objects.create(
+                            type = lesson_types[random.randint(0,len(lesson_types)-1)] ,
+                            duration = Lesson_durations[random.randint(0,len(Lesson_durations)-1)] ,
+                            lesson_date_time = rand_lesson_date_time,
+                            teacher_id = rand_teacher,
+                            student_id = students[i],
+                            request_date = random_req_day,
+                            lesson_status = lesson_status[random.randint(0,len(lesson_status)-1)],
+                        )
+                    except IntegrityError:
+                        pass
 
         # Seed the admins
         for i in range(3):
@@ -311,10 +309,10 @@ class Command(BaseCommand):
         for i in range(len(students)): # this seeder function will seed invoice and transactions for all exisitng student
             student_Id = students[i].id
             students_id_string = str(student_Id) # turn the studen id to string so it will able to use for constructingt the reference number of the invoice
-            
+
             # this filter out all the booked lesson for this student
-            lessons_booked = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED) 
-            for lesson in lessons_booked: 
+            lessons_booked = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED)
+            for lesson in lessons_booked:
                 # for each lesson, calculate the fees and contruct the reference number of the invoice
                 fees = Invoice.calculate_fees_amount(lesson.duration)
                 fees_int = int(fees)
