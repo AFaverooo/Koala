@@ -17,6 +17,7 @@ from itertools import chain
 
 from django.template.defaulttags import register
 
+
 """
 functions to call in the templates for dictionaries storing the relevant keys
 """

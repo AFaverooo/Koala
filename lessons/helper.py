@@ -80,7 +80,7 @@ def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
 def check_valid_date(lesson_date):
     term_six_end_date = Term.objects.get(term_number = 6).end_date
     term_one_start_date = Term.objects.get(term_number = 1).start_date
-    return term_one_start_date <= lesson_date <= term_six_end_date
+    return (term_one_start_date <= lesson_date <= term_six_end_date) and (settings.CURRENT_DATE <= lesson_date)
 
 
 """
