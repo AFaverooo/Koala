@@ -201,14 +201,17 @@ def check_invoice_belong_to_child(temp_invoice, student):
 # At last, all the about data will be using to create a new invoice for this student
 # And this student's balance will be update as a new invoice created
 def create_new_invoice(student_id, lesson):
-    student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
-    student = UserAccount.objects.get(id=student_id)
-    reference_number_temp = Invoice.generate_new_invoice_reference_number(str(student_id), len(student_number_of_invoice_pre_exist))
-    lesson_duration = lesson.duration
-    fees = Invoice.calculate_fees_amount(lesson_duration)
-    fees = int(fees)
-    Invoice.objects.create(reference_number =  reference_number_temp, student_ID = student_id, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
-    update_balance(student)
+        student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
+        try:
+            student = UserAccount.objects.get(id=student_id)
+        except ObjectDoesNotExist:
+            return redirect('home')
+        reference_number_temp = Invoice.generate_new_invoice_reference_number(str(student_id), len(student_number_of_invoice_pre_exist))
+        lesson_duration = lesson.duration
+        fees = Invoice.calculate_fees_amount(lesson_duration)
+        fees = int(fees)
+        Invoice.objects.create(reference_number =  reference_number_temp, student_ID = student_id, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
+        update_balance(student)
 
 # This function update invoice for student when the lesson of this invoice refers to has been modify
 # The fees of the lesson will be recalculate if the duration of the lesson has been changed
@@ -241,7 +244,10 @@ def update_invoice(lesson):
 # If the deleted lesson is booked, then invoice status will be set as DELETD and the field will be modify
 def update_invoice_when_delete(lesson):
     if(lesson.lesson_status == LessonStatus.FULLFILLED):
-        invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+        try:
+            invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+        except ObjectDoesNotExist:
+            return redirect('home')
         invoice.invoice_status = InvoiceStatus.DELETED
         invoice.amounts_need_to_pay = 0
         invoice.fees_amount = 0
