@@ -1,31 +1,31 @@
-{% load static %}
-<html>
-  <head>
-
-    <script src = "{% url 'js-catalog' %}"></script>
-    <script src="{% static '/admin/js/core.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
-
-  <head>
+{% extends 'director_base_content.html' %}
 
 
+
+{%block content%}
   <h1> Change user info </h1>
 
   <body>
+
+    <div class="container vh-100" id="homecardholder">
+      <div class="row h-100">
+        <div class="col-12 my-auto">
+          <div class="card mx-auto" id="homecard">
       <form action="{% url 'update_user' user.id %}" method="post">
         {% csrf_token %}
 
-          {% for message in messages %}
-            <div class="alert alert-{{ message.level_tag }}" role="alert">
-              {{ message }}
-            </div>
-          {% endfor %}
-           {{ form.media }}
-           {{ form.as_p }}
+        {% include 'partials/messages.html' with form=form %}
+        {% include 'partials/bootstrap_form.html' with form=form %}
 
 
            <input type="submit" value="Update" class="btn btn-primary"></input>
       </form>
+
+
+
+      </div>
+      </div>
+      </div>
+      </div>
 </body>
-</html>
+{%endblock%}

@@ -1,10 +1,7 @@
-<html>
-  <h1> THIS IS THE DIRECTOR FEED PAGE</h1>
+{% extends 'director_base_content.html' %}
 
-<!-- Refactoring needed -->
-<head>
-  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
-</head>
+{%block content%}
+  <h1> THIS IS THE DIRECTOR FEED PAGE</h1>
 
 
 {% if messages %}
@@ -19,10 +16,9 @@
   <div class="col-12">
     <h1>Directors</h1>
 
-      {% include 'partials/director_table/table_styles.html' %}
 
       <table class="table">
-      <thead>
+      <thead style="color:white;">
         {% include 'partials/director_table/table_head.html' %}
       </thead>
       <tbody>
@@ -39,12 +35,11 @@
   <div class="col-12">
     <h1>Admins</h1>
 
-      <p> <a href = '{% url 'create_admin_page' %}' class = "btn btn-sm btn-secondary"> Create admin  </a></p>
+      <p> <a href = '{% url 'create_admin_page' %}' class = "btn successbutton"> Create admin  </a></p>
 
-      {% include 'partials/director_table/table_styles.html' %}
 
       <table class="table">
-      <thead>
+      <thead style="color:white;">
         <tr>
           {% include 'partials/director_table/table_head.html' %}
         </tr>
@@ -58,4 +53,5 @@
 
   </div>
 </div>
-<p> <a href = '{% url 'director_feed' %}' class = "btn btn-sm btn-primary"> Go back  </a></p>
+
+{%endblock%}

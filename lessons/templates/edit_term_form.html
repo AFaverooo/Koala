@@ -1,44 +1,37 @@
-{% load static %}
-{{ form.media }}
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+{% extends 'admin_base_content.html' %}
 
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <script src = "{% url 'js-catalog' %}"></script>
-    <script src="{% static '/admin/js/core.js' %}"></script> -->
-    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
 
-{% load bootstrap4 %}
-{% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
-
-</head>
-
+{%block content%}
 
   <h1> Edit term details</h1>
 
-  <h2>
-    Previous term: start date({{previous_term.start_date}}), end date:({{previous_term.end_date}})<br>
-    Next term: start date({{next_term.start_date}}), end date:({{next_term.end_date}})
-  </h2>
+  <h4>
+    Previous term: Start Date:{{previous_term.start_date}}, End Date:{{previous_term.end_date}}<br>
+    Next term: Start Date: {{next_term.start_date}}, End Date:{{next_term.end_date}}
+  </h4>
 
-  <body>
+  
+  <div class="container vh-100" id="homecardholder">
+    <div class="row h-100">
+      <div class="col-12 my-auto">
+        <div class="card mx-auto" id="homecard">
+
       <form action="{% url 'update_term_details' term.term_number %}" method="post">
         {% csrf_token %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.level_tag }}" role="alert">
-              {{ message }}
-            </div>
-          {% endfor %}
+        <a href='{% url 'term_management' %}' >
+          <button type="button" class="btn-danger"><i class="bi-X"></i>  </button>
+         </a>
+
+         {%include 'partials/messages.html'%}
            {{ form.media }}
            {{ form.as_p }}
            <input type="submit" value="Save" class="btn btn-primary"></input>
 
-           <a href='{% url 'term_management' %}' >
-            <button type="button" class="btn button3">Cancel</button>
-           </a>
+          
       </form>
-</body>
-</html>
+
+      </div>
+      </div>
+      </div>
+      </div>
+      {%endblock%}
