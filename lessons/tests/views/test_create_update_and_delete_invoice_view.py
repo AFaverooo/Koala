@@ -10,6 +10,9 @@ import datetime
 
 class CreateUpdateDeleteInvoiceTestCase(TestCase):
 
+    # this function test if invoice can be successfully create, update and delete
+    # tested function: create_new_invoice, update_invoice, update_invoice_when_delete
+
     def setUp(self):
 
         self.student = UserAccount.objects.create_student(
