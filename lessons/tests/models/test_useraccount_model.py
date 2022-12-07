@@ -16,13 +16,7 @@ class UserAccountModelTestCase(TestCase):
         self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
         self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        self.director = UserAccount.objects.create_superuser(
-            first_name='Jack',
-            last_name='Smith',
-            email='jsmith@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.director = UserAccount.objects.get(email='jsmith@example.org')
 
 
     def _create_second_student(self):
