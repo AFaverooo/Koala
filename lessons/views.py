@@ -637,7 +637,6 @@ def student_feed(request):
         else:
             return HttpResponseForbidden()
     else:
-        # return redirect('log_in')
         return redirect('home')
 
 """
@@ -875,6 +874,7 @@ def home(request):
             role = form.cleaned_data.get('role')
             user = authenticate(email=email, password=password)
             if user is not None:
+                #only parent users can log in
                 if user.parent_of_user is None:
                     login(request,user)
                      # redirects the user based on his role
@@ -897,7 +897,6 @@ def home(request):
         messages.add_message(request,messages.ERROR,"The credentials provided is invalid!")
     form = LogInForm()
     next = request.GET.get('next') or ''
-    #return render(request,'log_in.html', {'form' : form, 'next' : next})
     return render(request,'home.html', {'form' : form, 'next' : next})
 
 
@@ -910,9 +909,10 @@ def log_out(request):
 
 @Description: Function called when a student attempts to sign up their child as a student user to the system
               This child and parent are related by the parent_of_user field in the UserAccount models
-              POST Requests create the new Child Student
+              POST Requests create the new Child Student using the data from the POST request
               Child Students are identified by their email -> no two UserAccount models can have the same email but can have the same name
               Only Student UserAccounts can acces this functionality
+              Child Student UserAccounts cannnot access the available application's functionalities but their parents can for them
 @return: Renders or redirects to another specified view with relevant messages
 """
 def sign_up_child(request):
@@ -959,7 +959,6 @@ def sign_up(request):
 """
 def new_lesson(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
-        #current_student = request.user
 
         if request.method == 'POST':
             request_form = RequestForm(request.POST)
@@ -978,7 +977,7 @@ def new_lesson(request):
                     return render(request,'requests_page.html', {'form' : request_form , 'lessons': get_saved_lessons(request.user), 'students_option':students_option})
 
                 try:
-                    request_form.save(actual_student)#Lesson.objects.create(type = type, duration = duration, lesson_date_time = lesson_date, teacher_id = teacher_id, student_id = current_student)
+                    request_form.save(actual_student)
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Lesson information provided already exists")
                     students_option = get_student_and_child_objects(request.user)
