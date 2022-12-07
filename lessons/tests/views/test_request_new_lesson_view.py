@@ -23,6 +23,12 @@ class RequestNewLessonTest(TestCase):
             end_date = datetime.date(2023, 7,21),
         )
 
+        self.term_one = Term.objects.create(
+            term_number=1,
+            start_date = datetime.date(2022, 9,1),
+            end_date = datetime.date(2022, 10,21),
+        )
+
         self.admin = UserAccount.objects.create_admin(
             first_name='Bob',
             last_name='Jacobs',

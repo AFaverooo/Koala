@@ -17,6 +17,9 @@ from itertools import chain
 
 from django.template.defaulttags import register
 
+"""
+functions to call in the templates for dictionaries storing the relevant keys
+"""
 @register.filter
 def get_lesson_duration(dictionary):
     return dictionary.get("Lesson Duration")
@@ -536,13 +539,24 @@ def delete_term(request, term_number):
 
 # ---------------------------------------------
 
+"""
+@params: Either a post or get request to the url student_feed associated to student_feed function in views
 
+@Description: Function called when a student logs into the system accessing the student feed page
+              Displays to the student their pending requested lessons which can be viewd,deleted or edited
+              Displays to the student their booked lessons which cannot be deleted or edited
+              The above extends to any of the students' childrens' lesson
+              The requested lessons are grouped by request date [The day the request was made]
+              POST Requests to this page are forbidden
+              Only students can access this functionality
+"""
 @login_required
 def student_feed(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
             greeting_str = f'Welcome back {request.user}, this is your feed!'
 
+            #get any unfullfilled or fullfilled lessons for both the student and its children
             fullfilled_lessons = make_lesson_timetable_dictionary(request.user)
             unfulfilled_requests = make_lesson_dictionary(request.user,"Lesson Request")
 
@@ -550,6 +564,7 @@ def student_feed(request):
 
             admin_email_str = ''
 
+            #admin to contact
             if admin:
                 admin_email_str = f'To Further Edit Bookings Contact {admin.email}'
             else:
@@ -562,6 +577,14 @@ def student_feed(request):
         # return redirect('log_in')
         return redirect('home')
 
+"""
+@params: Either a post or get request to the url requests_page associated to requests_page function in views
+
+@Description: Function called when a student attempts to request page which provides functionalities to create and request lessons
+              Displays to the student any saved lessons they have already made and yet to be requested
+              POST Requests to this page are forbidden
+              Only students can access this functionality
+"""
 @login_required
 def requests_page(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):

@@ -20,7 +20,7 @@ class InvoiceStatus(models.TextChoices):
     PARTIALLY_PAID = 'PARTIALLY_PAID', _('This invoice has been partially paid')
     DELETED = 'DELETED', _('This invoice has been deleted')
 
-#Enum type for the status of a lesson 
+#Enum type for the status of a lesson
 class LessonStatus(models.TextChoices):
     SAVED = 'SA', _('The lesson has been saved')
     UNFULFILLED = 'PN', _('The lesson request is pending')
@@ -40,21 +40,12 @@ class LessonDuration(models.TextChoices):
     FOURTY_FIVE = '45', _('45 minute lesson')
     HOUR = '60', _('1 hour lesson')
 
-    #def getDuration(self):
-    #    return f'{self.label}'
-
-    #def getLabel(self):
-    #    return f'{self.label}'
-
-#added a teacher as a user role
+#Enum type for the different types of roles a user can have
 class UserRole(models.TextChoices):
-    STUDENT = 'Student'
-    ADMIN = 'Administrator'
-    DIRECTOR = 'Director'
-    TEACHER = 'Teacher'
-
-    def is_student(self):
-        return self.value == 'Student'
+    STUDENT = 'STU', _('Student')
+    ADMIN = 'ADM', _('Administrator')
+    DIRECTOR = 'DIR', _('Director')
+    TEACHER = 'TEA', _('Teacher')
 
 #Enum type for the gender of the student user
 class Gender(models.TextChoices):
@@ -62,7 +53,10 @@ class Gender(models.TextChoices):
     FEMALE = 'F', _('Female')
     PNOT = 'PNOT', _('Prefer Not To Say')
 
-#custom manager for creating different types of user accounts
+"""
+Custom manager for the user account model for creating different types of user accounts, students,admins,directors and teachers
+Allows different types of permissions to be assigned to each user type
+"""
 class UserAccountManager(BaseUserManager):
     use_in_migrations = True
 
@@ -79,7 +73,7 @@ class UserAccountManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    #creates a student account
+    #creates a student user account, assigned STUDENT UserRole type
     def create_student(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
@@ -88,7 +82,7 @@ class UserAccountManager(BaseUserManager):
         extra_fields.setdefault('role', UserRole.STUDENT)
         return self._create_user(email, password, **extra_fields)
 
-    #creates a child student account, parameters include the UserAccount object which is the parent of the student to be created
+    #creates a child student user account, parameters include the UserAccount object which is the parent of the student to be created
     def create_child_student(self, email, password, **extra_fields):
 
         parent = extra_fields['parent_of_user']
@@ -109,7 +103,7 @@ class UserAccountManager(BaseUserManager):
         extra_fields.setdefault('role', UserRole.STUDENT)
         return self._create_user(email, password, **extra_fields)
 
-    #creates an admin account
+    #creates an admin account, which has staff permissions, assigned ADMIN UserRole type
     def create_admin(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', False)
@@ -126,7 +120,7 @@ class UserAccountManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
-    #creates a teacher account
+    #creates a teacher user account, which has staff permissions, assigned TEACHER UserRole type
     def create_teacher(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', False)
@@ -143,7 +137,7 @@ class UserAccountManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
-    #creates a director account of the system
+    #creates a director user account, which has staff and super user permissions, assigned DIRECTOR UserRole type
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -160,7 +154,11 @@ class UserAccountManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
-#UserAccount model refers to the User of the MSMS application
+"""
+UserAccount model refers to the different types of Users of the MSMS application
+Uniquely identified by their email, two users cannot have the same email
+Fields include their name, email , password, gender, role and balance
+"""
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
@@ -223,10 +221,13 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
-
-#Lesson model refers to the single lesson requested by the student user
-#It can have varying information such as the type of lessons, its duration , the teacher related to the lesson and the student requesting it
-#Lessons have varying status, SAVED when the lesson is first created by the user , UNFULFILLED when it is requested by the user and FULLFILLED when it is booked by an admin
+"""
+Lesson model refers to the single lesson requested by the student user
+It can have varying information such as the type of lessons, its duration , the teacher related to the lesson and the student that requested it
+Lessons have varying status, SAVED when the lesson is first created by the user , UNFULFILLED when it is requested by the user and FULLFILLED when it is booked by an admin
+Lessons are UNIQUELY identified by when they have been requested, the date and time the lesson is requested for and the student that requested the lesson
+Lessons are also assigned the TERM they fall in
+"""
 class Lesson(models.Model):
     lesson_id = models.BigAutoField(primary_key=True)
 
@@ -258,13 +259,13 @@ class Lesson(models.Model):
 
 
     def save(self, *args,**kwargs):
-        
+
         terms_list = Term.objects.all()
 
         for eachterm in terms_list :
 
             #Calculate mid-term date
-            start = eachterm.start_date 
+            start = eachterm.start_date
             end = eachterm.end_date
             mid_term_date = start + (end - start)/2
             close_to_end_of_term = end-(end - mid_term_date)/6
@@ -288,12 +289,12 @@ class Lesson(models.Model):
                 term = eachterm.term_number + 1
                 self.term = 'Term : ' + str(term) + '(Close to next term but no next term)'#       For reference : ' + str(self.lesson_date_time.date())
                 break
-            # else:#If lesson is not before mid term and is not close to end of term 
-            #     self.term = 'N/A' 
+            # else:#If lesson is not before mid term and is not close to end of term
+            #     self.term = 'N/A'
 
         super(Lesson,self).save(*args, **kwargs)
 
-    
+
 
     class Meta:
         unique_together = (('request_date', 'lesson_date_time', 'student_id'),)
@@ -408,7 +409,7 @@ class Transaction(models.Model):
             MinValueValidator(1),
         ]
     )
-    
+
 class Term(models.Model):
     term_number =  models.IntegerField(
         # blank = True,
@@ -432,7 +433,7 @@ class Term(models.Model):
         blank=True,
         null=True
     )
-    
+
 
     def create_term(self, term_number, start_date, end_date):
         '''Create and save a term with the given term_number, start_date and end_date'''

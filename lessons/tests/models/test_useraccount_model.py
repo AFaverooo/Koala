@@ -174,12 +174,12 @@ class UserAccountModelTestCase(TestCase):
         self._assert_useraccount_is_valid(self.student)
 
     def test_student_is_student(self):
-        self.assertTrue(self.student.role.is_student())
+        self.assertEqual(self.student.role, UserRole.STUDENT)
         self._assert_useraccount_is_valid(self.student)
 
     def test_student_is_not_student(self):
         self.student.role = UserRole.ADMIN
-        self.assertFalse(self.student.role.is_student())
+        self.assertNotEqual(self.student.role, UserRole.STUDENT)
 
     def test_student_not_parent(self):
         second_student = self._create_second_student()
