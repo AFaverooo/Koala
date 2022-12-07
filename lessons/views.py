@@ -1032,10 +1032,11 @@ def save_lessons(request):
 
 
 """
-@params: Either a post or get request to
+@params: request: Either a post or get request , lesson_id: The Lesson model object to render for editing
 
-@Description: Function to render 
-
+@Description: Function to render a RequestForm to edit an UNFULLFILLED Lesson of the student users' choice
+              Request form is rendered with the data of the lesson passed as a parameter bound
+              Function only accessible to students
 @return: Renders or redirects to another specified view with relevant messages
 """
 def render_edit_request(request,lesson_id):
@@ -1045,6 +1046,7 @@ def render_edit_request(request,lesson_id):
         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
         return redirect('student_feed')
 
+    #data of the lesson passed as a parameter
     data = {'type': to_edit_lesson.type,
             'duration': to_edit_lesson.duration,
             'lesson_date_time': to_edit_lesson.lesson_date_time,
@@ -1053,7 +1055,18 @@ def render_edit_request(request,lesson_id):
     form = RequestForm(data)
     return render(request,'edit_request.html', {'form' : form, 'lesson_id':lesson_id})
 
+"""
+@params: request: Either a post or get request to the edit_lesson url associated to the edit_lesson view, lesson_id: The Lesson model object to render for editing
 
+@Description: Function to peform the edit on lesson model object passed as parameter with the data provided by the Student User in the POST request
+              If this view is accessed with a GET request the requests_page is rendered
+              Function only accessible to students
+              The date entered must be valid by being within the term date range and cannot be less then the CURRENT_DATE in SETTINGS
+              Upon Succesfull edit the application is redirected to the student_feed
+              Function checks that the lesson attempted to be edited is one of the students or their children
+
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def edit_lesson(request,lesson_id):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         current_student = request.user
@@ -1082,7 +1095,6 @@ def edit_lesson(request,lesson_id):
                 except IntegrityError:
                     messages.add_message(request,messages.ERROR,"Duplicate lessons are not allowed")
                     return render_edit_request(request,lesson_id)
-                    #print('attempted to duplicate lesson')
 
                 messages.add_message(request,messages.SUCCESS,"Succesfully edited lesson")
                 return redirect('student_feed')
@@ -1092,10 +1104,19 @@ def edit_lesson(request,lesson_id):
         else:
             return render_edit_request(request,lesson_id)
     else:
-        # return redirect('log_in')
         return redirect('home')
 
+"""
+@params: request: Either a post or get request to the delete_pending url associated to the delete_pending view, lesson_id: The Lesson model object to render for deletion
 
+@Description: Function to peform the deletion of the UNFULLFILLED lesson model object passed as parameter with a POST request
+              If this view is accessed with a GET request the student_feed is rendered
+              Function only accessible to students
+              Upon Succesfull deletion the application is redirected to the student_feed
+              Function checks that the lesson attempted to be deleted is one of the students or their children
+
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def delete_pending(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
@@ -1121,6 +1142,17 @@ def delete_pending(request,lesson_id):
         # return redirect('log_in')
         return redirect('home')
 
+"""
+@params: request: Either a post or get request to the delete_saved url associated to the delete_saved view, lesson_id: The Lesson model object to render for deletion
+
+@Description: Function to peform the deletion of the SAVED lesson model object passed as parameter with a POST request
+              If this view is accessed with a GET request the student_feed is rendered
+              Function only accessible to students
+              Upon Succesfull deletion the application is redirected to the student_feed
+              Function checks that the lesson attempted to be deleted is one of the students or their children
+
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def delete_saved(request,lesson_id):
     if request.user.is_authenticated and request.user.role == UserRole.STUDENT:
         current_student = request.user
