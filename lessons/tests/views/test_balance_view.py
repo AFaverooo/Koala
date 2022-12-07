@@ -9,8 +9,10 @@ from datetime import time
 import datetime
 
 class BalanceViewAndGetFunctionsTestCase(TestCase): 
-    '''Tests of the invoice view'''
-
+    
+    # this function test if balance view works as expected
+    # tested function: balance and function used within it, get_student_invoice, get_student_transaction, get_student_balance, get_child_invoice
+    
     def setUp(self):
         self.url = reverse('balance')
 
