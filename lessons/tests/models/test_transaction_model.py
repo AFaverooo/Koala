@@ -10,7 +10,6 @@ class TransactionModelTesctCase(TestCase):
     def setUp(self):
         self.transaction = Transaction.objects.create(
             Student_ID_transaction = '1111',
-            # invoice_reference_transaction = '1111-001',
             transaction_amount = '77'
         )
 
@@ -18,8 +17,8 @@ class TransactionModelTesctCase(TestCase):
         second_transaction = Transaction.objects.create(
             Student_ID_transaction = '1331',
             invoice_reference_transaction = '1331-001',
-            # transaction_amount = '99'
-            
+
+
         )
         return second_transaction
 
@@ -29,11 +28,11 @@ class TransactionModelTesctCase(TestCase):
         except(ValidationError):
             self.fail('Test invoice should be valid')
 
-    def _assert_transaction_is_invalid(self):      
+    def _assert_transaction_is_invalid(self):
         with self.assertRaises(ValidationError):
             self.transaction.full_clean()
 
-    
+
     def test_valid_transaction(self):
         self._assert_transaction_is_valid()
 
@@ -43,7 +42,7 @@ class TransactionModelTesctCase(TestCase):
         self._assert_transaction_is_invalid()
 
     def test_Student_ID_transaction_can_be_30_characters_long(self):
-        self.transaction.Student_ID_transaction = '4' * 30 
+        self.transaction.Student_ID_transaction = '4' * 30
         self._assert_transaction_is_valid()
 
     def test_Student_ID_transaction_cannot_be_over_30_characters_long(self):

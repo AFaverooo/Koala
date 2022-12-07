@@ -92,7 +92,7 @@ class StudentFeedDeleteSavedLessonTestCase(TestCase):
         messages_list = list(response.context['messages'])
         self.assertEqual(len(messages_list),0)
 
-    #prev causing errors
+
     def test_not_student_accessing_deleting_saved_lessons(self):
         self.client.login(email=self.admin.email, password="Password123")
         response = self.client.get(self.delete_saved_url, follow = True)
@@ -183,7 +183,7 @@ class StudentFeedDeleteSavedLessonTestCase(TestCase):
         after_count = Lesson.objects.count()
         self.assertEqual(before_count-3, after_count)
         self.assertEqual(Lesson.objects.filter(student_id = self.student).count(),2)
-        #self.assertTemplateUsed(response, 'student_feed.html')
+
 
     def test_delete_child_lesson(self):
         self.create_child_student()
