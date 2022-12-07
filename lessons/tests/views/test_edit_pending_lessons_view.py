@@ -7,6 +7,7 @@ from django import forms
 import datetime
 from django.utils import timezone
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+from django.conf import settings
 
 class StudentFeedEditLessonTestCase(TestCase):
     """Unit tests for editing a requested lesson view."""
@@ -15,6 +16,7 @@ class StudentFeedEditLessonTestCase(TestCase):
 
     def setUp(self):
 
+        settings.CURRENT_DATE = datetime.date(2022, 9,1)
 
         self.term_six = Term.objects.create(
             term_number=6,
