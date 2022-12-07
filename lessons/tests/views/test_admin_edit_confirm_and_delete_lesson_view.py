@@ -87,15 +87,11 @@ class DirectorRoleChangesTestCase(TestCase):
         self.url = reverse('student_requests', args=[self.student.id])
 
         self.form_input = {
-                #'lesson_id': 1,
+                'lesson_id': 1,
                 'type':  LessonType.INSTRUMENT,
                 'duration': LessonDuration.HOUR,
                 'lesson_date_time': datetime.datetime(2022, 4, 1, 0, 0, 0, 0).replace(tzinfo=timezone.utc),
-                'teachers': self.teacher.id,
-                # 'student_id': self.student,
-                # 'request_date': date(2022,4,2),
-                # 'lesson_status':LessonStatus.UNFULLFILLED,
-                # 'term':2,
+                'teacher_id': self.teacher,
         }
 
     def test_student_requests_page_url(self):
@@ -120,11 +116,9 @@ class DirectorRoleChangesTestCase(TestCase):
         self.assertEqual(updated_lesson.type, self.form_input.get('type'))
         self.assertEqual(updated_lesson.duration,self.form_input.get('duration'))
         self.assertEqual(updated_lesson.lesson_date_time, self.form_input.get('lesson_date_time'))
-        self.assertEqual(updated_lesson.teacher_id, self.teacher)
+        self.assertEqual(updated_lesson.teacher_id, self.form_input.get('teacher_id'))
 
         #after sucessful lesson modification
-        # redirect_url = reverse('student_requests',args=[self.student.id])
-        # self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'admin_student_requests_page.html')
 
         messages_list = list(response.context['messages'])

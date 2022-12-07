@@ -12,14 +12,6 @@ class TermManagementTestCases(TestCase):
     def setUp(self):
 
 
-        # self.director = UserAccount.objects.create_superuser(
-        #     first_name='Jack',
-        #     last_name='Smith',
-        #     email='jsmith@example.org',
-        #     password='Password123',
-        #     gender = 'M',
-        # )
-
         self.admin = UserAccount.objects.create_admin(
                 first_name='Petra',
                 last_name='Pickles',
@@ -31,7 +23,7 @@ class TermManagementTestCases(TestCase):
 
         self.url = reverse('term_management')
 
-       
+
 
         self.term1 = Term.objects.create(
             term_number=1,
@@ -146,7 +138,7 @@ class TermManagementTestCases(TestCase):
 
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
-    
+
     def test_unsuccessful_create_term_due_to_unique_term_number_constraint(self):
         self.client.login(email=self.admin.email, password="Password123")
 
@@ -234,32 +226,11 @@ class TermManagementTestCases(TestCase):
         self.assertEqual(term_count_before,term_count_after)
         updated_term = Term.objects.get(term_number=self.form_input_with_dates_overlapping2['term_number'])
 
-        # self.assertNotEqual(len(Term.objects.filter(term_number=self.form_input_with_dates_overlapping2['term_number'])),1)
-
         self.assertEqual(updated_term.term_number, self.form_input_with_dates_overlapping2.get('term_number'))
         self.assertNotEqual(updated_term.start_date, self.form_input_with_dates_overlapping2.get('start_date'))
         self.assertNotEqual(updated_term.end_date, self.form_input_with_dates_overlapping2.get('end_date'))
-#
+
         self.assertTemplateUsed(response, 'edit_term_form.html')
 
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level, messages.ERROR)
-
-        
-
-    # def test_cant_delete_non_existing_term(self):
-
-    #     self.client.login(email=self.admin.email, password="Password123")
-
-    #     term_count_before = Term.objects.count()
-    #     self.delete_term_url = reverse('delete_term', args=['6'])
-    #     response = self.client.get(self.delete_term_url, follow = True)
-    #     term_count_after = Term.objects.count()
-    #     self.assertEqual(term_count_before,term_count_after)
-
-    #     redirect_url = reverse('term_management')
-    #     self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-    #     self.assertTemplateUsed(response, 'term_management.html')
-
-    #     messages_list = list(response.context['messages'])
-    #     self.assertEqual(messages_list[0].level, messages.ERROR)
