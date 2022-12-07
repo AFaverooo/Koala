@@ -9,7 +9,7 @@ from lessons.models import UserAccount, Gender
 
 class LogInTestCase(TestCase,LogInTester):
     """Tests for the login up view."""
-
+    
     def setUp(self):
         self.url = reverse('home')
         self.student = UserAccount.objects.create_student(
