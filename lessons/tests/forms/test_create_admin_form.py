@@ -7,6 +7,8 @@ from lessons.models import UserAccount,UserRole,Gender
 class UserFormTestCase(TestCase):
     """Unit tests of the create admins form."""
 
+
+
     def setUp(self):
         self.form_input = {
             'first_name': 'Jane',
@@ -16,6 +18,7 @@ class UserFormTestCase(TestCase):
             'new_password': 'Password123',
             'password_confirmation': 'Password123',
         }
+
 
     def test_valid_sign_up_form(self):
         form = CreateAdminForm(data=self.form_input)
