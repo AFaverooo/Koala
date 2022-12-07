@@ -13,7 +13,6 @@ class TestChildStudentUser(TestCase):
 
         self.student = UserAccount.objects.get(email='johndoe@example.org')
 
-
         self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
         self.admin = UserAccount.objects.get(email='bobby@example.org')

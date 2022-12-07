@@ -8,13 +8,13 @@ from django.utils import timezone
 from datetime import time
 import datetime
 
-class BalanceViewAndGetFunctionsTestCase(TestCase): 
+class BalanceViewAndGetFunctionsTestCase(TestCase):
     '''Tests of the invoice view'''
     fixtures = ['lessons/tests/fixtures/invoices.json']
-    
+
     # this function test if balance view works as expected
     # tested function: balance and function used within it, get_student_invoice, get_student_transaction, get_student_balance, get_child_invoice
-    
+
     def setUp(self):
         self.url = reverse('balance')
 
@@ -53,14 +53,7 @@ class BalanceViewAndGetFunctionsTestCase(TestCase):
             gender = Gender.FEMALE,
         )
 
-        # self.invoice = Invoice.objects.create(
-        #     reference_number = '1-001',
-        #     student_ID = '1',
-        #     fees_amount = '78',
-        #     amounts_need_to_pay = '78',
-        #     lesson_ID = '1',
-        #     invoice_status = InvoiceStatus.UNPAID,
-        # )
+
         self.invoice = Invoice.objects.get(reference_number = '1-001')
 
         self.transaction = Transaction.objects.create(
@@ -126,7 +119,7 @@ class BalanceViewAndGetFunctionsTestCase(TestCase):
             gender = Gender.FEMALE,
             parent_of_user = self.student,
         )
-    
+
     def create_invoice_for_child(self):
         self.invoice_child = Invoice.objects.create(
             reference_number = '5-001',
@@ -153,7 +146,7 @@ class BalanceViewAndGetFunctionsTestCase(TestCase):
 
     def test_get_balance(self):
         self.client.login(username=self.student.email, password='Password123')
-        response = self.client.get(self.url)                         
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'balance.html')
 
@@ -255,14 +248,3 @@ class BalanceViewAndGetFunctionsTestCase(TestCase):
         self.assertEqual(child_invoices[1].invoice_status, InvoiceStatus.UNPAID)
         self.assertEqual(child_invoices[1].amounts_need_to_pay, 78)
         self.assertEqual(child_invoices[1].lesson_ID, '3')
-
-
-
-
-
-
-
-
-
-
-

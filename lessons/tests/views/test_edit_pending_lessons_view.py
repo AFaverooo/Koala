@@ -174,7 +174,7 @@ class StudentFeedEditLessonTestCase(TestCase):
 
         self.assertEqual(before_count,after_count)
 
-    #prev causing errors
+    
     def test_not_student_accessing_editing_pending_lessons(self):
         self.client.login(email=self.admin.email, password="Password123")
         response = self.client.get(self.edit_url, follow = True)
