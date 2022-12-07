@@ -255,14 +255,18 @@ def update_invoice_when_delete(lesson):
 # Both total and transactions will be pass into transaction_history.html and dispaly in a table
 @login_required
 def get_all_transactions(request):
-    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
-        all_transactions = Transaction.objects.all()
-        total = 0
-        for each_transaction in all_transactions:
-                total+= each_transaction.transaction_amount
+    try:
+        if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+            all_transactions = Transaction.objects.all()
+            total = 0
+            for each_transaction in all_transactions:
+                    total+= each_transaction.transaction_amount
 
-        return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
-    else:
+            return render(request,'transaction_history.html', {'all_transactions': all_transactions, 'total':total})
+        else:
+            return redirect('home')
+    except ObjectDoesNotExist:
+        messages.add_message(request,messages.ERROR,"No such student exist!")
         return redirect('home')
 
 # This function will be call in admin page when press a button to display all students' invoices
@@ -270,11 +274,15 @@ def get_all_transactions(request):
 # All invoices will be pass into invoices_history.html and dispaly in a table
 @login_required
 def get_all_invocies(request):
-    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
-        all_invoices = Invoice.objects.all()
+    try:
+        if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+            all_invoices = Invoice.objects.all()
 
-        return render(request,'invoices_history.html', {'all_invoices': all_invoices})
-    else:
+            return render(request,'invoices_history.html', {'all_invoices': all_invoices})
+        else:
+            return redirect('home')
+    except ObjectDoesNotExist:
+        messages.add_message(request,messages.ERROR,"No such student exist!")
         return redirect('home')
 
 # This function will be call when admin or director try to see all invoices and transactions that belongs to this student
@@ -282,13 +290,17 @@ def get_all_invocies(request):
 # Those data will be display as two tables in the page
 @login_required
 def get_student_invoices_and_transactions(request, student_id):
-    if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
-        student = UserAccount.objects.get(id=student_id)
-        all_invoices = Invoice.objects.filter(student_ID = student_id)
-        all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
+    try:
+        if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
+            student = UserAccount.objects.get(id=student_id)
+            all_invoices = Invoice.objects.filter(student_ID = student_id)
+            all_transactions = Transaction.objects.filter(Student_ID_transaction = student_id)
 
-        return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
-    else:
+            return render(request, 'student_invoices_and_transactions.html', {'student': student, 'all_invoices': all_invoices, 'all_transactions':all_transactions})
+        else:
+            return redirect('home')
+    except ObjectDoesNotExist:
+        messages.add_message(request,messages.ERROR,"No such student exist!")
         return redirect('home')
 
 
