@@ -8,7 +8,7 @@ from lessons.forms import LogInForm
 from lessons.models import UserAccount, Gender
 
 class LogInTestCase(TestCase,LogInTester):
-    """Tests for the login up view."""
+    """Tests for the login view."""
 
     def setUp(self):
         self.url = reverse('home')
