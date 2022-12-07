@@ -10,6 +10,7 @@ from django.contrib.auth.hashers import check_password
 class DirectorUpdateUserTest(TestCase):
     """Unit tests of the update_user view."""
 
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
 
     def setUp(self):
 
@@ -21,13 +22,7 @@ class DirectorUpdateUserTest(TestCase):
             gender = 'M',
         )
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Jane',
-            last_name='Doe',
-            email='janedoe@example.org',
-            password='Password123',
-            gender = 'F',
-        )
+        self.admin = UserAccount.objects.get(email='janedoe@example.org')
 
         self.url = reverse('create_admin_page')
 
@@ -39,7 +34,6 @@ class DirectorUpdateUserTest(TestCase):
             'new_password': 'NewPassword123',
             'password_confirmation': 'NewPassword123',
         }
-
 
     def test_create_admin_page_url(self):
         self.assertEqual(self.url,'/create_admin_page')
@@ -62,7 +56,7 @@ class DirectorUpdateUserTest(TestCase):
         user_count_after = UserAccount.objects.count()
         self.assertEqual(user_count_before,user_count_after)
 
-        # after sucessful change
+        # After sucessful change
         redirect_url = reverse('director_manage_roles')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'director_manage_roles.html')
@@ -70,7 +64,7 @@ class DirectorUpdateUserTest(TestCase):
         messages_list = list(response.context['messages'])
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
-        # ensures user fields on database has changed
+        # Ensures user fields on database has changed
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.first_name, 'Jane2')
         self.assertEqual(self.admin.last_name, 'Doe2')
@@ -91,12 +85,12 @@ class DirectorUpdateUserTest(TestCase):
         user_count_after = UserAccount.objects.count()
         self.assertEqual(user_count_before,user_count_after)
 
-        # check current user is logged out
+        # Check current user is logged out
         response_url = reverse('home')
         self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'home.html')
 
-        # ensures user fields on database has changed
+        # Ensures user fields on database has changed
         self.current.refresh_from_db()
         self.assertEqual(self.current.first_name, 'Jane2')
         self.assertEqual(self.current.last_name, 'Doe2')
@@ -118,7 +112,7 @@ class DirectorUpdateUserTest(TestCase):
         user_count_after = UserAccount.objects.count()
         self.assertEqual(user_count_before,user_count_after)
 
-        # ensures user fields on database has not changed
+        # Ensures user fields on database has not changed
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.first_name, 'Jane')
         self.assertEqual(self.admin.last_name, 'Doe')
@@ -132,7 +126,7 @@ class DirectorUpdateUserTest(TestCase):
 
         self.client.login(email=self.current.email, password="Password123")
 
-        # try update the an admin account with an already used emails
+        # Try update the an admin account with an already used emails
         user_count_before = UserAccount.objects.count()
         self.update_user_url = reverse('update_user', args=[self.admin.id])
         self.form_input['email'] = 'apedro@example.org'
@@ -140,7 +134,7 @@ class DirectorUpdateUserTest(TestCase):
         user_count_after = UserAccount.objects.count()
         self.assertEqual(user_count_before,user_count_after)
 
-        # ensures user fields on database has not changed
+        # Ensures user fields on database has not changed
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.first_name, 'Jane')
         self.assertEqual(self.admin.last_name, 'Doe')

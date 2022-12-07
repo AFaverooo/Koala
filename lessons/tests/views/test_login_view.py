@@ -9,7 +9,7 @@ from lessons.models import UserAccount, Gender
 
 class LogInTestCase(TestCase,LogInTester):
     """Tests for the login up view."""
-
+    
     def setUp(self):
         self.url = reverse('home')
         self.student = UserAccount.objects.create_student(
@@ -34,6 +34,7 @@ class LogInTestCase(TestCase,LogInTester):
             password='Password123',
             gender = 'M',
         )
+
         self.student_form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
         self.admin_form_input = {'email' : 'janedoe@example.org', 'password' : 'Password123'}
         self.director_form_input = {'email' : 'jsmith@example.org', 'password' : 'Password123'}
