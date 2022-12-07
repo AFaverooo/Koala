@@ -608,7 +608,7 @@ def requests_page(request):
 
 @login_required
 def admin_feed(request):
-    
+
     if (request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
         student = UserAccount.objects.filter(role=UserRole.STUDENT.value,is_parent = False)
         parents = UserAccount.objects.filter(role=UserRole.STUDENT,is_parent = True)
