@@ -594,29 +594,26 @@ def admin_feed(request):
 
 @login_required
 def director_feed(request):
-    if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         return render(request,'director_feed.html')
     else:
-        # return redirect('log_in')
         return redirect('home')
 
 
 @login_required
 def director_manage_roles(request):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-        students = UserAccount.objects.filter(role = UserRole.STUDENT)
-        teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
         admins = UserAccount.objects.filter(role = UserRole.ADMIN)
         directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
-        return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
+        return render(request,'director_manage_roles.html',{'admins':admins, 'directors':directors})
     else:
         return redirect("home")
-
 
 
 @login_required
 def promote_director(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
             return redirect('director_manage_roles')
@@ -624,7 +621,7 @@ def promote_director(request,current_user_email):
 
             try:
                 user = UserAccount.objects.get(email=current_user_email)
-            except ObjectDoesNotExist:#For when editing a lesson with term number 1
+            except ObjectDoesNotExist:
                 messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
                 return redirect("director_manage_roles")
 
@@ -632,6 +629,7 @@ def promote_director(request,current_user_email):
             user.is_staff = True
             user.is_superuser = True
             user.save()
+
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
             return redirect('director_manage_roles')
     else:
@@ -642,6 +640,7 @@ def promote_director(request,current_user_email):
 def promote_admin(request,current_user_email):
 
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
             return redirect('director_manage_roles')
@@ -716,9 +715,8 @@ def delete_user(request,current_user_email):
         return redirect("home")
 
 
-
+@login_required
 def create_admin_page(request):
-
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
 
         if request.method == 'POST':

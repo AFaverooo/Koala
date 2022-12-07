@@ -51,7 +51,6 @@ class LogInTestCase(TestCase,LogInTester):
         self.child_form_input = {'email' : 'bobbylee@example.org', 'password' : 'Password123'}
 
     def test_log_in_url(self):
-        #should this be: self.assertEqual(self.url,'/') or  self.assertEqual(self.url,'')
         self.assertEqual(self.url,'/')
 
     def test_get_log_in(self):
