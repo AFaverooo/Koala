@@ -178,8 +178,8 @@ class TermDatesForm(forms.ModelForm):
 
 
 class RequestForm(forms.ModelForm):
-    """Form enabling unregistered users to sign up."""
-    
+    """Form enabling Students to request a lesson they wish to book."""
+
     # def generateDates(self):
     #     terms = Term.objects.all()
     #         for eachterm in terms:
@@ -189,20 +189,21 @@ class RequestForm(forms.ModelForm):
     #             if (start <= today <= end):
     #                 maxDate = end
     #                 if(today.weekday() != )
-        
+
 
     class Meta:
         """Form options."""
         model = Lesson
         fields = ['type','duration','lesson_date_time']
         widgets = {
-            "lesson_date_time": DateTimePickerInput( 
+            "lesson_date_time": DateTimePickerInput(
                 # options={
                 #     'minDate': (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00'),
                 #     'maxDate': (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y-%m-%d 23:59:59'),}
                     )
                     }
 
+    #returns drop down of all teachers that can be selected by a student
     teachers = forms.ModelChoiceField(queryset = UserAccount.objects.filter(role = UserRole.TEACHER) , widget = forms.Select, empty_label = None, initial = 0)
     # def clean(self, request):
     #     """Clean the data and generate messages for any errors."""

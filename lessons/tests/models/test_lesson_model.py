@@ -7,41 +7,50 @@ import datetime
 from django.utils import timezone
 
 class LessonModelTestCase(TestCase):
+    """Unit Tests for Lesson model"""
 
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        #self.teacher = UserAccount.objects.create_teacher(
+        #    first_name='Barbare',
+        #    last_name='Dutch',
+        #    email='barbdutch@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
-        self.second_student = UserAccount.objects.create_student(
-            first_name='Jane',
-            last_name='Doe',
-            email='janedoe@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        #self.student = UserAccount.objects.create_student(
+        #    first_name='John',
+        #    last_name='Doe',
+        #    email='johndoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
 
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
+
+        #self.second_student = UserAccount.objects.create_student(
+        #    first_name='Jane',
+        #    last_name='Doe',
+        #    email='janedoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+        self.second_student = UserAccount.objects.get(email='janedoe@example.org')
+
+        #self.child = UserAccount.objects.create_child_student(
+        #    first_name = 'Bobby',
+        #    last_name = 'Lee',
+        #    email = 'bobbylee@example.org',
+        #    password = 'Password123',
+        #    gender = Gender.MALE,
+        #    parent_of_user = self.student,
+        #)
+
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
         self.lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
@@ -210,7 +219,7 @@ class LessonModelTestCase(TestCase):
         self.create_child_lessons()
         before_count = Lesson.objects.count()
         UserAccount.objects.get(email = self.student.email).delete()
-        self.assertEqual(UserAccount.objects.count(),2) #second student and teacher
+        self.assertEqual(UserAccount.objects.count(),5) #second student and teacher
 
         after_count = Lesson.objects.count()
         self.assertEqual(before_count-5,after_count)

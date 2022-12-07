@@ -8,43 +8,46 @@ from lessons.modelHelpers import is_valid_gender,is_valid_role
 class UserAccountModelTestCase(TestCase):
     """Unit tests for the UserAccount model"""
 
-    #fixtures = ['lessons/tests/fixtures/john-fixtures.json']
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
 
     def setUp(self):
-        #self.student=UserAccount.objects.get(email='johndoe@example.org')
-        #self.student.role = UserRole.STUDENT
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.student=UserAccount.objects.get(email='johndoe@example.org')
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
+        #self.student = UserAccount.objects.create_student(
+        #    first_name='John',
+        #    last_name='Doe',
+        #    email='johndoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.teacher = UserAccount.objects.create_teacher(
+        #    first_name='Barbare',
+        #    last_name='Dutch',
+        #    email='barbdutch@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+
+        #self.admin = UserAccount.objects.create_admin(
+        #    first_name='Bob',
+        #    last_name='Jacobs',
+        #    email='bobby@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
 
     def _create_second_student(self):
-        student = UserAccount.objects.create_student(
-            first_name='Jane',
-            last_name='Doe',
-            email='janedoe@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        #student = UserAccount.objects.create_student(
+        #    first_name='Jane',
+        #    last_name='Doe',
+        #    email='janedoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+        student = UserAccount.objects.get(email='janedoe@example.org')
         return student
 
     def _create_third_student(self):
@@ -174,18 +177,17 @@ class UserAccountModelTestCase(TestCase):
         self._assert_useraccount_is_valid(self.student)
 
     def test_student_is_student(self):
-        self.assertTrue(self.student.role.is_student())
+        self.assertEqual(self.student.role, UserRole.STUDENT)
         self._assert_useraccount_is_valid(self.student)
 
     def test_student_is_not_student(self):
         self.student.role = UserRole.ADMIN
-        self.assertFalse(self.student.role.is_student())
+        self.assertNotEqual(self.student.role, UserRole.STUDENT)
 
     def test_student_not_parent(self):
         second_student = self._create_second_student()
         third_student = self._create_third_student()
 
-        self.assertFalse(self.student.is_parent)
         self.assertEqual(self.student.parent_of_user,None)
         self.assertFalse(second_student.is_parent)
         self.assertEqual(second_student.parent_of_user,None)
