@@ -7,12 +7,29 @@
     <td>{{ user.is_active|yesno:"✔,✘" }}</td>
 
     <td>
-        <a href = '{% url 'promote_director' user.email %}'>Make director</a>
+        <a href = '{% url 'promote_director' user.email %}'><button class="EntryButton">Make Director</button></a>
     </td>
     <td>
-      <a href = '{% url 'update_user' user.id %}'>Edit user</a>
-      <a href = '{% url 'delete_user' user.email %}'>Delete user</a>
-      <a href = '{% url 'disable_user' user.email %}'>Disable user</a>
+
+
+
+      <a href = '{% url 'update_user' user.id %}'>
+        <button type="button" class="btn-primary" style="border-radius:5px;">
+          <i class="bi bi-pencil-square"></i>
+        </button>
+      </a>
+
+
+
+      <a href = '{% url 'delete_user' user.email %}'>
+        <button type="submit" class="btn-danger" style="border-radius:5px">
+          <i class="bi-trash3-fill"></i></button>
+      </a>
+      <a href = '{% url 'disable_user' user.email %}'>
+        <button type="submit" class="btn-danger" style="border-radius:5px">
+          <i class="bi bi-slash-circle"></i>
+        </button>
+      </a>
     </td>
 
   </tr>

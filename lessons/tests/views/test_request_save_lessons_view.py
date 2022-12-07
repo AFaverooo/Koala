@@ -16,49 +16,25 @@ from django.db import IntegrityError
 from django.db import transaction
 
 class RequestSaveLessonsTest(TestCase):
+    """Unit tests for saving lessons and making them a requested set of lessons."""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json'], ['lessons/tests/fixtures/lessons.json']
     def setUp(self):
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
-
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
         self.save_lessons_url = reverse('save_lessons')
 
-
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
     def create_child_lessons(self):
         self.saved_child_lesson = Lesson.objects.create(
             type = LessonType.PRACTICE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 11, 22, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 11, 22, 15, 15, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.child,
             request_date = datetime.date(2022, 10, 15),
@@ -76,35 +52,14 @@ class RequestSaveLessonsTest(TestCase):
         )
 
     def create_saved_lessons(self):
-        self.saved_lesson = Lesson.objects.create(
-            type = LessonType.INSTRUMENT,
-            duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.SAVED
-        )
+        self.saved_lesson = Lesson.objects.get(lesson_id=1)
 
-        self.saved_lesson2 = Lesson.objects.create(
-            type = LessonType.THEORY,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.SAVED
-        )
+        self.saved_lesson2 = Lesson.objects.get(lesson_id=2)
 
-        self.saved_lesson3 = Lesson.objects.create(
-            type = LessonType.PERFORMANCE,
-            duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.SAVED
-        )
+        self.saved_lesson3 = Lesson.objects.get(lesson_id=3)
+
+        Lesson.objects.get(lesson_id=4).delete()
+        Lesson.objects.get(lesson_id=5).delete()
 
 
     def test_get_saved_lessons(self):
@@ -126,6 +81,12 @@ class RequestSaveLessonsTest(TestCase):
 
 
     def test_get_save_lessons_without_lessons_saved(self):
+        Lesson.objects.get(lesson_id=1).delete()
+        Lesson.objects.get(lesson_id=2).delete()
+        Lesson.objects.get(lesson_id=3).delete()
+        Lesson.objects.get(lesson_id=4).delete()
+        Lesson.objects.get(lesson_id=5).delete()
+
         redirect_url = reverse('requests_page')
         self.client.login(email=self.student.email, password="Password123")
         response = self.client.get(self.save_lessons_url,follow = True)
@@ -150,7 +111,12 @@ class RequestSaveLessonsTest(TestCase):
         self.assertFalse(form.is_bound)
 
     def test_succesfull_save_lessons_post_without_saved_lessons(self):
-        #self.create_saved_lessons()
+        Lesson.objects.get(lesson_id=1).delete()
+        Lesson.objects.get(lesson_id=2).delete()
+        Lesson.objects.get(lesson_id=3).delete()
+        Lesson.objects.get(lesson_id=4).delete()
+        Lesson.objects.get(lesson_id=5).delete()
+
         self.client.login(email = self.student.email, password = 'Password123')
         before_count = Lesson.objects.count()
         response = self.client.post(self.save_lessons_url, follow = True)

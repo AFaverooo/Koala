@@ -1,13 +1,16 @@
 
-<body style="background-color: #edede9">
+{% extends 'admin_base_content.html' %}
 
 
+{%block content%}
+
+<!-- tables to display invoices for this student -->
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>{{student.first_name}} {{student.last_name}}'s Invoices and Transactions History</h1><br>
+      <h1 style="text-align:center;">{{student.first_name}} {{student.last_name}}'s Invoices and Transactions History</h1><br>
       <div>
-        <h2> Student Invoices table </h2>
+        <h4 style="text-align:center;"> Student Invoices table </h4>
         <table class="table">
           <thead style="background-color: #023e8a;">
             <tr style="color: white; ">
@@ -33,15 +36,19 @@
           </tbody>
         </table>
         {% if not all_invoices %}
-        <h2>There are currently no items here</h2>
+        <h5>There are currently no items here</h5>
         {% endif %}
       </div>
 
+<!-- tables to display transactions for this student -->
+      <div class="divider"></div>
+      <div class="divider"></div>
+       <div class="divider"></div>
       <div>
-        <h2> Student Transactions table </h2>
+        <h4 style="text-align:center;"> Student Transactions table </h4>
         <table class="table">
-          <thead>
-            <tr>
+          <thead style="background-color: #023e8a;">
+            <tr style="color: white; ">
               <th scope="col">Student ID</th>
               <th scope="col">Invoice Reference</th>
               <th scope="col">Transaction amount</th>
@@ -58,7 +65,7 @@
           </tbody>
         </table>
         {% if not all_transactions %}
-        <h2>There are currently no items here</h2>
+        <h5>There are currently no items here</h5>
         {% endif %}
       </div>
 
@@ -66,3 +73,5 @@
     </div>
     </div>
   </body>
+
+  {%endblock%}

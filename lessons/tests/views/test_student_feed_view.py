@@ -8,112 +8,46 @@ from django.utils import timezone
 from lessons.tests.helpers import reverse_with_next
 
 class StudentFeedTestCase(TestCase):
-    """Tests for the student feed."""
+    """Tests for the student feed view."""
 
+    fixtures = ['lessons/tests/fixtures/useraccounts.json'], ['lessons/tests/fixtures/lessons.json']
     def setUp(self):
 
         self.url = reverse('student_feed')
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
-        self.teacher2 = UserAccount.objects.create_teacher(
-            first_name='Amane',
-            last_name='Hill',
-            email='amanehill@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.teacher2 = UserAccount.objects.get(email='amanehill@example.org')
 
-        self.teacher3 = UserAccount.objects.create_teacher(
-            first_name='Jonathan',
-            last_name='Jacks',
-            email='johnjacks@example.org',
-            password='Password123',
-            gender = Gender.PNOT,
-        )
+        self.teacher3 = UserAccount.objects.get(email='johnjacks@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
-        self.lesson = Lesson.objects.create(
-            type = LessonType.INSTRUMENT,
-            duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED
-        )
+        self.lesson = Lesson.objects.get(lesson_id=1)
+        self.lesson.lesson_status = LessonStatus.FULLFILLED
+        self.lesson.save()
 
-        self.lesson2 = Lesson.objects.create(
-            type = LessonType.THEORY,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 16, 00, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson2 = Lesson.objects.get(lesson_id=2)
+        self.lesson2.lesson_status = LessonStatus.FULLFILLED
+        self.lesson2.save()
 
-        self.lesson3 = Lesson.objects.create(
-            type = LessonType.PERFORMANCE,
-            duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher2,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson3 = Lesson.objects.get(lesson_id=3)
+        self.lesson3.lesson_status = LessonStatus.FULLFILLED
+        self.lesson3.save()
 
-        self.lesson4 = Lesson.objects.create(
-            type = LessonType.PRACTICE,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 12, 25, 9, 45, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher2,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson4 = Lesson.objects.get(lesson_id=4)
+        self.lesson4.lesson_status = LessonStatus.FULLFILLED
+        self.lesson4.save()
 
-        self.lesson5 = Lesson.objects.create(
-            type = LessonType.PRACTICE,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 9, 25, 9, 45, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher3,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson5 = Lesson.objects.get(lesson_id=5)
+        self.lesson5.lesson_status = LessonStatus.FULLFILLED
+        self.lesson5.save()
 
     def initialise_admin(self):
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
     def create_child_student_with_lessons(self):
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
         self.lesson.student_id = self.child
         self.lesson.save()
@@ -149,6 +83,14 @@ class StudentFeedTestCase(TestCase):
         self.lesson5.request_date = datetime.date(2022, 8, 15)
         self.lesson5.save()
         self.change_lessons_status_to_unfulfilled()
+
+    def changes_some_lessons_status_to_saved(self):
+        self.lesson.lesson_status = LessonStatus.SAVED
+        self.lesson.save()
+        self.lesson2.lesson_status = LessonStatus.SAVED
+        self.lesson2.save()
+        self.lesson3.lesson_status = LessonStatus.SAVED
+        self.lesson3.save()
 
     def get_dict_from_list(self,list_dict,lesson):
         for each_dict in list_dict:
@@ -237,6 +179,26 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
+    def test_student_feed_with_some_pending_and_saved_lessons(self):
+        self.initialise_admin()
+        self.change_lessons_status_to_unfulfilled()
+        self.changes_some_lessons_status_to_saved()
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.url, follow = True)
+
+        unfullfilled_lessons = response.context['unfulfilled_requests']
+        fullfilled_lessons = response.context['fullfilled_lessons']
+
+        greeting_str = response.context['greeting']
+        admin_email = response.context['admin_email']
+
+        self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
+        request_date_str = self.lesson.request_date.strftime("%Y-%m-%d")
+        self.assertEqual(len(unfullfilled_lessons[request_date_str]),2)
+        self.assertEqual(len(fullfilled_lessons), 0)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+
     def test_get_student_feed_with_pending_lessons(self):
         self.initialise_admin()
         self.change_lessons_status_to_unfulfilled()
@@ -287,7 +249,7 @@ class StudentFeedTestCase(TestCase):
     def test_get_student_feed_with_pending_lessons_without_an_admin(self):
         self.change_lessons_status_to_unfulfilled()
         self.client.login(email=self.student.email, password="Password123")
-
+        admin = UserAccount.objects.get(email='bobby@example.org').delete()
         response = self.client.get(self.url, follow = True)
 
         unfullfilled_lessons = response.context['unfulfilled_requests']
@@ -334,11 +296,6 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(len(unfullfilled_lessons),0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
-
-    def iterate_list_to_find_dict(self,list_dict,lesson):
-        for dict in list_dict:
-            if list(dict.keys)[0] == lesson:
-                return dict
 
     def test_get_pending_lessons_with_different_requests_dates(self):
         self.create_child_with_different_request_dates()

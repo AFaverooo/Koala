@@ -6,31 +6,17 @@ from lessons.models import UserAccount,UserRole, Gender
 from lessons.modelHelpers import is_valid_gender,is_valid_role
 
 class TestChildStudentUser(TestCase):
+    """Unit Tests for child student UserAccounts of the application"""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
 
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
+
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
     def _assert_student_is_valid(self):
         try:
@@ -49,13 +35,7 @@ class TestChildStudentUser(TestCase):
             self.child.full_clean()
 
     def _create_second_student(self):
-        student = UserAccount.objects.create_student(
-            first_name='Jane',
-            last_name='Doe',
-            email='janedoe@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        student = UserAccount.objects.get(email='janedoe@example.org')
         return student
 
     def test_child_first_name_must_not_be_blank(self):
@@ -133,12 +113,12 @@ class TestChildStudentUser(TestCase):
         self.assertFalse(self.child.is_staff)
 
     def test_child_student_is_student(self):
-        self.assertTrue(self.child.role.is_student())
+        self.assertEqual(self.child.role, UserRole.STUDENT)
         self._assert_child_student_is_valid()
 
     def test_child_student_is_not_student(self):
         self.child.role = UserRole.ADMIN
-        self.assertFalse(self.child.role.is_student())
+        self.assertNotEqual(self.child.role, UserRole.STUDENT)
 
     def test_child_user_is_valid(self):
         self._assert_child_student_is_valid()
@@ -175,6 +155,7 @@ class TestChildStudentUser(TestCase):
                 gender = Gender.MALE,
                 parent_of_user = self.admin,
                 )
+
     def test_deletion_of_parent_deletes_child(self):
         UserAccount.objects.get(email = self.student.email).delete()
-        self.assertEqual(UserAccount.objects.count(),1)
+        self.assertEqual(UserAccount.objects.count(),6)

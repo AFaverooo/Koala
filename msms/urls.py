@@ -50,11 +50,12 @@ urlpatterns = [
     path('sign_up/', views.sign_up, name = 'sign_up'),
     path('sign_up_child/', views.sign_up_child, name = 'sign_up_child'),
 
-    path('balance/', views.balance, name = 'balance'),
-    path('pay_for_invoice/', views.pay_for_invoice, name = 'pay_for_invoice'),
-    path('transaction_history/', views.get_all_transactions,name='transaction_history'),
-    path('invoices_history/', views.get_all_invocies, name = 'invoices_history'),
-    path('student_invoices_and_transactions/<str:student_id>', views.get_student_invoices_and_transactions, name = 'student_invoices_and_transactions'),
+    path('balance/', views.balance, name = 'balance'), # this is the url for student balance page that shows all the information relates to balance, invoices and transactions
+    path('pay_for_invoice/', views.pay_for_invoice, name = 'pay_for_invoice'), # this is the url for function that allows student to pay for his and his children's invoices
+    path('transaction_history/', views.get_all_transactions,name='transaction_history'), # this is the url for transaction_history that dispaly all students' transaction history in a table
+    path('invoices_history/', views.get_all_invocies, name = 'invoices_history'), # this is the url for invoices_history that dispaly all students' invoice history in a table
+    path('student_invoices_and_transactions/<str:student_id>', views.get_student_invoices_and_transactions, name = 'student_invoices_and_transactions'), # this is the url for student_invoices_and_transactions page 
+                                                                                                                                                        # that display all the transactions and invoices history for on particular student
 
     path('log_out/', views.log_out, name = 'log_out'),
 

@@ -1,13 +1,12 @@
 from django.test import TestCase
-from lessons.models import Invoice, InvoiceStatus, UserAccount, Gender, Transaction, Lesson,LessonType,LessonDuration,LessonStatus
+from lessons.models import Invoice, InvoiceStatus, UserAccount, Gender, Transaction
 from django.urls import reverse
-from lessons.views import update_balance,get_student_balance
-from lessons.tests.helpers import reverse_with_next
-from django.utils import timezone
-from datetime import time
-import datetime
+from lessons.views import update_balance
 
 class UpdateBalanceTestCase(TestCase):
+
+    # this function test if functions that related to update balance works as expceted
+    # tested view function: update_invoice and function within it
 
     def setUp(self):
         self.url = reverse('balance')

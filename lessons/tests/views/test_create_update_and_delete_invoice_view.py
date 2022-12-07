@@ -10,6 +10,9 @@ import datetime
 
 class CreateUpdateDeleteInvoiceTestCase(TestCase):
 
+    # this function test if invoice can be successfully create, update and delete
+    # tested function: create_new_invoice, update_invoice, update_invoice_when_delete
+
     def setUp(self):
 
         self.student = UserAccount.objects.create_student(
@@ -37,7 +40,7 @@ class CreateUpdateDeleteInvoiceTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.SAVED
+            lesson_status = LessonStatus.FULLFILLED
         )
 
     def create_new_lesson_FOURTY_FIVE(self):
@@ -48,7 +51,7 @@ class CreateUpdateDeleteInvoiceTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.SAVED
+            lesson_status = LessonStatus.FULLFILLED
         )
 
     def create_new_lesson_HOUR(self):
@@ -59,7 +62,7 @@ class CreateUpdateDeleteInvoiceTestCase(TestCase):
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.SAVED
+            lesson_status = LessonStatus.FULLFILLED
         )
     
     def create_new_invoice_THIRTY(self):

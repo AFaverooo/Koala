@@ -27,7 +27,7 @@
 
         <table class="table">
         <thead style="background-color: #023e8a;">
-          <tr>
+          <tr style="color: white; ">
             <th scope="col">ID</th>
             <th scope="col">Firstname</th>
             <th scope="col">Lastname</th>
@@ -38,7 +38,7 @@
         </thead>
         <tbody>
           {% for user in student %}
-            <tr>
+            <tr >
               <th scope="row">{{user.id}}</th>
               <td>{{ user.first_name }}</td>
               <td>{{ user.last_name }}</td>
@@ -122,7 +122,7 @@
         
         <table class="table">
           <thead>
-            <tr>
+            <tr style="color: white; ">
               <th scope="col">lesson_id</th>
               <th scope="col">request_date</th>
               <th scope="col">type</th>
@@ -165,7 +165,7 @@
           <h4>- Fulfilled Requests</h4>
           <table class="table">
             <thead>
-              <tr>
+              <tr >
                 <th scope="col">lesson_id</th>
                 <th scope="col">request_date</th>
                 <th scope="col">type</th>

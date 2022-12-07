@@ -10,6 +10,9 @@ import datetime
 
 class GetAllTransactionHistoryTestCase(TestCase):
 
+    # this test test if function that display one particular student's invoices and transactions work as expect
+    # related view function: get_student_invoices_and_transactions
+
     def setUp(self):
 
         self.student = UserAccount.objects.create_student(

@@ -3,28 +3,18 @@ from django.test import TestCase
 from django.urls import reverse
 from lessons.forms import SignUpForm
 from lessons.models import UserAccount, Gender, UserRole
+from django.contrib import messages
 
 class SignUpChildViewTestCase(TestCase):
-    """Tests of the sign up view."""
+    """Tests of the sign up view for a child."""
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
 
     def setUp(self):
         self.url = reverse('sign_up_child')
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
         self.form_input = {
             'first_name': 'Bobby',
@@ -66,7 +56,7 @@ class SignUpChildViewTestCase(TestCase):
         self.assertTrue(isinstance(form, SignUpForm))
         self.assertFalse(form.is_bound)
 
-    def test_unsuccesful_sign_up_of_child_user(self):
+    def test_unsuccesful_sign_up_of_child_user_incorrect_email(self):
         self.client.login(email=self.student.email, password="Password123")
         self.form_input['email'] = 'BAD_EMAIL.COM'
         before_count = UserAccount.objects.count()
@@ -77,12 +67,28 @@ class SignUpChildViewTestCase(TestCase):
         self.assertTemplateUsed(response, 'sign_up_child.html')
         form = response.context['form']
         self.assertTrue(isinstance(form, SignUpForm))
-        self.assertTrue(form.is_bound)
+        self.assertFalse(form.is_bound)
+
+    def test_unsuccesful_sign_up_of_child_user_no_name(self):
+        self.client.login(email=self.student.email, password="Password123")
+        self.form_input['first_name'] = ''
+        before_count = UserAccount.objects.count()
+        response = self.client.post(self.url, self.form_input)
+        after_count = UserAccount.objects.count()
+        self.assertEqual(after_count, before_count)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'sign_up_child.html')
+        form = response.context['form']
+        self.assertTrue(isinstance(form, SignUpForm))
+        self.assertFalse(form.is_bound)
 
     def test_succesful_sign_up_child_user(self):
         self.client.login(email=self.student.email, password="Password123")
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
         before_count = UserAccount.objects.count()
+
         response = self.client.post(self.url, self.form_input, follow=True)
+
         after_count = UserAccount.objects.count()
         self.assertEqual(after_count, before_count+1)
         response_url = reverse('student_feed')
@@ -112,5 +118,17 @@ class SignUpChildViewTestCase(TestCase):
         self.assertEqual(parent_of_child.email,self.student.email)
         self.assertTrue(parent_of_child.is_parent)
         self.assertEqual(self.student.parent_of_user,None)
-        #After we have LogInTester defined, uncomment
-        #self.assertTrue(self._is_logged_in())
+
+    def test_unsuccessfull_sign_up_of_child_user_copy(self):
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = UserAccount.objects.count()
+
+        response = self.client.post(self.url, self.form_input, follow=True)
+
+        after_count = UserAccount.objects.count()
+        self.assertEqual(after_count, before_count)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'sign_up_child.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'These account details already exist for another child')
+        self.assertEqual(messages_list[0].level, messages.ERROR)

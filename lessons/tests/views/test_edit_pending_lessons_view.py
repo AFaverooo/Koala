@@ -7,9 +7,16 @@ from django import forms
 import datetime
 from django.utils import timezone
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+from django.conf import settings
 
 class StudentFeedEditLessonTestCase(TestCase):
+    """Unit tests for editing a requested lesson view."""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json'], ['lessons/tests/fixtures/lessons.json']
+
     def setUp(self):
+
+        settings.CURRENT_DATE = datetime.date(2022, 9,1)
 
         self.term_six = Term.objects.create(
             term_number=6,
@@ -17,105 +24,45 @@ class StudentFeedEditLessonTestCase(TestCase):
             end_date = datetime.date(2023, 7,21),
         )
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
+        self.term_one = Term.objects.create(
+            term_number=1,
+            start_date = datetime.date(2022, 9,1),
+            end_date = datetime.date(2022, 10,21),
         )
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
-        self.other_student = UserAccount.objects.create_student(
-            first_name='Jane',
-            last_name='Doe',
-            email='janedoe@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
-        self.lesson = Lesson.objects.create(
-            type = LessonType.INSTRUMENT,
-            duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 15, 15, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED
-        )
+        self.other_student = UserAccount.objects.get(email='janedoe@example.org')
+
+        self.lesson = Lesson.objects.get(lesson_id=1)
+        self.lesson.lesson_status = LessonStatus.FULLFILLED
+        self.lesson.save()
 
         self.edit_url = reverse('edit_lesson', kwargs={'lesson_id':self.lesson.lesson_id})
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        self.teacher2 = UserAccount.objects.create_teacher(
-            first_name='Amane',
-            last_name='Hill',
-            email='amanehill@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        self.teacher2 = UserAccount.objects.get(email='amanehill@example.org')
 
-        self.teacher3 = UserAccount.objects.create_teacher(
-            first_name='Jonathan',
-            last_name='Jacks',
-            email='johnjacks@example.org',
-            password='Password123',
-            gender = Gender.PNOT,
-        )
+        self.teacher3 = UserAccount.objects.get(email='johnjacks@example.org')
 
-        self.lesson2 = Lesson.objects.create(
-            type = LessonType.THEORY,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 16, 00, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson2 = Lesson.objects.get(lesson_id=2)
+        self.lesson2.lesson_status = LessonStatus.FULLFILLED
+        self.lesson2.save()
 
-        self.lesson3 = Lesson.objects.create(
-            type = LessonType.PERFORMANCE,
-            duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher2,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson3 = Lesson.objects.get(lesson_id=3)
+        self.lesson3.lesson_status = LessonStatus.FULLFILLED
+        self.lesson3.save()
 
-        self.lesson4 = Lesson.objects.create(
-            type = LessonType.PRACTICE,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 12, 25, 9, 45, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher2,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson4 = Lesson.objects.get(lesson_id=4)
+        self.lesson4.lesson_status = LessonStatus.FULLFILLED
+        self.lesson4.save()
 
-        self.lesson5 = Lesson.objects.create(
-            type = LessonType.PRACTICE,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 9, 25, 9, 45, 00, tzinfo=timezone.utc),
-            teacher_id = self.teacher3,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED,
-        )
+        self.lesson5 = Lesson.objects.get(lesson_id=5)
+        self.lesson5.lesson_status = LessonStatus.FULLFILLED
+        self.lesson5.save()
 
         self.lesson6 = Lesson.objects.create(
             type = LessonType.PRACTICE,
@@ -128,14 +75,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         )
 
     def create_child_student(self):
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
     def change_lessons_status_to_unfulfilled(self):
         self.lesson.lesson_status = LessonStatus.UNFULFILLED
@@ -154,14 +94,14 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.form_input = {
             'type': LessonType.INSTRUMENT,
             'duration': LessonDuration.FOURTY_FIVE,
-            'lesson_date_time' : datetime.datetime(2022, 7, 21, 16, 00, 00, tzinfo=timezone.utc),
+            'lesson_date_time' : datetime.datetime(2022, 9, 21, 16, 00, 00, tzinfo=timezone.utc),
             'teachers': self.teacher2.id,
         }
 
         self.form_input2 = {
             'type': LessonType.PERFORMANCE,
             'duration': LessonDuration.HOUR,
-            'lesson_date_time' : datetime.datetime(2022, 7, 17, 16, 00, 00, tzinfo=timezone.utc),
+            'lesson_date_time' : datetime.datetime(2022, 9, 17, 16, 00, 00, tzinfo=timezone.utc),
             'teachers': self.teacher3.id,
         }
 
@@ -169,6 +109,13 @@ class StudentFeedEditLessonTestCase(TestCase):
             'type': LessonType.PERFORMANCE,
             'duration': LessonDuration.HOUR,
             'lesson_date_time' : datetime.datetime(2024, 7, 17, 16, 00, 00, tzinfo=timezone.utc),
+            'teachers': self.teacher3.id,
+        }
+
+        self.form_input_invalid_date_before_CURRENT_DATE = {
+            'type': LessonType.PERFORMANCE,
+            'duration': LessonDuration.HOUR,
+            'lesson_date_time' : datetime.datetime(2019, 7, 17, 16, 00, 00, tzinfo=timezone.utc),
             'teachers': self.teacher3.id,
         }
 
@@ -194,11 +141,30 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(str(messages_list[0]), 'Incorrect lesson ID passed')
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
+    def test_unsuccesful_request_date_smaller_then_CURRENT_DATE(self):
+        self.change_lessons_status_to_unfulfilled()
+        self.create_forms()
+        self.client.login(email=self.student.email, password="Password123")
+        before_count = Lesson.objects.count()
+        response = self.client.post(self.edit_url, self.form_input_invalid_date_before_CURRENT_DATE, follow = True)
+        after_count = Lesson.objects.count()
+        self.assertEqual(after_count, before_count)
+
+        self.assertTemplateUsed(response, 'edit_request.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'The lesson date provided is beyond the term dates available')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
+
+        actual_lesson = Lesson.objects.get(lesson_id = self.lesson.lesson_id)
+
+        self.assertEqual(actual_lesson.type, self.lesson.type)
+        self.assertEqual(actual_lesson.duration, self.lesson.duration)
+        self.assertEqual(actual_lesson.lesson_date_time, self.lesson.lesson_date_time)
+        self.assertEqual(actual_lesson.request_date, self.lesson.request_date)
 
     def test_not_logged_in_accessing_edit_pending_lessons(self):
         before_count = Lesson.objects.count()
         self.change_lessons_status_to_unfulfilled()
-        reverse('edit_lesson', kwargs={'lesson_id':self.lesson.lesson_id})
         response = self.client.get(self.edit_url, follow = True)
         after_count = Lesson.objects.count()
 
@@ -235,7 +201,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertTrue(isinstance(response_form, RequestForm))
         self.assertTrue(response_form.is_bound)
 
-    def test_not_permitted_edit_with_valid_but_not_accessible_lesson_id(self):
+    def test_not_permitted_edit_with_valid_but_not_accessible_lesson_id_get(self):
         before_count = Lesson.objects.count()
         self.client.login(email=self.student.email, password="Password123")
         self.change_lessons_status_to_unfulfilled()
@@ -454,7 +420,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(updated_lesson.request_date, request_date)
         self.assertEqual(updated_lesson.duration, LessonDuration.FOURTY_FIVE)
         self.assertEqual(updated_lesson.teacher_id,self.teacher2)
-        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 7, 21, 16, 00, 00, tzinfo=timezone.utc))
+        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 9, 21, 16, 00, 00, tzinfo=timezone.utc))
 
     def test_apply_edit_to_lesson2_succesfully(self):
         self.create_forms()
@@ -485,7 +451,7 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(updated_lesson.request_date, request_date)
         self.assertEqual(updated_lesson.duration, LessonDuration.HOUR)
         self.assertEqual(updated_lesson.teacher_id,self.teacher3)
-        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 7, 17, 16, 00, 00, tzinfo=timezone.utc))
+        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 9, 17, 16, 00, 00, tzinfo=timezone.utc))
 
     def test_apply_edit_to_child_lesson_succesfully(self):
         self.create_child_student()
@@ -519,4 +485,4 @@ class StudentFeedEditLessonTestCase(TestCase):
         self.assertEqual(updated_lesson.request_date, request_date)
         self.assertEqual(updated_lesson.duration, LessonDuration.HOUR)
         self.assertEqual(updated_lesson.teacher_id,self.teacher3)
-        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 7, 17, 16, 00, 00, tzinfo=timezone.utc))
+        self.assertEqual(updated_lesson.lesson_date_time,datetime.datetime(2022, 9, 17, 16, 00, 00, tzinfo=timezone.utc))

@@ -4,12 +4,13 @@ from django.test import TestCase
 from lessons.forms import SignUpForm
 from lessons.models import UserAccount,Gender
 
-#Checked for fixtures
 
 class SignUpFormTestCase(TestCase):
     """Unit tests of the sign up form."""
 
+
     def setUp(self):
+
         self.form_input = {
             'first_name': 'Jane',
             'last_name': 'Doe',
@@ -18,7 +19,7 @@ class SignUpFormTestCase(TestCase):
             'new_password': 'Password123',
             'password_confirmation': 'Password123',
         }
-
+        
     def test_valid_sign_up_form(self):
         form = SignUpForm(data=self.form_input)
         self.assertTrue(form.is_valid())

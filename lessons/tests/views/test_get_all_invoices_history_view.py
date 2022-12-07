@@ -10,6 +10,9 @@ import datetime
 
 class GetAllTransactionHistoryTestCase(TestCase):
 
+    # this test test if function that display all students's invoice history work as expected
+    # related view function: get_all_invocies
+
     def setUp(self):
         self.url = reverse('invoices_history')
 

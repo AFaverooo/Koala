@@ -6,15 +6,11 @@ from lessons.models import UserAccount
 
 class LogInFormTestCase(TestCase):
     """Unit tests for the login form."""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
         self.form_input = {'email' : 'johndoe@example.org', 'password' : 'Password123'}
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = 'M',
-        )
+        self.student = UserAccount.objects.get(email = 'johndoe@example.org')
 
     def test_form_contains_required_fields(self):
         form = LogInForm()
