@@ -14,13 +14,22 @@ The project is called `msms` (Music School Management System).  It currently con
 ## Known problems
 When runserver and trying to access the webpage, a error message such as 'valueError at /'-'the view lessons.helper.modified_view_function didn't return an HttpResponse object' might come out. We think this might be becasue we push settings we made for pythonanywhere to the main is well. To solve this problem, please delete database and redo python manage.py migrate, and everything should work as normal
 
-CURRENT_DATE is defined in settings to prevent a Student User attempting to request lessons before TODAYS date. There is an unsureness whether this provided value updates whenever the application is used and whether TODAYS DATE is updated. It works in the tests we have run dynamically assigning this value, and it works at the application level. #07/12/2022
-
 ## Deployed version of the application
-The deployed version of the application can be found at http://saths008.pythonanywhere.com/.
+The deployed version of the application can be found at http://saths008.pythonanywhere.com/ .
 
 ## Installation instructions
-To install the software and use it in your local development environment, you must first set up and activate a local development environment.  From the root of the project:
+To install the software and use it in your local development environment, you must first set up and activate a local development environment. 
+
+To create a superuser for testing purposes, please use the command:
+
+python3 manage.py createsuperuser
+
+And use the following email:
+admin@example.org
+
+,as this user won't be deleted when the database is deleted.
+
+From the root of the project:
 
 If possible test our application in firefox or Google Chrome, avoid safari if possible as the bootstrap doesn't render properly.
 
