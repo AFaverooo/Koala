@@ -302,7 +302,13 @@ class Lesson(models.Model):
     def is_equal(self,other_lesson):
         return ((self.lesson_id == other_lesson.lesson_id) and (self.request_date == other_lesson.request_date) and (self.lesson_date_time == other_lesson.lesson_date_time) and (self.student_id == other_lesson.student_id))
 
-#Invoice refers to the invoices of the lessons student booked
+# Invoice models refers to invoices student for their lessons has when their lesson status is booked
+# reference_number field specify a unique reference number for each invoice, and the reference number is construct base on their student number and number of invoices pre exist, this field cannot be blank
+# student_Id field refers to the student id of the student who own this invoice
+# fees_amount field refers to the total amounts of the fees of this invoice
+# invoices_status field refers to the status of this invoices, can be PAID, UNPAID, PARTIALLY_PAID and DELETED
+# amounts_need_to_pay refers to the amount left for student to pay for this invoice
+# lesson_ID refers to the lesson this invoice pay for
 class Invoice(models.Model):
     reference_number = models.CharField(
         max_length=30,
@@ -314,7 +320,6 @@ class Invoice(models.Model):
         )]
     )
 
-    # student number store the student
     student_ID = models.CharField(
         max_length = 30,
         blank=False,
@@ -339,7 +344,6 @@ class Invoice(models.Model):
         blank = False,
     )
 
-    # this field display the amounts left need to be paid by student
     amounts_need_to_pay = models.IntegerField(
         blank=False,
         default = 0,
@@ -359,8 +363,10 @@ class Invoice(models.Model):
         )]
     )
 
+    # This function is use to construct reference number for invoice
+    # The reference number is create base on the student id and the number of pre exist invoices for this student
+    # The contructed invoice reference number will then be return
     def generate_new_invoice_reference_number(student_id, number_of_exist_invoice):
-        #this method will be use to generate new invoice reference number base on the student reference number
         number_of_exist_invoice +=1
         if(number_of_exist_invoice < 10):
             reference_number = student_id + '-' + '00' + str(number_of_exist_invoice) # student 1 with 2 exist invoice get a new reference_number 1-003
@@ -371,6 +377,9 @@ class Invoice(models.Model):
 
         return f'{reference_number}'
 
+    # This function calculate the fees amount of the invoice
+    # The way we do it is easy, it is all base on the duration of the lesson
+    # The fees of the lesson will then be return
     def calculate_fees_amount(lesson_duration):
         #30 mins lesson cost 15, 45 mins lesson cost 18,  1 hr lesson cost 20, no matter the date and teacher
         if(lesson_duration == LessonDuration.THIRTY):
@@ -381,6 +390,10 @@ class Invoice(models.Model):
             fees = 20
         return f'{fees}'
 
+# Transaction models refers to the transaction student made outside the system for the not fully paid invoice
+# Student_ID_transaction refers to the student id of the student who made the transaction
+# invoice_reference_transaction refers to the invoice this transaction paid for, this field can't be unique as student can pay for same invoice multiple times
+# transaction_amount refers to the amount of the money student paid outside the system
 class Transaction(models.Model):
     Student_ID_transaction = models.CharField(
         max_length = 30,
