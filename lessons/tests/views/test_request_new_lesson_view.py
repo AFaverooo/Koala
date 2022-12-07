@@ -15,6 +15,10 @@ from django.db import IntegrityError
 from django.db import transaction
 
 class RequestNewLessonTest(TestCase):
+    """Unit tests for requesting a new lesson view."""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
+
     def setUp(self):
 
         self.term_six = Term.objects.create(
@@ -29,29 +33,34 @@ class RequestNewLessonTest(TestCase):
             end_date = datetime.date(2022, 10,21),
         )
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.admin = UserAccount.objects.create_admin(
+        #    first_name='Bob',
+        #    last_name='Jacobs',
+        #    email='bobby@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.student = UserAccount.objects.create_student(
+        #  first_name='John',
+        #    last_name='Doe',
+        #    email='johndoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
+
+        #self.teacher = UserAccount.objects.create_teacher(
+        #    first_name='Barbare',
+        #    last_name='Dutch',
+        #    email='barbdutch@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
         self.url = reverse('new_lesson')
 
@@ -80,14 +89,15 @@ class RequestNewLessonTest(TestCase):
         }
 
     def create_child_student(self):
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        #self.child = UserAccount.objects.create_child_student(
+        #    first_name = 'Bobby',
+        #    last_name = 'Lee',
+        #    email = 'bobbylee@example.org',
+        #    password = 'Password123',
+        #    gender = Gender.MALE,
+        #    parent_of_user = self.student,
+        #)
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
     def create_saved_lessons(self):
         self.saved_lesson = Lesson.objects.create(
@@ -104,7 +114,7 @@ class RequestNewLessonTest(TestCase):
         self.saved_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 10, 20, 15, 0, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -114,7 +124,7 @@ class RequestNewLessonTest(TestCase):
         self.saved_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -125,7 +135,7 @@ class RequestNewLessonTest(TestCase):
         self.assertEqual(self.url,'/new_lesson/')
 
     def test_valid_new_lesson_form(self):
-        self.assertEqual(len(UserAccount.objects.filter(role = UserRole.TEACHER)), 1)
+        self.assertEqual(len(UserAccount.objects.filter(role = UserRole.TEACHER)), 3)
         form = RequestForm(data=self.form_input)
         self.assertTrue(form.is_valid())
 
@@ -133,7 +143,7 @@ class RequestNewLessonTest(TestCase):
         self.client.login(email=self.student.email, password="Password123")
         before_count = Lesson.objects.count()
         self.form_input['selectedStudent'] = 'notextistentemail@example.org'
-
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
         response = self.client.post(self.url, self.form_input, follow = True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
@@ -152,6 +162,7 @@ class RequestNewLessonTest(TestCase):
     def test_unsuccesful_new_lesson_request_lesson_date_outside_term_dates(self):
         self.client.login(email=self.student.email, password="Password123")
         before_count = Lesson.objects.count()
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
         response = self.client.post(self.url,self.form_input_invalid_date,follow=True)
         after_count = Lesson.objects.count()
         self.assertEqual(after_count, before_count)
