@@ -114,7 +114,7 @@ class RequestNewLessonTest(TestCase):
         self.saved_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 10, 20, 15, 0, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -124,7 +124,7 @@ class RequestNewLessonTest(TestCase):
         self.saved_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),

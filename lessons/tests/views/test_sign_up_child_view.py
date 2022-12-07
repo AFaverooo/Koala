@@ -82,9 +82,6 @@ class SignUpChildViewTestCase(TestCase):
         form = response.context['form']
         self.assertTrue(isinstance(form, SignUpForm))
         self.assertFalse(form.is_bound)
-        messages_list = list(response.context['messages'])
-        self.assertEqual(str(messages_list[0]), 'The account details provided are invalid')
-        self.assertEqual(messages_list[0].level, messages.ERROR)
 
     def test_unsuccesful_sign_up_of_child_user_no_name(self):
         self.client.login(email=self.student.email, password="Password123")
@@ -98,9 +95,6 @@ class SignUpChildViewTestCase(TestCase):
         form = response.context['form']
         self.assertTrue(isinstance(form, SignUpForm))
         self.assertFalse(form.is_bound)
-        messages_list = list(response.context['messages'])
-        self.assertEqual(str(messages_list[0]), 'The account details provided are invalid')
-        self.assertEqual(messages_list[0].level, messages.ERROR)
 
     def test_succesful_sign_up_child_user(self):
         self.client.login(email=self.student.email, password="Password123")
@@ -151,3 +145,6 @@ class SignUpChildViewTestCase(TestCase):
         self.assertEqual(after_count, before_count)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'sign_up_child.html')
+        messages_list = list(response.context['messages'])
+        self.assertEqual(str(messages_list[0]), 'These account details already exist for another child')
+        self.assertEqual(messages_list[0].level, messages.ERROR)
