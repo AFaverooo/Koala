@@ -997,14 +997,13 @@ def new_lesson(request):
         return redirect('home')
 
 """
-@params: Either a post or get request to the url new_lesson associated to new_lesson function in views
+@params: Either a post or get request to the url save_lessons associated to save_lessons function in views
 
-@Description: Function called when a student attempts to create a new lesson they wish to request
+@Description: Function called when a student attempts save and request the lessons they have created
               Lessons are uniquely identified by their request_date,lesson_Date_time and student_id, enforcing this as the primary key to avoid duplicates
-              The student utilising this functionality can request lessons for themselves and for their children
-              POST Requests create the new Child Student
-              GET requests render the requests_page template
-              Child Students are identified by their email -> no two UserAccount models can have the same email but can have the same name
+              The student utilising this functionality can save lessons for themselves and for their children
+              POST Requests makes all saved lessons attributed to the student and any of their children into unfullfilled lessons
+              GET requests render the requests_page template with any saved lessons
               Only Student UserAccounts can acces this functionality
 
 @return: Renders or redirects to another specified view with relevant messages
@@ -1026,18 +1025,22 @@ def save_lessons(request):
             messages.add_message(request,messages.SUCCESS, "Lesson requests are now pending for validation by admin")
             return redirect('student_feed')
         else:
-            #form = RequestForm()
-            #return render(request,'requests_page.html', {'form' : form ,'lessons': get_saved_lessons(current_student)})
             return redirect('requests_page')
     else:
-        #print('user should be logged in')
-        return redirect('home')
-        #form = RequestForm()
-        #return render(rquest,'requests_page.html', {'form':form})
 
+        return redirect('home')
+
+
+"""
+@params: Either a post or get request to
+
+@Description: Function to render 
+
+@return: Renders or redirects to another specified view with relevant messages
+"""
 def render_edit_request(request,lesson_id):
     try:
-        to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id)) #used to be lesson_lesson_edit_id from get method
+        to_edit_lesson = Lesson.objects.get(lesson_id = int(lesson_id))
     except ObjectDoesNotExist:
         messages.add_message(request, messages.ERROR, "Incorrect lesson ID passed")
         return redirect('student_feed')
