@@ -150,7 +150,7 @@ class Command(BaseCommand):
             for x in range(0,3):
                 random_req_day = self.faker.date_between(start_date='-1y', end_date=current_term.end_date)
 
-                for _ in range(random.randint(0,6)):
+                for _ in range(random.randint(0,3)):
 
                     rand_teacher = teachers[random.randint(0,len(teachers)-1)]
                     rand_lesson_date_time = self.faker.date_time_between(tzinfo = timezone.utc,start_date=current_term.start_date, end_date=current_term.end_date)
