@@ -814,7 +814,6 @@ def home(request):
             if user is not None:
                 if user.parent_of_user is None:
                     login(request,user)
-
                      # redirects the user based on his role
                     if (user.role == UserRole.ADMIN.value):
                          #redirect_url = request.POST.get('next') or 'admin_feed'

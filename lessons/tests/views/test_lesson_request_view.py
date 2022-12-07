@@ -141,6 +141,9 @@ class LessonRequestViewTestCase(TestCase):
         self.assertEqual(actual_student[0].role,UserRole.STUDENT)
         self.assertEqual(actual_child[0].role,UserRole.STUDENT)
 
+    def test_saved_lessons_with_different_request_date(self):
+        self.fail()
+
     def test_get_request_page_with_saved_lessons(self):
         self.client.login(email=self.student.email, password="Password123")
         response = self.client.get(self.url, follow = True)

@@ -335,11 +335,6 @@ class StudentFeedTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
 
-    def iterate_list_to_find_dict(self,list_dict,lesson):
-        for dict in list_dict:
-            if list(dict.keys)[0] == lesson:
-                return dict
-
     def test_get_pending_lessons_with_different_requests_dates(self):
         self.create_child_with_different_request_dates()
         self.initialise_admin()
