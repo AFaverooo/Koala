@@ -9,9 +9,12 @@ from django.contrib import messages
 class DirectorRoleChangesTestCase(TestCase):
     """Tests for the director_manage_roles view."""
 
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
+
     def setUp(self):
         self.url = reverse('director_manage_roles')
 
+        # This is the current user we log in with to access the page
         self.current = UserAccount.objects.create_superuser(
             first_name='Ahmed',
             last_name='Pedro',
@@ -20,21 +23,8 @@ class DirectorRoleChangesTestCase(TestCase):
             gender = 'M',
         )
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Jane',
-            last_name='Doe',
-            email='janedoe@example.org',
-            password='Password123',
-            gender = 'F',
-        )
-
-        self.director = UserAccount.objects.create_superuser(
-            first_name='Jack',
-            last_name='Smith',
-            email='jsmith@example.org',
-            password='Password123',
-            gender = 'M',
-        )
+        self.admin = UserAccount.objects.get(email='janedoe@example.org')
+        self.director = UserAccount.objects.get(email='jsmith@example.org')
 
     def test_change_role_page_url(self):
         self.assertEqual(self.url,'/director_manage_roles/')
@@ -55,10 +45,10 @@ class DirectorRoleChangesTestCase(TestCase):
 
         # Change an admin into a director
         self.promote_director_url = reverse('promote_director', args=[self.admin.email])
-        admin_count_before = UserAccount.objects.filter(role = UserRole.ADMIN).count()
+        director_count_before = UserAccount.objects.filter(role = UserRole.DIRECTOR).count()
         response = self.client.get(self.promote_director_url, follow = True)
-        admin_count_after = UserAccount.objects.filter(role = UserRole.ADMIN).count()
-        self.assertEqual(admin_count_before-1,admin_count_after)
+        director_count_after = UserAccount.objects.filter(role = UserRole.DIRECTOR).count()
+        self.assertEqual(director_count_before+1,director_count_after)
 
         redirect_url = reverse('director_manage_roles')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
