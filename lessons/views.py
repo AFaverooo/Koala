@@ -849,9 +849,13 @@ def sign_up_child(request):
             if form.is_valid():
                 student = form.save_child(request.user)
                 return redirect('student_feed')
+            else:
+                new_form = SignUpForm()
+                messages.add_message(request,messages.ERROR,"The account details provided are invalid")
+                return render(request, 'sign_up_child.html', {'form': new_form})
         else:
             form = SignUpForm()
-        return render(request, 'sign_up_child.html', {'form': form})
+            return render(request, 'sign_up_child.html', {'form': form})
     else:
         return redirect('home')
 

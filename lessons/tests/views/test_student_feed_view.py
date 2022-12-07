@@ -8,7 +8,7 @@ from django.utils import timezone
 from lessons.tests.helpers import reverse_with_next
 
 class StudentFeedTestCase(TestCase):
-    """Tests for the student feed."""
+    """Tests for the student feed view."""
 
     fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
@@ -157,6 +157,14 @@ class StudentFeedTestCase(TestCase):
         self.lesson5.save()
         self.change_lessons_status_to_unfulfilled()
 
+    def changes_some_lessons_status_to_saved(self):
+        self.lesson.lesson_status = LessonStatus.SAVED
+        self.lesson.save()
+        self.lesson2.lesson_status = LessonStatus.SAVED
+        self.lesson2.save()
+        self.lesson3.lesson_status = LessonStatus.SAVED
+        self.lesson3.save()
+
     def get_dict_from_list(self,list_dict,lesson):
         for each_dict in list_dict:
             if lesson in each_dict.keys():
@@ -241,6 +249,26 @@ class StudentFeedTestCase(TestCase):
         self.assertTrue(self.check_lesson_in_returned_dictionary(fullfilled_lessons,self.lesson5))
         self.assertEqual(greeting_str, 'Welcome back John Doe, this is your feed!')
         self.assertEqual(len(unfullfilled_lessons),0)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'student_feed.html')
+
+    def test_student_feed_with_some_pending_and_saved_lessons(self):
+        self.initialise_admin()
+        self.change_lessons_status_to_unfulfilled()
+        self.changes_some_lessons_status_to_saved()
+        self.client.login(email=self.student.email, password="Password123")
+        response = self.client.get(self.url, follow = True)
+
+        unfullfilled_lessons = response.context['unfulfilled_requests']
+        fullfilled_lessons = response.context['fullfilled_lessons']
+
+        greeting_str = response.context['greeting']
+        admin_email = response.context['admin_email']
+
+        self.assertEqual(admin_email, f'To Further Edit Bookings Contact {self.admin.email}')
+        request_date_str = self.lesson.request_date.strftime("%Y-%m-%d")
+        self.assertEqual(len(unfullfilled_lessons[request_date_str]),2)
+        self.assertEqual(len(fullfilled_lessons), 0)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_feed.html')
 

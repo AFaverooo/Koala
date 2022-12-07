@@ -15,32 +15,39 @@ from django.db import IntegrityError
 from django.db import transaction
 
 class LessonRequestViewTestCase(TestCase):
+    """Unit tests for the lesson request view"""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
         self.url = reverse('requests_page')
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.admin = UserAccount.objects.create_admin(
+        #    first_name='Bob',
+        #    last_name='Jacobs',
+        #    email='bobby@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.student = UserAccount.objects.create_student(
+        #    first_name='John',
+        #    last_name='Doe',
+        #    email='johndoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        #self.teacher = UserAccount.objects.create_teacher(
+        #    first_name='Barbare',
+        #    last_name='Dutch',
+        #    email='barbdutch@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
+
 
         self.saved_lesson = Lesson.objects.create(
             type = LessonType.INSTRUMENT,
@@ -63,14 +70,15 @@ class LessonRequestViewTestCase(TestCase):
         )
 
     def create_child_student(self):
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        #self.child = UserAccount.objects.create_child_student(
+        #    first_name = 'Bobby',
+        #    last_name = 'Lee',
+        #    email = 'bobbylee@example.org',
+        #    password = 'Password123',
+        #    gender = Gender.MALE,
+        #    parent_of_user = self.student,
+        #)
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
     def change_lessons_status_to_unfulfilled(self):
         self.saved_lesson.lesson_status = LessonStatus.UNFULFILLED
@@ -109,12 +117,12 @@ class LessonRequestViewTestCase(TestCase):
 
     def test_drop_down_of_users_is_populated_with_student(self):
         self.client.login(email=self.student.email, password="Password123")
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
         response = self.client.get(self.url, follow = True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'requests_page.html')
 
         student_options = response.context['students_option']
-
         self.assertEqual(len(student_options),1)
         self.assertTrue(self.student in student_options)
 
@@ -142,10 +150,25 @@ class LessonRequestViewTestCase(TestCase):
         self.assertEqual(actual_child[0].role,UserRole.STUDENT)
 
     def test_saved_lessons_with_different_request_date(self):
-        self.fail()
+        self.client.login(email=self.student.email, password="Password123")
+        self.saved_lesson2.request_date = datetime.date(2022, 11, 15)
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
+        response = self.client.get(self.url, follow = True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'requests_page.html')
+
+        form = response.context['form']
+        student_options = response.context['students_option']
+        self.assertEqual(len(student_options),1)
+        self.assertTrue(self.student in student_options)
+        self.assertEqual(len(response.context['lessons']),2)
+        self.assertTrue(isinstance(form, RequestForm))
+        self.assertFalse(form.is_bound)
+
 
     def test_get_request_page_with_saved_lessons(self):
         self.client.login(email=self.student.email, password="Password123")
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
         response = self.client.get(self.url, follow = True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'requests_page.html')
@@ -169,6 +192,7 @@ class LessonRequestViewTestCase(TestCase):
     def test_get_request_page_without_saved_lessons(self):
         self.change_lessons_status_to_unfulfilled()
         self.client.login(email=self.student.email, password="Password123")
+        UserAccount.objects.get(email='bobbylee@example.org').delete()
         response = self.client.get(self.url, follow = True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'requests_page.html')
