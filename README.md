@@ -17,7 +17,7 @@ When runserver and trying to access the webpage, a error message such as 'valueE
 CURRENT_DATE is defined in settings to prevent a Student User attempting to request lessons before TODAYS date. There is an unsureness whether this provided value updates whenever the application is used and whether TODAYS DATE is updated. It works in the tests we have run dynamically assigning this value, and it works at the application level. #07/12/2022
 
 ## Deployed version of the application
-The deployed version of the application can be found at *<[Link to app](http://saths008.pythonanywhere.com/)>*.
+The deployed version of the application can be found at http://saths008.pythonanywhere.com/.
 
 ## Installation instructions
 To install the software and use it in your local development environment, you must first set up and activate a local development environment.  From the root of the project:
