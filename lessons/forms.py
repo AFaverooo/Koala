@@ -140,10 +140,6 @@ class CreateAdminForm(forms.ModelForm):
 
 
 class TermDatesForm(forms.ModelForm):
-    # def __init__ (self,*args,**kwargs):
-    #     super(TermDatesForm,self).__init__(self,*args,**kwargs)
-    #     self.fields['term_number'].disabled = True
-
     class Meta:
         """Form options."""
         model = Term
@@ -153,29 +149,6 @@ class TermDatesForm(forms.ModelForm):
             "end_date": DatePickerInput(),
             }
         ordering = ['term_number']
-
-    # def clean(self):
-    #     """Clean the data and generate messages for any errors."""
-
-    #     super().clean()
-    #     term_number = self.cleaned_data.get('term_number')
-    #     start_date = self.cleaned_data.get('start_date')
-    #     end_date = self.cleaned_data.get('end_date')
-    #     # if new_password != password_confirmation:
-    #     #     self.add_error('password_confirmation', 'Confirmation does not match password.')
-
-    # def save(self):
-    #     """Create a new user."""
-
-    #     super().save(commit=False)
-    #     term = Term.objects.create(
-    #         # self.cleaned_data.get('username'),
-    #         term_number=self.cleaned_data.get('term_number'),
-    #         start_date=self.cleaned_data.get('start_date'),
-    #         end_date=self.cleaned_data.get('end_date'),
-    #     )
-    #     return term
-
 
 class RequestForm(forms.ModelForm):
     """Form enabling Students to request a lesson they wish to book."""

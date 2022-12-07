@@ -4,7 +4,7 @@ from django.test import TestCase
 import datetime
 
 
-class RequestFormTestCase(TestCase):
+class TermFormTestCase(TestCase):
     """Unit tests of the sign up form."""
 
     def setUp(self):
