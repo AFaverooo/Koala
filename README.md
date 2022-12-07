@@ -12,7 +12,7 @@ The members of the team are:
 The project is called `msms` (Music School Management System).  It currently consists of a single app `lessons` where all functionality resides.
 
 ## Known problems
-When runserver and trying to access the webpage, a error message such as 'valueError at /'-'the view lessons.helper.modified_view_function didn't eeturn an HttpResponse object' might come out. We think this might be becasue we push settings we made for pythonanywhere to the main is well. To solve this problem, please delete database and redo python manage.py migrate, and everything should work as normal
+When runserver and trying to access the webpage, a error message such as 'valueError at /'-'the view lessons.helper.modified_view_function didn't return an HttpResponse object' might come out. We think this might be becasue we push settings we made for pythonanywhere to the main is well. To solve this problem, please delete database and redo python manage.py migrate, and everything should work as normal
 
 ## Deployed version of the application
 The deployed version of the application can be found at *<[Link to app](http://saths008.pythonanywhere.com/)>*.
