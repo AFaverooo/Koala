@@ -10,6 +10,9 @@ import datetime
 
 class PayForInvoiceTestCase(TestCase):
 
+    # this function test if pay for invoice function works as expected
+    # related function: pay_for_invoice and used function within it
+
     def setUp(self):
         self.url = reverse('pay_for_invoice')
 

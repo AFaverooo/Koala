@@ -9,6 +9,9 @@ import datetime
 
 class UpdateBalanceTestCase(TestCase):
 
+    # this function test if functions that related to update balance works as expceted
+    # tested view function: update_invoice and function within it
+
     def setUp(self):
         self.url = reverse('balance')
 

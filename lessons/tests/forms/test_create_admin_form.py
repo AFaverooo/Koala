@@ -1,4 +1,3 @@
-"""Unit tests of the user form."""
 from django.contrib.auth.hashers import check_password
 from django import forms
 from django.test import TestCase
@@ -69,6 +68,6 @@ class UserFormTestCase(TestCase):
         student = UserAccount.objects.get(email ='janedoe@example.org')
         self.assertEqual(student.first_name, 'Jane')
         self.assertEqual(student.last_name, 'Doe')
-        self.assertEqual(student.gender, Gender.FEMALE.value)
+        self.assertEqual(student.gender, Gender.FEMALE)
         is_password_correct = check_password('Password123', student.password)
         self.assertTrue(is_password_correct)

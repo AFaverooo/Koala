@@ -4,6 +4,9 @@ from lessons.models import Transaction
 
 class TransactionModelTesctCase(TestCase):
 
+    # this test test all fields in transaction model
+    # tested model: Transaction
+
     def setUp(self):
         self.transaction = Transaction.objects.create(
             Student_ID_transaction = '1111',

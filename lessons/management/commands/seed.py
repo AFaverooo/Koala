@@ -244,8 +244,6 @@ class Command(BaseCommand):
             request_date = date(2022,10,25),
             lesson_status = LessonStatus.FULLFILLED,
         )
-        # TO:DO CREATE INVOICE AND TRANSACTION FOR THIS SET OF LESSONS FOR JOHN DOE (note: lesson is fulfilled and paid-for)
-
 
         self.alice_doe_child = UserAccount.objects.create_child_student(
             parent_of_user = self.john_doe_student,
@@ -276,9 +274,6 @@ class Command(BaseCommand):
             request_date = date(2022,12,25),
             lesson_status = LessonStatus.FULLFILLED,
         )
-
-        # TO:DO CREATE INVOICE AND TRANSACTION FOR THIS SET OF LESSONS FOR ALICE DOE (note: lesson is fulfilled and paid-for)
-
 
         self.bob_doe_child = UserAccount.objects.create_child_student(
             parent_of_user = self.john_doe_student,
@@ -311,22 +306,24 @@ class Command(BaseCommand):
             lesson_status = LessonStatus.FULLFILLED,
         )
 
-        # TO:DO CREATE INVOICE AND TRANSACTION FOR THIS SET OF LESSONS FOR BOB DOE (note: lesson is fulfilled and paid-for)
-
         # seed the invoices base on existing user and bookings
         students = UserAccount.objects.filter(role=UserRole.STUDENT.value)
-        for i in range(len(students)):
+        for i in range(len(students)): # this seeder function will seed invoice and transactions for all exisitng student
             student_Id = students[i].id
-            students_id_string = str(student_Id)
-
-            # create a new invoice for each existing lesson
-            lessons_booked = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED)
-            for lesson in lessons_booked:
+            students_id_string = str(student_Id) # turn the studen id to string so it will able to use for constructingt the reference number of the invoice
+            
+            # this filter out all the booked lesson for this student
+            lessons_booked = Lesson.objects.filter(student_id = students[i], lesson_status = LessonStatus.FULLFILLED) 
+            for lesson in lessons_booked: 
+                # for each lesson, calculate the fees and contruct the reference number of the invoice
                 fees = Invoice.calculate_fees_amount(lesson.duration)
                 fees_int = int(fees)
                 student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_Id)
                 reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice_pre_exist))
 
+                # the invoice status is random, there's low probably to create UNPAID and PARTIALLY_PAID invoice and a very low chance to create OVERPAID invoice
+                # if the invoice status is not UNPAID, a transaction will also be created
+                # if this student is a child of another student, then the transaction will be create under the parent as child shouldn't be able to pay for the invoice
                 probability = random.randint(0, 12)
                 probability_OVER_PAID = random.randint(0,3)
                 if(probability == 3 or probability == 4): # unpaid invoice
@@ -353,7 +350,7 @@ class Command(BaseCommand):
                     else:
                         Transaction.objects.create(Student_ID_transaction = students_id_string, invoice_reference_transaction = reference_number_temp, transaction_amount = fees_int)
 
-            # this calculate the balance for student
+            # this calculate the balance for student, if this student has children, the children's invoice will also be use to calculte the balance
             if(students[i].parent_of_user):
                 current_existing_invoice_parent = Invoice.objects.filter(student_ID = students[i].parent_of_user.id)
 

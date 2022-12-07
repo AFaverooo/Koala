@@ -44,7 +44,12 @@ def get_lesson_request(dictionary):
 def get_lesson_student(dictionary):
     return dictionary.get("Student")
 
-
+#This function is call when student is trying to access the balance page from student feed
+# This function will get all the invoices and transactions belongs to this student,
+# If this student has any children, all of his children's invoices will be get is well
+# The student's balance will also be update
+# All of the above data will be pass into balance.html and print out
+# If the user that trying to access this page is not identify as student, he will be redirect to home page
 @login_required
 def balance(request):
     if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
@@ -59,15 +64,24 @@ def balance(request):
     else:
         return redirect('home')
 
+# This function returns all invoices that belongs to the student(params) that insert as a parameter
+# All invoices that filter out will be return
 def get_student_invoice(student):
     return Invoice.objects.filter(student_ID = student.id)
 
+# This function returns all transactions that belongs to this student(params).
+# All transactionss that filter out will be return
 def get_student_transaction(student):
     return Transaction.objects.filter( Student_ID_transaction = student.id)
 
+# This function returns the balance of this student.
+# The balance will be return
 def get_student_balance(student):
     return UserAccount.objects.filter(id = student.id).values_list('balance', flat=True)
 
+# this function filter out all children that belongs to this student(params)
+# And then all invoices belong to those children will be filter out and insert into a list
+# This list of invoices will be return
 def get_child_invoice(student):
     list_of_child_invoice = []
 
@@ -80,7 +94,10 @@ def get_child_invoice(student):
     return list_of_child_invoice
 
 
-# this function update the student balance
+# This function update the student balance for the student(params)
+# This function filter out all existing invoices that belongs to this student and this student's children
+# This function also filter out all existing transactions that belongs to this student
+# Then a balance will be calculate by adding up fees_amounts of all transactions and using this number to minus fees_amounts of all invoices 
 def update_balance(student):
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
     current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
@@ -88,6 +105,7 @@ def update_balance(student):
     invoice_fee_total = 0
     payment_fee_total = 0
 
+    # Functions below are adding up fees for each invoices and transactions
     for invoice in current_existing_invoice:
         invoice_fee_total += invoice.fees_amount
 
@@ -100,10 +118,19 @@ def update_balance(student):
     student.balance = payment_fee_total - invoice_fee_total
     student.save()
 
+# This function is call when student is trying to pay for he and his children's invoices
+# If the user is identify as student, he will be able to go to the next step, or else he will be redirect to home page
+# The function first detect if there are values exist in all require field, or else it will add an error message, and student will be redirect to balance page 
+# Then the function will try to find if there is any invoice in database that fit to the one student enter by comparing their reference number
+# If there isn't any invoice with same reference number as the one student enter, an error message will be added, and student will be redirect to balance page
+# If the invoice can be found in the database, this invoice will be check base on serval condition
+# If any of it didn't meet, a correspond error message will be added, and student will be redirect to balance page
+# If all of them met, the status of the invoice will be reset base on how much student paid for it, and student balance will be update, and a new transaction will be created
 @login_required
 def pay_for_invoice(request):
     if(request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if(request.method == 'POST'):
+            # check all require fields are filled, if not error message will be added
             try:
                 input_invoice_reference = request.POST.get('invocie_reference')
                 input_amounts_pay = request.POST.get('amounts_pay')
@@ -119,16 +146,22 @@ def pay_for_invoice(request):
                 messages.add_message(request,messages.ERROR,"There isn't such invoice exist!")
                 return redirect('balance')
 
+            # check if this invoice belongs to this student or his children or not
             if(int(temp_invoice.student_ID) != int(student.id) and check_invoice_belong_to_child(temp_invoice, student) == False):
                 messages.add_message(request,messages.ERROR,"this invoice does not belong to you or your children!")
-            elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
+            # check if this invoice is paid or not, if it is there's no point to pay for it any more
+            elif(temp_invoice.invoice_status == InvoiceStatus.PAID): 
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
-            elif(temp_invoice.invoice_status == InvoiceStatus.DELETED):
+            # check if this invoice is deleted or not, if it is there's no point to pay for it any more
+            elif(temp_invoice.invoice_status == InvoiceStatus.DELETED): 
                 messages.add_message(request,messages.ERROR,"This invoice has already been deleted!")
-            elif(input_amounts_pay_int < 1):
+            # check if the number student insert for the amount they want to pay is less than 1, student is not allow to insert 0 or negative number
+            elif(input_amounts_pay_int < 1): 
                 messages.add_message(request,messages.ERROR,"Transaction amount cannot be less than 1!")
-            elif(input_amounts_pay_int > 10000):
+            # check if the number student insert for the amount they want to pay is larger than 10000, student is not allow to insert number larger than 10000
+            elif(input_amounts_pay_int > 10000): 
                 messages.add_message(request,messages.ERROR,"Transaction amount cannot be larger than 10000!")
+            # update the status of the invoice, depends on how much student paid
             else:
                 if(temp_invoice.amounts_need_to_pay <= input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PAID
@@ -136,6 +169,7 @@ def pay_for_invoice(request):
                 elif(temp_invoice.amounts_need_to_pay > input_amounts_pay_int):
                     temp_invoice.invoice_status = InvoiceStatus.PARTIALLY_PAID
                     temp_invoice.amounts_need_to_pay -= input_amounts_pay_int
+                # update the balance for student
                 update_balance(student)
                 student.save()
                 temp_invoice.save()
@@ -149,6 +183,9 @@ def pay_for_invoice(request):
     else:
         return redirect('home')
 
+# This function checks if the invoice is belongs the student's children or not
+# It filter out all children that belongs to this student by comparing the parent_of_user field of all students and the student(params)
+# If yes then return Ture, else False
 def check_invoice_belong_to_child(temp_invoice, student):
     children = UserAccount.objects.filter(parent_of_user = student)
     for child in children:
@@ -156,6 +193,12 @@ def check_invoice_belong_to_child(temp_invoice, student):
             return True
     return False
 
+# This function create new invoice for the student
+# Ths all pre exist invoices of this student will be get
+# As this will be use to construct reference number of new invoices by using function generate_new_invoice_reference_number in Invoice model
+# The the fees of this invoice will be calcualted by using calculate_fees_amount function from Invoice model
+# At last, all the about data will be using to create a new invoice for this student
+# And this student's balance will be update as a new invoice created
 def create_new_invoice(student_id, lesson):
     student_number_of_invoice_pre_exist = Invoice.objects.filter(student_ID = student_id)
     student = UserAccount.objects.get(id=student_id)
@@ -165,6 +208,11 @@ def create_new_invoice(student_id, lesson):
     fees = int(fees)
     Invoice.objects.create(reference_number =  reference_number_temp, student_ID = student_id, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
     update_balance(student)
+
+# This function update invoice for student when the lesson of this invoice refers to has been modify
+# The fees of the lesson will be recalculate if the duration of the lesson has been changed
+# However if this booked lesson is created directly from django admin page
+# Therefore the create_new_invocie function will not be call so in this case create new invoice will be done in here
 
 def update_invoice(lesson):
     try:
@@ -187,15 +235,23 @@ def update_invoice(lesson):
         reference_number_temp = Invoice.generate_new_invoice_reference_number(students_id_string, len(student_number_of_invoice_pre_exist))
         Invoice.objects.create(reference_number =  reference_number_temp, student_ID = students_id_string, fees_amount = fees, invoice_status = InvoiceStatus.UNPAID, amounts_need_to_pay = fees, lesson_ID = lesson.lesson_id)
 
-
+# This function will update the invoice status when lesson delete
+# As there's only invoice for booked lesson, so there's a if loop to detect the status of the lesson
+# If the deleted lesson is booked, then invoice status will be set as DELETD and the field will be modify
 def update_invoice_when_delete(lesson):
-    invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
-    invoice.invoice_status = InvoiceStatus.DELETED
-    invoice.amounts_need_to_pay = 0
-    invoice.fees_amount = 0
-    invoice.lesson_ID = ''
-    invoice.save()
+    if(lesson.lesson_status == LessonStatus.FULLFILLED):
+        invoice = Invoice.objects.get(lesson_ID = lesson.lesson_id)
+        invoice.invoice_status = InvoiceStatus.DELETED
+        invoice.amounts_need_to_pay = 0
+        invoice.fees_amount = 0
+        invoice.lesson_ID = ''
+        invoice.save()
 
+
+# This function will be call in admin page when press a button to display all students' transactions
+# This function only works when the user is identify as an Admin or a Director, or else the user will be redirect to home page
+# This function also calculate a total of the transaction_amounts of all transactions students made
+# Both total and transactions will be pass into transaction_history.html and dispaly in a table
 @login_required
 def get_all_transactions(request):
     if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
@@ -208,7 +264,9 @@ def get_all_transactions(request):
     else:
         return redirect('home')
 
-
+# This function will be call in admin page when press a button to display all students' invoices
+# This function only works when the user is identify as an Admin or a Director, or else the user will be redirect to home page
+# All invoices will be pass into invoices_history.html and dispaly in a table
 @login_required
 def get_all_invocies(request):
     if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
@@ -218,6 +276,9 @@ def get_all_invocies(request):
     else:
         return redirect('home')
 
+# This function will be call when admin or director try to see all invoices and transactions that belongs to this student
+# This function will get all invoices and transactions that belongs to this student and pass them into student_invoices_and_transactions.html
+# Those data will be display as two tables in the page
 @login_required
 def get_student_invoices_and_transactions(request, student_id):
     if(request.user.is_authenticated and (request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR)):
@@ -617,29 +678,26 @@ def admin_feed(request):
 
 @login_required
 def director_feed(request):
-    if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         return render(request,'director_feed.html')
     else:
-        # return redirect('log_in')
         return redirect('home')
 
 
 @login_required
 def director_manage_roles(request):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-        students = UserAccount.objects.filter(role = UserRole.STUDENT)
-        teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
         admins = UserAccount.objects.filter(role = UserRole.ADMIN)
         directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
-        return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
+        return render(request,'director_manage_roles.html',{'admins':admins, 'directors':directors})
     else:
         return redirect("home")
-
 
 
 @login_required
 def promote_director(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
             return redirect('director_manage_roles')
@@ -647,7 +705,7 @@ def promote_director(request,current_user_email):
 
             try:
                 user = UserAccount.objects.get(email=current_user_email)
-            except ObjectDoesNotExist:#For when editing a lesson with term number 1
+            except ObjectDoesNotExist:
                 messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
                 return redirect("director_manage_roles")
 
@@ -655,6 +713,7 @@ def promote_director(request,current_user_email):
             user.is_staff = True
             user.is_superuser = True
             user.save()
+
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
             return redirect('director_manage_roles')
     else:
@@ -665,6 +724,7 @@ def promote_director(request,current_user_email):
 def promote_admin(request,current_user_email):
 
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
             return redirect('director_manage_roles')
@@ -739,9 +799,8 @@ def delete_user(request,current_user_email):
         return redirect("home")
 
 
-
+@login_required
 def create_admin_page(request):
-
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
 
         if request.method == 'POST':
