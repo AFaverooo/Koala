@@ -679,6 +679,11 @@ def admin_feed(request):
         # return redirect('log_in')
         return redirect('home')
 
+
+"""
+@Description: Function is called to render the director_feed template
+- only logged in directors can use this funcion
+"""
 @login_required
 def director_feed(request):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
@@ -686,7 +691,10 @@ def director_feed(request):
     else:
         return redirect('home')
 
-
+"""
+@Description: Function is called to render the director_manage_roles template
+- only logged in directors can use this funcion
+"""
 @login_required
 def director_manage_roles(request):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
@@ -697,6 +705,11 @@ def director_manage_roles(request):
         return redirect("home")
 
 
+"""
+@Description: Function is called to promote a registered user based on his email into a director.
+Currently logged in director can't promote himself to director.
+- only logged in directors can use this funcion
+"""
 @login_required
 def promote_director(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
@@ -722,7 +735,11 @@ def promote_director(request,current_user_email):
     else:
         return redirect("home")
 
-
+"""
+@Description: Function is called to promote a registered user based on his email into an admin.
+Currently logged in director can't promote himself to admin.
+- only logged in directors can use this funcion
+"""
 @login_required
 def promote_admin(request,current_user_email):
 
@@ -752,6 +769,11 @@ def promote_admin(request,current_user_email):
 
 
 
+"""
+@Description: Function is called to disable a registered user based on his email.
+Currently logged in director can't disable himself.
+- only logged in directors can use this funcion
+"""
 @login_required
 def disable_user(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
@@ -780,7 +802,11 @@ def disable_user(request,current_user_email):
         return redirect("home")
 
 
-
+"""
+@Description: Function is called to delete a registered user based on his email.
+Currently logged in director can't delete himself.
+- only logged in directors can use this funcion
+"""
 @login_required
 def delete_user(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
@@ -801,7 +827,11 @@ def delete_user(request,current_user_email):
     else:
         return redirect("home")
 
-
+"""
+@Description: Function is called to render the create director_create_admin template.
+Form is saved when there is post request, otherwise an empty form is rendered
+- only logged in directors can use this funcion
+"""
 @login_required
 def create_admin_page(request):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
@@ -818,7 +848,11 @@ def create_admin_page(request):
     else:
         return redirect("home")
 
-
+"""
+@Description: Function is called to update a user based on his ID based on the information of
+the CreateAdminForm. Currently log in director can update himself and other registered admins/directors.
+- only logged in directors can use this funcion
+"""
 @login_required
 def update_user(request,current_user_id):
 
@@ -862,6 +896,10 @@ def update_user(request,current_user_id):
         return render(request,'director_update_user.html', {'form': form , 'user': user})
 
 
+"""
+@Description: Function is called to render the home page, and redirect users to their corresponding feed pages
+based on their roles. Children are not allowed to log into the application.
+"""
 @login_prohibited
 def home(request):
     if request.method == 'POST':
@@ -877,9 +915,9 @@ def home(request):
                 #only parent users can log in
                 if user.parent_of_user is None:
                     login(request,user)
+
                      # redirects the user based on his role
                     if (user.role == UserRole.ADMIN.value):
-                         #redirect_url = request.POST.get('next') or 'admin_feed'
                         return redirect('admin_feed')
                     elif (user.role == UserRole.DIRECTOR.value):
                         redirect_url = request.POST.get('next') or 'director_feed'
