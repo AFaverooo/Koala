@@ -9,7 +9,7 @@ from django.utils import timezone
 class LessonModelTestCase(TestCase):
     """Unit Tests for Lesson model"""
 
-    fixtures = ['lessons/tests/fixtures/useraccounts.json']
+    fixtures = ['lessons/tests/fixtures/useraccounts.json'], ['lessons/tests/fixtures/lessons.json']
     def setUp(self):
 
         self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
@@ -20,46 +20,26 @@ class LessonModelTestCase(TestCase):
 
         self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
-        self.lesson = Lesson.objects.create(
-            type = LessonType.INSTRUMENT,
-            duration = LessonDuration.THIRTY,
-            lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-        )
+        self.lesson = Lesson.objects.get(lesson_id = 1)
+        self.lesson.lesson_status = LessonStatus.FULLFILLED
+        self.lesson.save()
 
+        self.lesson2 = Lesson.objects.get(lesson_id = 2)
+        self.lesson2.lesson_status = LessonStatus.FULLFILLED
+        self.lesson2.save()
 
+        self.lesson3 = Lesson.objects.get(lesson_id = 3)
+        self.lesson3.lesson_status = LessonStatus.FULLFILLED
+        self.lesson3.teacher_id = self.teacher
+        self.lesson3.save()
 
-        self.lesson2 = Lesson.objects.create(
-            type = LessonType.THEORY,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.UNFULFILLED
-        )
+        self.lesson4 = Lesson.objects.get(lesson_id = 4)
+        self.lesson4.lesson_status = LessonStatus.FULLFILLED
+        self.lesson4.student_id = self.second_student
+        self.lesson4.teacher_id = self.teacher
+        self.lesson4.save()
 
-        self.lesson3 = Lesson.objects.create(
-            type = LessonType.PERFORMANCE,
-            duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED
-        )
-
-        self.lesson4 = Lesson.objects.create(
-            type = LessonType.PERFORMANCE,
-            duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 1, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
-            teacher_id = self.teacher,
-            student_id = self.second_student,
-            request_date = datetime.date(2022, 10, 15),
-            lesson_status = LessonStatus.FULLFILLED
-        )
+        Lesson.objects.get(lesson_id = 5).delete()
 
     def create_child_lessons(self):
         self.booked_child_lesson = Lesson.objects.create(
@@ -97,7 +77,7 @@ class LessonModelTestCase(TestCase):
             self.lessonCopy = Lesson.objects.create(
                 type = LessonType.INSTRUMENT,
                 duration = LessonDuration.THIRTY,
-                lesson_date_time = datetime.datetime(2022, 11, 20, 20, 8, 7, 127325, tzinfo=timezone.utc),
+                lesson_date_time = datetime.datetime(2022, 11, 20, 15, 15, 0, tzinfo=timezone.utc),
                 teacher_id = self.teacher,
                 student_id = self.student,
                 request_date = datetime.date(2022, 10, 15),
@@ -163,7 +143,6 @@ class LessonModelTestCase(TestCase):
 
     def test_student_deletion_deletes_all_related_lessons(self):
         before_count = Lesson.objects.count()
-
         UserAccount.objects.get(email = self.student.email).delete()
         after_count = Lesson.objects.count()
         self.assertEqual(before_count-3,after_count)
