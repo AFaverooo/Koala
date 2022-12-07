@@ -305,126 +305,114 @@ def get_parent(student):
     return None
 
 
+@login_required
 def student_requests(request,student_id):
-    if request.method == 'GET':
-        try:
-            student = UserAccount.objects.get(id=student_id)
-            family = get_student_and_child_objects(student)
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if request.method == 'GET':
+            try:
+                student = UserAccount.objects.get(id=student_id)
+                family = get_student_and_child_objects(student)
 
-            user_lesson_dictionary = {}
+                user_lesson_dictionary = {}
 
-            for eachuser in family:
-                lessons = Lesson.objects.filter(student_id = eachuser).order_by('request_date')
-                user_lesson_dictionary.update({ eachuser : lessons})
+                for eachuser in family:
+                    lessons = Lesson.objects.filter(student_id = eachuser).order_by('request_date')
+                    user_lesson_dictionary.update({ eachuser : lessons})
 
-            return render(request,'admin_student_requests_page.html',{'user_lesson_dictionary':user_lesson_dictionary, 'student':student})
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, 'Student does not exist!')
-            return redirect('admin_feed')
-    else:
-        return redirect('admin_feed')
-
-def admin_update_request_page(request, lesson_id):
-    if request.method == 'GET':
-        try:
-            lesson = Lesson.objects.get(lesson_id=lesson_id)
-            data = {
-                'type' : lesson.type,
-                'duration': lesson.duration,
-                'lesson_date_time': lesson.lesson_date_time,
-                'teachers' : lesson.teacher_id
-                }
-            form = RequestForm(data)
-            return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, 'Something went wrong!')
-            return redirect('admin_feed')
-    else:
-        return redirect('admin_feed')
-
-def admin_update_request(request, lesson_id):
-    if request.method == 'POST':
-        try:
-            lesson = Lesson.objects.get(lesson_id=lesson_id)
-            form = RequestForm(request.POST)
-
-            if form.is_valid():
-                type = form.cleaned_data.get('type')
-                duration = form.cleaned_data.get('duration')
-                lesson_date_time = form.cleaned_data.get('lesson_date_time')
-                teacher_id = form.cleaned_data.get('teachers')
-
-                if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
-                    messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
-                    return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
-                else:
-                    lesson.type = type
-                    lesson.duration = duration
-                    lesson.lesson_date_time = lesson_date_time
-                    lesson.teacher_id = teacher_id
-                    lesson.save()
-
-                    # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
-                    if lesson.lesson_status == LessonStatus.FULLFILLED:
-                        update_invoice(lesson)
-
-                    messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
-
-                    student = UserAccount.objects.get(id=lesson.student_id.id)
-
-                    parent = get_parent(student)
-
-                    if (parent != None):
-                        return redirect('student_requests',parent.id)
-                    else:
-                        return redirect('student_requests',student.id)
-            else:
-                messages.add_message(request, messages.ERROR, 'Invalid form data!')
+                return render(request,'admin_student_requests_page.html',{'user_lesson_dictionary':user_lesson_dictionary, 'student':student})
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, 'Student does not exist!')
                 return redirect('admin_feed')
-
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, 'Lesson not found!')
+        else:
             return redirect('admin_feed')
     else:
-        return redirect('admin_feed')
+        return redirect('home')
 
+@login_required
+def admin_update_request_page(request, lesson_id):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if request.method == 'GET':
+            try:
+                lesson = Lesson.objects.get(lesson_id=lesson_id)
+                data = {
+                    'type' : lesson.type,
+                    'duration': lesson.duration,
+                    'lesson_date_time': lesson.lesson_date_time,
+                    'teachers' : lesson.teacher_id
+                    }
+                form = RequestForm(data)
+                return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, 'Something went wrong!')
+                return redirect('admin_feed')
+        else:
+            return redirect('admin_feed')
+    else:
+        return redirect('home')
+
+@login_required
+def admin_update_request(request, lesson_id):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if request.method == 'POST':
+            try:
+                lesson = Lesson.objects.get(lesson_id=lesson_id)
+                form = RequestForm(request.POST)
+
+                if form.is_valid():
+                    type = form.cleaned_data.get('type')
+                    duration = form.cleaned_data.get('duration')
+                    lesson_date_time = form.cleaned_data.get('lesson_date_time')
+                    teacher_id = form.cleaned_data.get('teachers')
+
+                    if (lesson.type == type and lesson.duration == duration and lesson.lesson_date_time == lesson_date_time and lesson.teacher_id == teacher_id):
+                        messages.add_message(request, messages.ERROR, 'Lesson details are the same as before!')
+                        return render(request,'admin_update_request.html', {'form': form , 'lesson': lesson})
+                    else:
+                        lesson.type = type
+                        lesson.duration = duration
+                        lesson.lesson_date_time = lesson_date_time
+                        lesson.teacher_id = teacher_id
+                        lesson.save()
+
+                        # update_invoice function won' be call for pending lesson, as invoice does not exist at this time
+                        if lesson.lesson_status == LessonStatus.FULLFILLED:
+                            update_invoice(lesson)
+
+                        messages.add_message(request, messages.SUCCESS, 'Lesson was successfully updated!')
+
+                        student = UserAccount.objects.get(id=lesson.student_id.id)
+
+                        parent = get_parent(student)
+
+                        if (parent != None):
+                            return redirect('student_requests',parent.id)
+                        else:
+                            return redirect('student_requests',student.id)
+                else:
+                    messages.add_message(request, messages.ERROR, 'Invalid form data!')
+                    return redirect('admin_feed')
+
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, 'Lesson not found!')
+                return redirect('admin_feed')
+        else:
+            return redirect('admin_feed')
+    else:
+        return redirect('home')
+
+@login_required
 def admin_confirm_booking(request, lesson_id):
-    if request.method == 'GET':
-
-        try:
-            lesson = Lesson.objects.get(lesson_id=lesson_id)
-            if(lesson.lesson_status == LessonStatus.FULLFILLED):
-                messages.add_message(request, messages.INFO, 'Already booked!')
-            else:
-                lesson.lesson_status = LessonStatus.FULLFILLED
-                lesson.save()
-                messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
-                create_new_invoice(lesson.student_id.id, lesson)
-
-            student = UserAccount.objects.get(id=lesson.student_id.id)
-
-            parent = get_parent(student)
-
-            if (parent != None):
-                return redirect('student_requests',parent.id)
-            else:
-                return redirect('student_requests',student.id)
-
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, 'Lesson not found !')
-            return redirect('admin_feed')
-    else:
-        return redirect('admin_feed')
-
-def delete_lesson(request, lesson_id):
-    if request.method == 'GET':
-        try:
-            lesson = Lesson.objects.get(lesson_id=lesson_id)
-            if lesson is not None:
-                update_invoice_when_delete(lesson)
-                lesson.delete()
-
-                messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if request.method == 'GET':
+            try:
+                lesson = Lesson.objects.get(lesson_id=lesson_id)
+                if(lesson.lesson_status == LessonStatus.FULLFILLED):
+                    messages.add_message(request, messages.INFO, 'Already booked!')
+                else:
+                    lesson.lesson_status = LessonStatus.FULLFILLED
+                    lesson.save()
+                    messages.add_message(request, messages.SUCCESS, 'Successfully Booked!')
+                    create_new_invoice(lesson.student_id.id, lesson)
 
                 student = UserAccount.objects.get(id=lesson.student_id.id)
 
@@ -434,200 +422,254 @@ def delete_lesson(request, lesson_id):
                     return redirect('student_requests',parent.id)
                 else:
                     return redirect('student_requests',student.id)
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, 'The lesson you tried to delete does not exist!')
+
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, 'Lesson not found !')
+                return redirect('admin_feed')
+        else:
             return redirect('admin_feed')
     else:
-        return redirect('admin_feed')
+        return redirect('home')
+
+
+@login_required
+def delete_lesson(request, lesson_id):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if request.method == 'GET':
+            try:
+                lesson = Lesson.objects.get(lesson_id=lesson_id)
+                if lesson is not None:
+                    update_invoice_when_delete(lesson)
+                    lesson.delete()
+
+                    messages.add_message(request, messages.SUCCESS, 'Lesson was successfully deleted!')
+
+                    student = UserAccount.objects.get(id=lesson.student_id.id)
+
+                    parent = get_parent(student)
+
+                    if (parent != None):
+                        return redirect('student_requests',parent.id)
+                    else:
+                        return redirect('student_requests',student.id)
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, 'The lesson you tried to delete does not exist!')
+                return redirect('admin_feed')
+        else:
+            return redirect('admin_feed')
+    else:
+        return redirect('home')
+            
 
 
 # Term view functions
 
 @login_required
 def term_management_page(request):
-    terms_list = Term.objects.all().order_by('term_number').values()
-    return render(request,'term_management.html', {'terms_list': terms_list})
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        terms_list = Term.objects.all().order_by('term_number').values()
+        return render(request,'term_management.html', {'terms_list': terms_list})
+    else:
+        return redirect('home')
 
+@login_required
 def add_term_page(request):
-    if len(Term.objects.all()) < 6:
-        form = TermDatesForm()
-        return render(request, 'create_term_form.html', {'form':form})
-    else:
-        messages.add_message(request,messages.ERROR, "Cannot have more than 6 terms in a year, please edit or delete existing terms!")
-        return term_management_page(request)
-
-def create_term(request):
-    if(request.method == 'POST'):
-        form = TermDatesForm(request.POST)
-        if form.is_valid():
-            term_number = form.cleaned_data.get('term_number')
-            start_date = form.cleaned_data.get('start_date')
-            end_date = form.cleaned_data.get('end_date')
-
-            if(start_date > end_date or end_date < start_date):
-                messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
-                return render(request, 'create_term_form.html', {'form':form})
-
-            if(start_date == end_date):
-                messages.add_message(request, messages.ERROR, "Term cannot start and end on the same day!")
-                return render(request, 'create_term_form.html', {'form':form})
-
-
-            if(term_number!=1):
-
-                if(len(Term.objects.filter(term_number=term_number)) !=0):
-                    messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
-                    return render(request,'create_term_form.html', {'form': form})
-
-                if (len(Term.objects.filter(term_number=term_number-1)) !=0):
-
-                    previous_term = Term.objects.get(term_number=term_number-1)
-
-                    if(start_date <= previous_term.end_date):
-                        messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
-                        return render(request, 'create_term_form.html', {'form':form})
-
-            if(term_number!= 6):
-                if(len(Term.objects.filter(term_number=term_number+1)) !=0):
-                    next_term = Term.objects.get(term_number=term_number+1)
-
-                    if(end_date >= next_term.start_date):
-                        messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
-                        return render(request, 'create_term_form.html', {'form':form})
-
-            form.save()
-            messages.add_message(request,messages.SUCCESS, "Successfully added term!")
-            return redirect('term_management')
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if len(Term.objects.all()) < 6:
+            form = TermDatesForm()
+            return render(request, 'create_term_form.html', {'form':form})
         else:
-            messages.add_message(request,messages.ERROR, "Invalid form input, Validator is set to only accept term numbers from 1 to 6!")
-            return redirect('term_management')
+            messages.add_message(request,messages.ERROR, "Cannot have more than 6 terms in a year, please edit or delete existing terms!")
+            return term_management_page(request)
     else:
-        return redirect('term_management')
+        return redirect('home')
 
-
-
-def edit_term_details_page(request,term_number):
-    if(request.method == 'GET'):
-        try:
-            term = Term.objects.get(term_number=term_number)
-
-            try:
-                previous_term = Term.objects.get(term_number=str(int(term_number)-1))
-            except ObjectDoesNotExist:
-                previous_term = None
-
-            try:
-                next_term = Term.objects.get(term_number=str(int(term_number)+1))
-            except ObjectDoesNotExist:
-                next_term = None
-
-            data = {
-                'term_number': term.term_number,
-                'start_date': term.start_date,
-                'end_date': term.end_date,
-                }
-
-            form = TermDatesForm(data)
-            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-        except ObjectDoesNotExist:
-            return redirect('term_management')
-    else:
-        return redirect('term_management')
-
-def update_term_details(request,term_number):
-    if(request.method == 'POST'):
-        try:
-            term = Term.objects.get(term_number=term_number)
+@login_required
+def create_term(request):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if(request.method == 'POST'):
             form = TermDatesForm(request.POST)
-
             if form.is_valid():
-                term_number_in = form.cleaned_data.get('term_number')
+                term_number = form.cleaned_data.get('term_number')
                 start_date = form.cleaned_data.get('start_date')
                 end_date = form.cleaned_data.get('end_date')
 
-                if(int(term_number) != int(term_number_in) and len(Term.objects.filter(term_number=term_number_in)) !=0):
-                        messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
-                        return redirect(request,'edit_term_form.html', {'form': form})
+                if(start_date > end_date or end_date < start_date):
+                    messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
+                    return render(request, 'create_term_form.html', {'form':form})
 
+                if(start_date == end_date):
+                    messages.add_message(request, messages.ERROR, "Term cannot start and end on the same day!")
+                    return render(request, 'create_term_form.html', {'form':form})
+
+
+                if(term_number!=1):
+
+                    if(len(Term.objects.filter(term_number=term_number)) !=0):
+                        messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
+                        return render(request,'create_term_form.html', {'form': form})
+
+                    if (len(Term.objects.filter(term_number=term_number-1)) !=0):
+
+                        previous_term = Term.objects.get(term_number=term_number-1)
+
+                        if(start_date <= previous_term.end_date):
+                            messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
+                            return render(request, 'create_term_form.html', {'form':form})
+
+                if(term_number!= 6):
+                    if(len(Term.objects.filter(term_number=term_number+1)) !=0):
+                        next_term = Term.objects.get(term_number=term_number+1)
+
+                        if(end_date >= next_term.start_date):
+                            messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
+                            return render(request, 'create_term_form.html', {'form':form})
+
+                form.save()
+                messages.add_message(request,messages.SUCCESS, "Successfully added term!")
+                return redirect('term_management')
+            else:
+                messages.add_message(request,messages.ERROR, "Invalid form input, Validator is set to only accept term numbers from 1 to 6!")
+                return redirect('term_management')
+        else:
+            return redirect('term_management')
+    else:
+        return redirect('home')
+
+
+@login_required
+def edit_term_details_page(request,term_number):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if(request.method == 'GET'):
+            try:
+                term = Term.objects.get(term_number=term_number)
 
                 try:
-                    previous_term = Term.objects.get(term_number=str(int(term_number_in)-1))
-
-                    if(int(term_number_in)-1 == int(term_number)):
-                        previous_term = None
-
-                    if(previous_term != None and start_date < previous_term.end_date and term_number != term_number_in):
-                        messages.add_message(request, messages.ERROR, "Term's start date overlaps with the previous term's end date for the chosen term number! Try changing the term number or fix term overlap before attempting to alter term number.")
-                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term})#,'next_term':next_term})
-
-                    if(previous_term != None and start_date < previous_term.end_date):
-                        messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
-                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term})#,'next_term':next_term})
-
-
+                    previous_term = Term.objects.get(term_number=str(int(term_number)-1))
                 except ObjectDoesNotExist:
                     previous_term = None
 
                 try:
-                    next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
-
-                    if(int(term_number_in)+1 == int(term_number)):
-                        next_term = None
-
-                    if(next_term!= None and end_date > next_term.start_date and term_number != term_number_in):
-                        messages.add_message(request, messages.ERROR, "Term's end date overlaps with the next term's start date for the chosen term number. Try changing the term number or fix term overlap before attempting to alter term number!")
-                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
-                    if(next_term!= None and end_date > next_term.start_date):
-                        messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
-                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
+                    next_term = Term.objects.get(term_number=str(int(term_number)+1))
                 except ObjectDoesNotExist:
                     next_term = None
 
-                if(previous_term !=None and next_term !=None  and end_date > next_term.start_date and start_date < previous_term.end_date):
-                    messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with other terms!")
-                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+                data = {
+                    'term_number': term.term_number,
+                    'start_date': term.start_date,
+                    'end_date': term.end_date,
+                    }
 
-                if (term.start_date == start_date and term.end_date == end_date and term.term_number == term_number_in):
-                    messages.add_message(request, messages.ERROR, 'Term details are the same as before!')
-                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
-                if(start_date > end_date or end_date < start_date):
-                    messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
-                    return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
-
-                term.term_number = term_number_in
-                term.start_date = start_date
-                term.end_date = end_date
-                term.save()
-
-                messages.add_message(request, messages.SUCCESS, 'Term details were successfully updated!')
+                form = TermDatesForm(data)
+                return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+            except ObjectDoesNotExist:
                 return redirect('term_management')
-            else:
-                messages.add_message(request, messages.ERROR, 'The input data is invalid. Only term numbers 1-6 are accepted')
-                return redirect('term_management')
-
-        except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, 'Unexpected Error')
+        else:
             return redirect('term_management')
     else:
-        return redirect('term_management')
+        return redirect('home')
+
+@login_required
+def update_term_details(request,term_number):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if(request.method == 'POST'):
+            try:
+                term = Term.objects.get(term_number=term_number)
+                form = TermDatesForm(request.POST)
+
+                if form.is_valid():
+                    term_number_in = form.cleaned_data.get('term_number')
+                    start_date = form.cleaned_data.get('start_date')
+                    end_date = form.cleaned_data.get('end_date')
+
+                    if(int(term_number) != int(term_number_in) and len(Term.objects.filter(term_number=term_number_in)) !=0):
+                            messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
+                            return redirect(request,'edit_term_form.html', {'form': form})
 
 
-def delete_term(request, term_number):
-    if request.method == 'GET':
-        try:
-            term = Term.objects.get(term_number=term_number)
-            if term is not None:
-                term.delete()
-                messages.add_message(request, messages.SUCCESS, 'Term was successfully deleted!')
+                    try:
+                        previous_term = Term.objects.get(term_number=str(int(term_number_in)-1))
+
+                        if(int(term_number_in)-1 == int(term_number)):
+                            previous_term = None
+
+                        if(previous_term != None and start_date < previous_term.end_date and term_number != term_number_in):
+                            messages.add_message(request, messages.ERROR, "Term's start date overlaps with the previous term's end date for the chosen term number! Try changing the term number or fix term overlap before attempting to alter term number.")
+                            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term})#,'next_term':next_term})
+
+                        if(previous_term != None and start_date < previous_term.end_date):
+                            messages.add_message(request, messages.ERROR, "This term's start date overlaps with the previous term's ending date!")
+                            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term})#,'next_term':next_term})
+
+
+                    except ObjectDoesNotExist:
+                        previous_term = None
+
+                    try:
+                        next_term = Term.objects.get(term_number=str(int(term_number_in)+1))
+
+                        if(int(term_number_in)+1 == int(term_number)):
+                            next_term = None
+
+                        if(next_term!= None and end_date > next_term.start_date and term_number != term_number_in):
+                            messages.add_message(request, messages.ERROR, "Term's end date overlaps with the next term's start date for the chosen term number. Try changing the term number or fix term overlap before attempting to alter term number!")
+                            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+                        if(next_term!= None and end_date > next_term.start_date):
+                            messages.add_message(request, messages.ERROR, "This term's end date overlaps with the next term's starting date!")
+                            return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+                    except ObjectDoesNotExist:
+                        next_term = None
+
+                    if(previous_term !=None and next_term !=None  and end_date > next_term.start_date and start_date < previous_term.end_date):
+                        messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with other terms!")
+                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+                    if (term.start_date == start_date and term.end_date == end_date and term.term_number == term_number_in):
+                        messages.add_message(request, messages.ERROR, 'Term details are the same as before!')
+                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+                    if(start_date > end_date or end_date < start_date):
+                        messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
+                        return render(request,'edit_term_form.html', {'form': form, 'term':term,'previous_term':previous_term,'next_term':next_term})
+
+                    term.term_number = term_number_in
+                    term.start_date = start_date
+                    term.end_date = end_date
+                    term.save()
+
+                    messages.add_message(request, messages.SUCCESS, 'Term details were successfully updated!')
+                    return redirect('term_management')
+                else:
+                    messages.add_message(request, messages.ERROR, 'The input data is invalid. Only term numbers 1-6 are accepted')
+                    return redirect('term_management')
+
+            except ObjectDoesNotExist:
+                messages.add_message(request, messages.ERROR, 'Unexpected Error')
                 return redirect('term_management')
-        except ObjectDoesNotExist:
-                messages.add_message(request, messages.ERROR, 'Term does not exist!')
-                return redirect('term_management')
+        else:
+            return redirect('term_management')
     else:
-        return redirect('term_management')
+        return redirect('home')
+
+@login_required
+def delete_term(request, term_number):
+    if (request.user.is_authenticated and request.user.role == UserRole.ADMIN or request.user.role == UserRole.DIRECTOR):
+        if request.method == 'GET':
+            try:
+                term = Term.objects.get(term_number=term_number)
+                if term is not None:
+                    term.delete()
+                    messages.add_message(request, messages.SUCCESS, 'Term was successfully deleted!')
+                    return redirect('term_management')
+            except ObjectDoesNotExist:
+                    messages.add_message(request, messages.ERROR, 'Term does not exist!')
+                    return redirect('term_management')
+        else:
+            return redirect('term_management')
+    else:
+        return redirect('home')
 
 # ---------------------------------------------
 
