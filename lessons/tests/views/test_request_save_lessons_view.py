@@ -16,49 +16,59 @@ from django.db import IntegrityError
 from django.db import transaction
 
 class RequestSaveLessonsTest(TestCase):
+    """Unit tests for saving lessons and making them a requested set of lessons."""
+
+    fixtures = ['lessons/tests/fixtures/useraccounts.json']
     def setUp(self):
 
-        self.admin = UserAccount.objects.create_admin(
-            first_name='Bob',
-            last_name='Jacobs',
-            email='bobby@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.admin = UserAccount.objects.create_admin(
+        #    first_name='Bob',
+        #    last_name='Jacobs',
+        #    email='bobby@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
+        self.admin = UserAccount.objects.get(email='bobby@example.org')
 
-        self.student = UserAccount.objects.create_student(
-            first_name='John',
-            last_name='Doe',
-            email='johndoe@example.org',
-            password='Password123',
-            gender = Gender.MALE,
-        )
+        #self.student = UserAccount.objects.create_student(
+        #    first_name='John',
+        #    last_name='Doe',
+        #    email='johndoe@example.org',
+        #    password='Password123',
+        #    gender = Gender.MALE,
+        #)
 
-        self.teacher = UserAccount.objects.create_teacher(
-            first_name='Barbare',
-            last_name='Dutch',
-            email='barbdutch@example.org',
-            password='Password123',
-            gender = Gender.FEMALE,
-        )
+        self.student = UserAccount.objects.get(email='johndoe@example.org')
+
+        #self.teacher = UserAccount.objects.create_teacher(
+        #    first_name='Barbare',
+        #    last_name='Dutch',
+        #    email='barbdutch@example.org',
+        #    password='Password123',
+        #    gender = Gender.FEMALE,
+        #)
+
+        self.teacher = UserAccount.objects.get(email='barbdutch@example.org')
 
         self.save_lessons_url = reverse('save_lessons')
 
 
-        self.child = UserAccount.objects.create_child_student(
-            first_name = 'Bobby',
-            last_name = 'Lee',
-            email = 'bobbylee@example.org',
-            password = 'Password123',
-            gender = Gender.MALE,
-            parent_of_user = self.student,
-        )
+        #self.child = UserAccount.objects.create_child_student(
+        #    first_name = 'Bobby',
+        #    last_name = 'Lee',
+        #    email = 'bobbylee@example.org',
+        #    password = 'Password123',
+        #    gender = Gender.MALE,
+        #    parent_of_user = self.student,
+        #)
+
+        self.child = UserAccount.objects.get(email='bobbylee@example.org')
 
     def create_child_lessons(self):
         self.saved_child_lesson = Lesson.objects.create(
             type = LessonType.PRACTICE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 11, 22, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 11, 22, 15, 15, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.child,
             request_date = datetime.date(2022, 10, 15),
@@ -89,7 +99,7 @@ class RequestSaveLessonsTest(TestCase):
         self.saved_lesson2 = Lesson.objects.create(
             type = LessonType.THEORY,
             duration = LessonDuration.FOURTY_FIVE,
-            lesson_date_time = datetime.datetime(2022, 10, 20, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 10, 20, 16, 0, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),
@@ -99,7 +109,7 @@ class RequestSaveLessonsTest(TestCase):
         self.saved_lesson3 = Lesson.objects.create(
             type = LessonType.PERFORMANCE,
             duration = LessonDuration.HOUR,
-            lesson_date_time = datetime.datetime(2022, 9, 20, 20, 8, 7, tzinfo=timezone.utc),
+            lesson_date_time = datetime.datetime(2022, 9, 20, 9, 45, 0, tzinfo=timezone.utc),
             teacher_id = self.teacher,
             student_id = self.student,
             request_date = datetime.date(2022, 10, 15),

@@ -97,7 +97,7 @@ def get_child_invoice(student):
 # This function update the student balance for the student(params)
 # This function filter out all existing invoices that belongs to this student and this student's children
 # This function also filter out all existing transactions that belongs to this student
-# Then a balance will be calculate by adding up fees_amounts of all transactions and using this number to minus fees_amounts of all invoices 
+# Then a balance will be calculate by adding up fees_amounts of all transactions and using this number to minus fees_amounts of all invoices
 def update_balance(student):
     current_existing_invoice = Invoice.objects.filter(student_ID = student.id)
     current_existing_transaction = Transaction.objects.filter(Student_ID_transaction = student.id)
@@ -120,7 +120,7 @@ def update_balance(student):
 
 # This function is call when student is trying to pay for he and his children's invoices
 # If the user is identify as student, he will be able to go to the next step, or else he will be redirect to home page
-# The function first detect if there are values exist in all require field, or else it will add an error message, and student will be redirect to balance page 
+# The function first detect if there are values exist in all require field, or else it will add an error message, and student will be redirect to balance page
 # Then the function will try to find if there is any invoice in database that fit to the one student enter by comparing their reference number
 # If there isn't any invoice with same reference number as the one student enter, an error message will be added, and student will be redirect to balance page
 # If the invoice can be found in the database, this invoice will be check base on serval condition
@@ -150,16 +150,16 @@ def pay_for_invoice(request):
             if(int(temp_invoice.student_ID) != int(student.id) and check_invoice_belong_to_child(temp_invoice, student) == False):
                 messages.add_message(request,messages.ERROR,"this invoice does not belong to you or your children!")
             # check if this invoice is paid or not, if it is there's no point to pay for it any more
-            elif(temp_invoice.invoice_status == InvoiceStatus.PAID): 
+            elif(temp_invoice.invoice_status == InvoiceStatus.PAID):
                 messages.add_message(request,messages.ERROR,"This invoice has already been paid!")
             # check if this invoice is deleted or not, if it is there's no point to pay for it any more
-            elif(temp_invoice.invoice_status == InvoiceStatus.DELETED): 
+            elif(temp_invoice.invoice_status == InvoiceStatus.DELETED):
                 messages.add_message(request,messages.ERROR,"This invoice has already been deleted!")
             # check if the number student insert for the amount they want to pay is less than 1, student is not allow to insert 0 or negative number
-            elif(input_amounts_pay_int < 1): 
+            elif(input_amounts_pay_int < 1):
                 messages.add_message(request,messages.ERROR,"Transaction amount cannot be less than 1!")
             # check if the number student insert for the amount they want to pay is larger than 10000, student is not allow to insert number larger than 10000
-            elif(input_amounts_pay_int > 10000): 
+            elif(input_amounts_pay_int > 10000):
                 messages.add_message(request,messages.ERROR,"Transaction amount cannot be larger than 10000!")
             # update the status of the invoice, depends on how much student paid
             else:
@@ -678,29 +678,26 @@ def admin_feed(request):
 
 @login_required
 def director_feed(request):
-    if (request.user.is_authenticated and request.user.role == UserRole.DIRECTOR):
+    if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
         return render(request,'director_feed.html')
     else:
-        # return redirect('log_in')
         return redirect('home')
 
 
 @login_required
 def director_manage_roles(request):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
-        students = UserAccount.objects.filter(role = UserRole.STUDENT)
-        teachers = UserAccount.objects.filter(role = UserRole.TEACHER)
         admins = UserAccount.objects.filter(role = UserRole.ADMIN)
         directors = UserAccount.objects.filter(role = UserRole.DIRECTOR)
-        return render(request,'director_manage_roles.html',{'students':students, 'teachers':teachers, 'admins':admins, 'directors':directors})
+        return render(request,'director_manage_roles.html',{'admins':admins, 'directors':directors})
     else:
         return redirect("home")
-
 
 
 @login_required
 def promote_director(request,current_user_email):
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot promote yourself!")
             return redirect('director_manage_roles')
@@ -708,7 +705,7 @@ def promote_director(request,current_user_email):
 
             try:
                 user = UserAccount.objects.get(email=current_user_email)
-            except ObjectDoesNotExist:#For when editing a lesson with term number 1
+            except ObjectDoesNotExist:
                 messages.add_message(request,messages.ERROR,f"{current_user_email} does not exist")
                 return redirect("director_manage_roles")
 
@@ -716,6 +713,7 @@ def promote_director(request,current_user_email):
             user.is_staff = True
             user.is_superuser = True
             user.save()
+
             messages.add_message(request,messages.SUCCESS,f"{current_user_email} now has the role director")
             return redirect('director_manage_roles')
     else:
@@ -726,6 +724,7 @@ def promote_director(request,current_user_email):
 def promote_admin(request,current_user_email):
 
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
+
         if (request.user.email == current_user_email):
             messages.add_message(request,messages.ERROR,"You cannot demote yourself!")
             return redirect('director_manage_roles')
@@ -800,9 +799,8 @@ def delete_user(request,current_user_email):
         return redirect("home")
 
 
-
+@login_required
 def create_admin_page(request):
-
     if request.user.is_authenticated and request.user.role == UserRole.DIRECTOR:
 
         if request.method == 'POST':
@@ -875,7 +873,6 @@ def home(request):
             if user is not None:
                 if user.parent_of_user is None:
                     login(request,user)
-
                      # redirects the user based on his role
                     if (user.role == UserRole.ADMIN.value):
                          #redirect_url = request.POST.get('next') or 'admin_feed'
@@ -911,9 +908,13 @@ def sign_up_child(request):
             if form.is_valid():
                 student = form.save_child(request.user)
                 return redirect('student_feed')
+            else:
+                new_form = SignUpForm()
+                messages.add_message(request,messages.ERROR,"These account details already exist for another child")
+                return render(request, 'sign_up_child.html', {'form': new_form})
         else:
             form = SignUpForm()
-        return render(request, 'sign_up_child.html', {'form': form})
+            return render(request, 'sign_up_child.html', {'form': form})
     else:
         return redirect('home')
 
