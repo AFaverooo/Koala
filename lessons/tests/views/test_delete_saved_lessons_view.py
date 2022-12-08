@@ -60,8 +60,7 @@ class StudentFeedDeleteSavedLessonTestCase(TestCase):
         self.assertTrue(self.student in student_options)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'requests_page.html')
-        messages_list = list(response.context['messages'])
-        self.assertEqual(len(messages_list),0)
+
 
     def test_attempt_deletion_of_other_student_lessons(self):
         self.student_jane = UserAccount.objects.get(email='janedoe@example.org')

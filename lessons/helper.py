@@ -78,9 +78,18 @@ def check_correct_student_accessing_saved_lesson(student_id, other_lesson):
 @Description: returns whether the lesson date requested or edited is valid by checking it falls within the range of term dates
 """
 def check_valid_date(lesson_date):
-    term_six_end_date = Term.objects.get(term_number = 6).end_date
-    term_one_start_date = Term.objects.get(term_number = 1).start_date
-    return (term_one_start_date <= lesson_date <= term_six_end_date) and (settings.CURRENT_DATE <= lesson_date)
+    terms_list = (Term.objects.all())
+
+    term_number_list = []
+    for term in terms_list:
+        term_number_list.append(term.term_number)
+    
+    last_term = max(term_number_list)
+    first_term = min(term_number_list)
+    
+    last_term_end_date = Term.objects.get(term_number = last_term).end_date
+    first_term_start_date = Term.objects.get(term_number = first_term).start_date
+    return (first_term_start_date <= lesson_date <= last_term_end_date) and (settings.CURRENT_DATE <= lesson_date)
 
 
 """

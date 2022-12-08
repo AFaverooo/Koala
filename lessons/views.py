@@ -512,6 +512,10 @@ def create_term(request):
                 start_date = form.cleaned_data.get('start_date')
                 end_date = form.cleaned_data.get('end_date')
 
+                if(start_date == None or end_date == None):
+                    messages.add_message(request, messages.ERROR, "Dates must not be left empty!")
+                    return render(request, 'create_term_form.html', {'form':form})
+
                 if(start_date > end_date or end_date < start_date):
                     messages.add_message(request, messages.ERROR, "This term's end date and start date overlap with one another!")
                     return render(request, 'create_term_form.html', {'form':form})
@@ -599,6 +603,10 @@ def update_term_details(request,term_number):
                     term_number_in = form.cleaned_data.get('term_number')
                     start_date = form.cleaned_data.get('start_date')
                     end_date = form.cleaned_data.get('end_date')
+
+                    if(start_date == None or end_date == None):
+                        messages.add_message(request, messages.ERROR, "Dates must not be left empty!")
+                        return render(request, 'create_term_form.html', {'form':form})
 
                     if(int(term_number) != int(term_number_in) and len(Term.objects.filter(term_number=term_number_in)) !=0):
                             messages.add_message(request, messages.ERROR, 'There already exists a term with this term number!')
@@ -743,6 +751,9 @@ def student_feed(request):
 def requests_page(request):
     if (request.user.is_authenticated and request.user.role == UserRole.STUDENT):
         if request.method == 'GET':
+            if(len(Term.objects.all()) == 0):
+                messages.add_message(request, messages.ERROR, 'Please wait for the admin to add term dates')
+                # return redirect('student_feed')
             student = request.user
             students_option = get_student_and_child_objects(student)
             savedLessons = get_saved_lessons(student)
@@ -1090,6 +1101,10 @@ def new_lesson(request):
         if request.method == 'POST':
             request_form = RequestForm(request.POST)
             if request_form.is_valid():
+
+                if(len(Term.objects.all()) == 0):
+                    messages.add_message(request, messages.ERROR, 'Please wait for the admin to add term dates')
+                    return redirect('requests_page')
 
                 try:
                     actual_student = UserAccount.objects.get(email = request.POST['selectedStudent'])
