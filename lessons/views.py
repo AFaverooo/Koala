@@ -665,6 +665,9 @@ def update_term_details(request,term_number):
                     term.end_date = end_date
                     term.save()
 
+                    for lesson in Lesson.objects.all():
+                        lesson.save()
+
                     messages.add_message(request, messages.SUCCESS, 'Term details were successfully updated!')
                     return redirect('term_management')
                 else:
